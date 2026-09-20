@@ -1,0 +1,13 @@
+[gd_scene format=3 uid="uid://bhphi872t6fdt"]
+
+[ext_resource type="Script" uid="uid://3uovx1cf585g" path="res://scenes/ui/loading_screen/boot.gd" id="1_wyauh"]
+
+[node name="Boot" type="Control" unique_id=1958508907]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_wyauh")
+initial_scene_path = "uid://68dobhnbf23d"

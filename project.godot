@@ -15,9 +15,13 @@ compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 [application]
 
 config/name="zurd"
-run/main_scene="uid://dpsoupfmots6v"
+run/main_scene="uid://bhphi872t6fdt"
 config/features=PackedStringArray("4.7", "Forward Plus")
 config/icon="res://assets/ui/icon.svg"
+
+[autoload]
+
+SceneManager="*uid://0xuiid5n8fko"
 
 [dotnet]
 

@@ -1,0 +1,28 @@
+[gd_scene format=3 uid="uid://68dobhnbf23d"]
+
+[ext_resource type="Script" uid="uid://bo1xq5oh5kpnl" path="res://scenes/ui/menus/main_menu.gd" id="1_flhq8"]
+
+[node name="MainMenu" type="Control" unique_id=408600085]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_flhq8")
+world_scene_path = "uid://bf0mokdbbectp"
+
+[node name="CenterContainer" type="CenterContainer" parent="." unique_id=1854115553]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer" unique_id=255606425]
+layout_mode = 2
+
+[node name="Button" type="Button" parent="CenterContainer/VBoxContainer" unique_id=1536681961]
+layout_mode = 2
+text = "Start Game"
