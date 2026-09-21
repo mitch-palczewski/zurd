@@ -47,6 +47,7 @@ A git commit message should be of the form `commit tag (tag detail) : commit des
 > Example: `docs`: updated readme
 - `asset` - Adding media like models, images, audio
 > Example: `asset(models): Added models to be launched`
+- `tool` - An editor tool or enhancement
 
 
 
