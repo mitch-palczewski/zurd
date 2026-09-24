@@ -52,15 +52,29 @@ A git commit message should be of the form `commit tag (tag detail) : commit des
 > Example: `asset(models): Added models to be launched`
 - `tool` - An editor tool or enhancement.
 
+---
 
 # Collision Layers 
+
+> Collision Layer ("Who am i?"): The category or identity assigned to the object itself. Its identity. It tells Godot which "bucket" this object belongs to.
+
+> Collision Mask ("Who do I collide with?"): The list of categories this object actively scans and checks for collisions against. It tells Godot which other objects this specific body should collide with or detect.
 
 | Layer # | Name | Description |
 | ------- | -------- | --------- |
 | Layer 1 | Environment | Static ground, Immovabele structures |
 | Layer 2 | Player | Player, Ship |
-| Layer 3 | DeployedProps | Floating RigidBody3D objects, collidable objects |
+| Layer 3 | Objects | Floating objects, collidable objects, space junk |
 | Layer 4 | Enemies | Enemy Zurd |
+| Layer 5 | UI | Clickable elements, interactable objects|
+
+| Entity Type | Layer (Who am I?) | Mask (Who do I collide with?) | Notes |
+| ------------ | ---------------- | ------------------ | ------ |
+| Environment | 1 | None (0) | Disables unnecessary |
+| Player | 2 | 1, 3, 4, 5 | Collides with ground, walls, floating objects, and enemies |
+| Objects | 3 | 1, 2, 3, 4 | Floating Objects bounce off everything |
+| Enemies | 4 | 1, 2, 3 | Enemies collide with walls, objects, and the player | 
+| UI | 5 | None (0) | Interactable objects, 3d buttons, or triggers, need to be collided with but does not collide |
 
 
 
