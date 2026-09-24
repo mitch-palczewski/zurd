@@ -11,12 +11,6 @@ func _post_import(scene: Node) -> Object:
     if mesh_nodes.is_empty():
         push_warning("Importer: No MeshInstance3D found in " + get_source_file())
         return scene
-
-    # DELETE 
-    var mesh_node = _find_mesh_instance(scene)
-    if not mesh_node:
-        push_warning("Importer: No MeshInstance3D found in " + get_source_file())
-        return scene
     
     var item_name: String = get_source_file().get_file().get_basename().validate_filename()
 
@@ -58,6 +52,8 @@ func _make_collider_scene(item_name: String, mesh_nodes: Array[MeshInstance3D], 
 func _make_static_body_3d_scene(item_name: String, mesh_scene: PackedScene, collider_scene: PackedScene) -> PackedScene:
     var static_root = StaticBody3D.new()
     static_root.name = item_name.capitalize() + "Static"
+    static_root.collision_layer = 1
+    static_root.collision_mask = 0
     add_scene(static_root, mesh_scene)
     add_scene(static_root, collider_scene)
     return _save_packed_scene(static_root, STATIC_DIR + item_name + "_static.tscn")
@@ -66,18 +62,17 @@ func _make_static_body_3d_scene(item_name: String, mesh_scene: PackedScene, coll
 func _make_rigid_body_3d_scene(item_name: String, mesh_scene: PackedScene, collider_scene: PackedScene) -> PackedScene:
     var rigid_root = RigidBody3D.new()
     rigid_root.name = item_name.capitalize() + "Rigid"
+    rigid_root.collision_layer = 0
+    rigid_root.collision_mask = 0
+    rigid_root.set_collision_layer_value(3, true)
+    rigid_root.set_collision_mask_value(1, true)
+    rigid_root.set_collision_mask_value(2, true)
+    rigid_root.set_collision_mask_value(3, true)
+    rigid_root.set_collision_mask_value(4, true)
     add_scene(rigid_root, mesh_scene)
     add_scene(rigid_root, collider_scene)
     return _save_packed_scene(rigid_root, RIGID_DIR + item_name + "_rigid.tscn")
-
-func _find_mesh_instance(node: Node) -> MeshInstance3D:
-    if node is MeshInstance3D:
-        return node
-    for child in node.get_children():
-        var found = _find_mesh_instance(child)
-        if found:
-            return found
-    return null
+    
 
 func _find_all_mesh_instances(node: Node, result: Array[MeshInstance3D]=[]) -> Array[MeshInstance3D]:
     if node is MeshInstance3D:

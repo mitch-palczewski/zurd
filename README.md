@@ -60,6 +60,8 @@ A git commit message should be of the form `commit tag (tag detail) : commit des
 
 > Collision Mask ("Who do I collide with?"): The list of categories this object actively scans and checks for collisions against. It tells Godot which other objects this specific body should collide with or detect.
 
+### Collision Layer Definitions
+
 | Layer # | Name | Description |
 | ------- | -------- | --------- |
 | Layer 1 | Environment | Static ground, Immovabele structures |
@@ -67,6 +69,9 @@ A git commit message should be of the form `commit tag (tag detail) : commit des
 | Layer 3 | Objects | Floating objects, collidable objects, space junk |
 | Layer 4 | Enemies | Enemy Zurd |
 | Layer 5 | UI | Clickable elements, interactable objects|
+
+
+### Example implementation:
 
 | Entity Type | Layer (Who am I?) | Mask (Who do I collide with?) | Notes |
 | ------------ | ---------------- | ------------------ | ------ |
