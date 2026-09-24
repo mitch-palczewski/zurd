@@ -7,6 +7,12 @@ const COLLIDER_DIR = "res://scenes/objects/colliders/"
 const MESH_DIR = "res://scenes/objects/mesh/"
 
 func _post_import(scene: Node) -> Object:
+    var mesh_nodes: Array[MeshInstance3D] = _find_all_mesh_instances(scene)
+    if mesh_nodes.is_empty():
+        push_warning("Importer: No MeshInstance3D found in " + get_source_file())
+        return scene
+
+    # DELETE 
     var mesh_node = _find_mesh_instance(scene)
     if not mesh_node:
         push_warning("Importer: No MeshInstance3D found in " + get_source_file())
@@ -19,8 +25,8 @@ func _post_import(scene: Node) -> Object:
     DirAccess.make_dir_recursive_absolute(COLLIDER_DIR)
     DirAccess.make_dir_recursive_absolute(MESH_DIR)
 
-    var mesh_scene: PackedScene = _make_mesh_scene(item_name, mesh_node)
-    var collider_scene: PackedScene = _make_collider_scene(item_name, mesh_node)
+    var mesh_scene: PackedScene = _make_mesh_scene(item_name, mesh_nodes, scene)
+    var collider_scene: PackedScene = _make_collider_scene(item_name, mesh_nodes, scene)
 
     _make_static_body_3d_scene(item_name, mesh_scene, collider_scene)
     _make_rigid_body_3d_scene(item_name, mesh_scene, collider_scene)
@@ -28,20 +34,25 @@ func _post_import(scene: Node) -> Object:
     return scene
 
 
-func _make_mesh_scene(item_name: String, mesh_node: MeshInstance3D) -> PackedScene:
-    var mesh_clone = mesh_node.duplicate() as MeshInstance3D
-    mesh_clone.name = item_name.capitalize() + "Mesh"
+func _make_mesh_scene(item_name: String, mesh_nodes: Array[MeshInstance3D], scene_root: Node) -> PackedScene:
+    var root_node = Node3D.new()
+    root_node.name = item_name.capitalize() + "Mesh"
 
-    _enable_vertex_colors(mesh_clone)
+    for mesh_node in mesh_nodes:
+        var clone = mesh_node.duplicate() as MeshInstance3D
+        clone.transform = _get_relative_transform(mesh_node, scene_root)
+        _enable_vertex_colors(clone)
+        root_node.add_child(clone)
+        clone.owner = root_node
     
-    return _save_packed_scene(mesh_clone, MESH_DIR + item_name + "_mesh.tscn")
+    return _save_packed_scene(root_node, MESH_DIR + item_name + "_mesh.tscn")
 
 
-func _make_collider_scene(item_name: String, mesh_node: MeshInstance3D) -> PackedScene:
+func _make_collider_scene(item_name: String, mesh_nodes: Array[MeshInstance3D], scene_root: Node) -> PackedScene:
     var collider_path: String = COLLIDER_DIR + item_name + "_collider.tscn"
     if ResourceLoader.exists(collider_path):
         return load(collider_path)
-    return _create_default_box_collider(mesh_node, collider_path)
+    return _create_default_box_collider(mesh_nodes, collider_path, scene_root)
 
 
 func _make_static_body_3d_scene(item_name: String, mesh_scene: PackedScene, collider_scene: PackedScene) -> PackedScene:
@@ -68,8 +79,15 @@ func _find_mesh_instance(node: Node) -> MeshInstance3D:
             return found
     return null
 
-func _create_default_box_collider(mesh_node: MeshInstance3D, path: String) -> PackedScene:
-    var aabb = mesh_node.mesh.get_aabb()
+func _find_all_mesh_instances(node: Node, result: Array[MeshInstance3D]=[]) -> Array[MeshInstance3D]:
+    if node is MeshInstance3D:
+        result.append(node)
+    for child in node.get_children():
+        _find_all_mesh_instances(child, result)
+    return result
+
+func _create_default_box_collider(mesh_nodes: Array[MeshInstance3D], path: String, scene_root: Node) -> PackedScene:
+    var aabb: AABB = _calculate_combined_aabb(mesh_nodes, scene_root)
     
     var col_root = Node3D.new()
     col_root.name = "Colliders"
@@ -86,6 +104,33 @@ func _create_default_box_collider(mesh_node: MeshInstance3D, path: String) -> Pa
     shape_node.owner = col_root
 
     return _save_packed_scene(col_root, path)
+
+
+func _calculate_combined_aabb(mesh_nodes: Array[MeshInstance3D], scene_root: Node) -> AABB:
+    var combined = AABB() 
+    var has_aabb = false 
+    for mesh_node in mesh_nodes:
+        if not mesh_node.mesh:
+            continue
+        var local_aabb = mesh_node.mesh.get_aabb()
+        var rel_transform = _get_relative_transform(mesh_node, scene_root)
+        var xformed_aabb = rel_transform * local_aabb
+
+        if not has_aabb:
+            combined = xformed_aabb
+            has_aabb = true
+        else:
+            combined = combined.merge(xformed_aabb)
+    return combined
+
+
+func _get_relative_transform(node:Node3D, root: Node) -> Transform3D:
+    var trans = Transform3D.IDENTITY
+    var current: Node = node
+    while current and current != root and current is Node3D:
+        trans = (current as Node3D).transform * trans
+        current = current.get_parent()
+    return trans
 
 
 func _enable_vertex_colors(mesh_node: MeshInstance3D) -> void:

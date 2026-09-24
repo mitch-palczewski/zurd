@@ -1,7 +1,10 @@
+# Pile Deployments from FEED (Collective) Trophy Room
 # The Terror of the all consuming *Zurd*
 Developed by the Feed Collective: Eben Kling, Aude Jomini, Phil Lique, Mitch Palczewski
 
-# Set up
+In this multiplayer immersive game guests steer a Trans-dimensional Trophy Room through a vast expanse of space. Players deploy objects from the room's cache of curiosities to build islands of matter and defend their constructions from an infestation of roving *Zurd* skulls which gobble up objects. Players can defend their constuctions by swatting these pests like flies. If *Zurds* are getting hungry and the ship is not properly defended, they will attempt to eat the ship. 
+
+# Repo Set up
 ### Required Applications 
 - [.NET SDK](https://dotnet.microsoft.com/en-us/download) - Allows you to run Godot Engine with C# 
 - [Godot Engine - .NET](https://godotengine.org/download/windows/) - Make sure to select the .NET version
@@ -47,7 +50,17 @@ A git commit message should be of the form `commit tag (tag detail) : commit des
 > Example: `docs`: updated readme
 - `asset` - Adding media like models, images, audio
 > Example: `asset(models): Added models to be launched`
-- `tool` - An editor tool or enhancement
+- `tool` - An editor tool or enhancement.
+
+
+# Collision Layers 
+
+| Layer # | Name | Description |
+| ------- | -------- | --------- |
+| Layer 1 | Environment | Static ground, Immovabele structures |
+| Layer 2 | Player | Player, Ship |
+| Layer 3 | DeployedProps | Floating RigidBody3D objects, collidable objects |
+| Layer 4 | Enemies | Enemy Zurd |
 
 
 
