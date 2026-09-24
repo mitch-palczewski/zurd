@@ -72,7 +72,7 @@ func _make_rigid_body_3d_scene(item_name: String, mesh_scene: PackedScene, colli
     add_scene(rigid_root, mesh_scene)
     add_scene(rigid_root, collider_scene)
     return _save_packed_scene(rigid_root, RIGID_DIR + item_name + "_rigid.tscn")
-    
+
 
 func _find_all_mesh_instances(node: Node, result: Array[MeshInstance3D]=[]) -> Array[MeshInstance3D]:
     if node is MeshInstance3D:
@@ -153,8 +153,18 @@ func add_scene(parent_node: Node, scene: PackedScene) -> void:
 
 func _save_packed_scene(root_node: Node, save_path: String) -> PackedScene:
     var packed = PackedScene.new()
-    packed.pack(root_node)
-    var error = ResourceSaver.save(packed, save_path)
-    if error != OK:
-        push_error("Failed to save scene to: " + save_path + " (Error code:  " + str(error) + ")")
-    return packed
+    var packed_err = packed.pack(root_node)
+    if packed_err != OK:
+        push_error("Failed to pack scene for: " + save_path + " (Error code: " + str(packed_err) + ")")
+        root_node.free()
+        return null
+    
+    var save_err = ResourceSaver.save(packed, save_path)
+    if save_err != OK:
+        push_error("Failed to save scene to: " + save_path + " (Error code:  " + str(save_err) + ")")
+        root_node.free()
+        return null
+    
+    root_node.free()
+
+    return load(save_path) as PackedScene
