@@ -1,8 +1,6 @@
 extends Node
 
-# Define your signals globally here
-
-
-# signal enemy_clicked(enemy_node: Node3D)
-# signal prop_spawned(prop_instance: RigidBody3D)
-# signal player_died()
+## Fired when a 3D world scene finishes setting up its scene tree. 
+## Passes the level instance so listeners can query children.
+#@warning_ignore("unused_signal")
+#signal level_ready(level_node: Node3D)
