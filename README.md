@@ -47,8 +47,8 @@ cd zurd
 A git commit message should be of the form `commit tag (tag detail) : commit description `
 
 ### Commit Tags 
-- `core` - A new feature or capability added to the codebase.
-> Example: `core(player): Added flight controls` 
+- `feat` - A new feature or capability added to the codebase.
+> Example: `feat(player): Added flight controls` 
 - `fix` - A bug fix or error resolution.
 > Example: `fix(ui): Resolve status bar scaling`
 - `docs` - Documentation-only changes (e.g., README updates, comments).
