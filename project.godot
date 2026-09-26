@@ -22,6 +22,7 @@ config/icon="res://assets/ui/icon.svg"
 [autoload]
 
 SceneManager="*uid://0xuiid5n8fko"
+EventBus="*uid://5gdm88785ufq"
 
 [dotnet]
 
