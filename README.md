@@ -4,6 +4,11 @@ Developed by the Feed Collective: Eben Kling, Aude Jomini, Phil Lique, Mitch Pal
 
 In this multiplayer immersive game guests steer a Trans-dimensional Trophy Room through a vast expanse of space. Players deploy objects from the room's cache of curiosities to build islands of matter and defend their constructions from an infestation of roving *Zurd* skulls which gobble up objects. Players can defend their constuctions by swatting these pests like flies. If *Zurds* are getting hungry and the ship is not properly defended, they will attempt to eat the ship. 
 
+---
+---
+---
+---
+
 # Repo Set up
 ### Required Applications 
 - [.NET SDK](https://dotnet.microsoft.com/en-us/download) - Allows you to run Godot Engine with C# 
@@ -51,14 +56,22 @@ A git commit message should be of the form `commit tag (tag detail) : commit des
 - `asset` - Adding media like models, images, audio
 > Example: `asset(models): Added models to be launched`
 - `tool` - An editor tool or enhancement.
+- `refactor` - Script changes that do not change functionality. Like naming or code structure.
 
+---
+---
+---
 ---
 
 # Collision Layers 
 
-> Collision Layer ("Who am i?"): The category or identity assigned to the object itself. Its identity. It tells Godot which "bucket" this object belongs to.
+Collision Layer ("Who am i?"): The category or identity assigned to the object itself. Its identity. It tells Godot which "bucket" this object belongs to.
 
-> Collision Mask ("Who do I collide with?"): The list of categories this object actively scans and checks for collisions against. It tells Godot which other objects this specific body should collide with or detect.
+Collision Mask ("Who do I collide with?"): The list of categories this object actively scans and checks for collisions against. It tells Godot which other objects this specific body should collide with or detect.
+
+> The glb_physics_importer.gd auto asigns imported .glb collision mask. The generated Static object gets assigned Layer 1 and the generated Rigid Object gets assigned Layer 3. 
+
+
 
 ### Collision Layer Definitions
 
@@ -75,11 +88,25 @@ A git commit message should be of the form `commit tag (tag detail) : commit des
 
 | Entity Type | Layer (Who am I?) | Mask (Who do I collide with?) | Notes |
 | ------------ | ---------------- | ------------------ | ------ |
-| Environment | 1 | None (0) | Disables unnecessary |
-| Player | 2 | 1, 3, 4, 5 | Collides with ground, walls, floating objects, and enemies |
-| Objects | 3 | 1, 2, 3, 4 | Floating Objects bounce off everything |
-| Enemies | 4 | 1, 2, 3 | Enemies collide with walls, objects, and the player | 
-| UI | 5 | None (0) | Interactable objects, 3d buttons, or triggers, need to be collided with but does not collide |
+| **Environment** | 1 | None (0) | Disables unnecessary |
+| **Player** | 2 | 1, 3, 4, 5 | Collides with ground, walls, floating objects, and enemies |
+| **Object**s | 3 | 1, 2, 3, 4 | Floating Objects bounce off everything |
+| **Enemies** | 4 | 1, 2, 3 | Enemies collide with walls, objects, and the player | 
+| **UI** | 5 | None (0) | Interactable objects, 3d buttons, or triggers, need to be collided with but does not collide |
+
+---
+---
+---
+---
+
+# Autoload Scripts
+
+Autoload scripts in Godot are global scripts allowing functions to be called throughout the application without instancing a scene. 
+
+| Autoload Name | Script Path | Responsibility |
+| :--- | :--- | :--- |
+| **EventBus** | `res://scripts/autoload/event_bus.gd` | Central message bus for global signals (interaction, spawning, UI). |
+| **SceneChanger** | `res://scripts/autoload/scene_changer.gd` | Handles asynchronous scene loading and transition overlays. |
 
 
 
