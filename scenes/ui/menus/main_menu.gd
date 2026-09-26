@@ -9,4 +9,4 @@ func _ready() -> void:
 
 func _on_start_button_pressed() -> void:
 	start_button.disabled = true
-	SceneManager.change_scene_async(world_scene_path)
+	SceneChanger.change_scene_async(world_scene_path)

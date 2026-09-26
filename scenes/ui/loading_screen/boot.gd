@@ -9,4 +9,4 @@ func _ready() -> void:
 		push_error("Boot: No initial_scene_path specified in Inspector")
 		return
 	
-	SceneManager.change_scene(initial_scene_path)
+	SceneChanger.change_scene(initial_scene_path)

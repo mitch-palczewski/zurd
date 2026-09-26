@@ -9,8 +9,8 @@ var _start_time: float = 0.0
 
 func _ready() -> void:
 	_start_time = Time.get_ticks_msec() / 1000.0
-	SceneManager.load_progress_updated.connect(_on_load_progress_updated)
-	SceneManager.load_completed.connect(_on_load_completed)
+	SceneChanger.load_progress_updated.connect(_on_load_progress_updated)
+	SceneChanger.load_completed.connect(_on_load_completed)
 
 
 func _on_load_progress_updated(progress: float) -> void:
