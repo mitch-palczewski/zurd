@@ -1,5 +1,9 @@
 [gd_scene format=3 uid="uid://bxuwjngngmiju"]
 
+[ext_resource type="PackedScene" uid="uid://c4aciywu4i5np" path="res://scenes/objects/static/Archway_static.tscn" id="1_bnjis"]
+[ext_resource type="PackedScene" uid="uid://dxmbj1qghxp3" path="res://scenes/objects/static/Arch_01_static.tscn" id="2_xor13"]
+[ext_resource type="PackedScene" uid="uid://b5m20rugrd7ay" path="res://scenes/objects/static/Crocodile_01_static.tscn" id="3_bxqal"]
+
 [sub_resource type="BoxShape3D" id="BoxShape3D_35kfv"]
 size = Vector3(200, 1, 200)
 
@@ -20,12 +24,28 @@ albedo_texture = SubResource("NoiseTexture2D_pv0mm")
 material = SubResource("StandardMaterial3D_eh7gx")
 size = Vector2(200, 200)
 
+[sub_resource type="PlaneMesh" id="PlaneMesh_k1w45"]
+size = Vector2(600, 600)
+
 [node name="TestGround" type="Node3D" unique_id=2013099410]
 
-[node name="StaticBody3D" type="StaticBody3D" parent="." unique_id=493951066]
+[node name="MainWrappedGround" type="StaticBody3D" parent="." unique_id=493951066]
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D" unique_id=620850422]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="MainWrappedGround" unique_id=620850422]
 shape = SubResource("BoxShape3D_35kfv")
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="StaticBody3D" unique_id=1903109641]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="MainWrappedGround" unique_id=1903109641]
 mesh = SubResource("PlaneMesh_35kfv")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=1191578334]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
+mesh = SubResource("PlaneMesh_k1w45")
+
+[node name="ArchwayStatic" parent="." unique_id=1478703784 instance=ExtResource("1_bnjis")]
+transform = Transform3D(4.2328305, 0, -2.487651, 0, 4.909711, 0, 2.487651, 0, 4.2328305, -40.28216, 1.8733087, 9.831184)
+
+[node name="Arch 01Static" parent="." unique_id=1987915247 instance=ExtResource("2_xor13")]
+transform = Transform3D(1.801819, 0, -4.011834, 0, 4.397882, 0, 4.011834, 0, 1.801819, 13.766827, 5.2434387, 34.48603)
+
+[node name="Crocodile 01Static" parent="." unique_id=394928527 instance=ExtResource("3_bxqal")]
+transform = Transform3D(15.043136, 0, 0, 0, 15.043136, 0, 0, 0, 15.043136, 24.209703, 14.367068, -31.018206)
