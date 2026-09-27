@@ -1,0 +1,10 @@
+[gd_resource type="ShaderMaterial" format=3 uid="uid://vj6oamoxpsv1"]
+
+[ext_resource type="Shader" uid="uid://drl3osp5lqku1" path="res://assets/shaders/fairway_stripes.gdshader" id="1_yv0g3"]
+
+[resource]
+render_priority = 0
+shader = ExtResource("1_yv0g3")
+shader_parameter/light_grass = Color(0.35, 0.68, 0.22, 1)
+shader_parameter/dark_grass = Color(0.24, 0.52, 0.14, 1)
+shader_parameter/stripe_width = 5.0

@@ -1,30 +1,22 @@
 [gd_scene format=3 uid="uid://bxuwjngngmiju"]
 
 [ext_resource type="PackedScene" uid="uid://c4aciywu4i5np" path="res://scenes/objects/static/Archway_static.tscn" id="1_bnjis"]
+[ext_resource type="Material" uid="uid://vj6oamoxpsv1" path="res://assets/materials/fairway_stripes.tres" id="1_xor13"]
 [ext_resource type="PackedScene" uid="uid://dxmbj1qghxp3" path="res://scenes/objects/static/Arch_01_static.tscn" id="2_xor13"]
 [ext_resource type="PackedScene" uid="uid://b5m20rugrd7ay" path="res://scenes/objects/static/Crocodile_01_static.tscn" id="3_bxqal"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_35kfv"]
 size = Vector3(200, 1, 200)
 
-[sub_resource type="Gradient" id="Gradient_35kfv"]
-offsets = PackedFloat32Array(0.10526316, 1)
-
-[sub_resource type="FastNoiseLite" id="FastNoiseLite_35kfv"]
-
-[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_pv0mm"]
-noise = SubResource("FastNoiseLite_35kfv")
-color_ramp = SubResource("Gradient_35kfv")
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_eh7gx"]
-albedo_color = Color(0.23137255, 0.57254905, 0.7058824, 1)
-albedo_texture = SubResource("NoiseTexture2D_pv0mm")
-
 [sub_resource type="PlaneMesh" id="PlaneMesh_35kfv"]
-material = SubResource("StandardMaterial3D_eh7gx")
-size = Vector2(200, 200)
+material = ExtResource("1_xor13")
+size = Vector2(198, 198)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_1h25x"]
+albedo_color = Color(0.2878948, 0.5529155, 0.36965898, 1)
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_k1w45"]
+material = SubResource("StandardMaterial3D_1h25x")
 size = Vector2(600, 600)
 
 [node name="TestGround" type="Node3D" unique_id=2013099410]
@@ -38,14 +30,74 @@ shape = SubResource("BoxShape3D_35kfv")
 mesh = SubResource("PlaneMesh_35kfv")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=1191578334]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.057510376, -0.5000305, 0.340065)
 mesh = SubResource("PlaneMesh_k1w45")
 
 [node name="ArchwayStatic" parent="." unique_id=1478703784 instance=ExtResource("1_bnjis")]
 transform = Transform3D(4.2328305, 0, -2.487651, 0, 4.909711, 0, 2.487651, 0, 4.2328305, -40.28216, 1.8733087, 9.831184)
 
+[node name="Archway" parent="ArchwayStatic/ArchwayMesh" parent_id_path=PackedInt32Array(1478703784, 353636118) index="0" unique_id=1647693072]
+transform = Transform3D(-0.40099654, 0, 0.9160795, 0, 1, 0, -0.9160795, 0, -0.40099654, 0, 0.13489148, 0)
+surface_material_override/0 = ExtResource("1_xor13")
+
 [node name="Arch 01Static" parent="." unique_id=1987915247 instance=ExtResource("2_xor13")]
 transform = Transform3D(1.801819, 0, -4.011834, 0, 4.397882, 0, 4.011834, 0, 1.801819, 13.766827, 5.2434387, 34.48603)
 
+[node name="Arch" parent="Arch 01Static/Arch 01Mesh" parent_id_path=PackedInt32Array(1987915247, 1318704810) index="0" unique_id=1723391503]
+surface_material_override/0 = ExtResource("1_xor13")
+
 [node name="Crocodile 01Static" parent="." unique_id=394928527 instance=ExtResource("3_bxqal")]
-transform = Transform3D(15.043136, 0, 0, 0, 15.043136, 0, 0, 0, 15.043136, 24.209703, 14.367068, -31.018206)
+transform = Transform3D(26.918148, -12.85029, 3.2067692, 10.640769, 25.30796, 12.094674, -7.8858957, -9.714791, 27.266014, 24.209703, 3.9782476, -31.018206)
+
+[node name="Crocodile_01" parent="Crocodile 01Static/Crocodile 01Mesh" parent_id_path=PackedInt32Array(394928527, 1917953980) index="0" unique_id=1139370619]
+surface_material_override/0 = ExtResource("1_xor13")
+
+[node name="ArchwayStatic2" parent="." unique_id=1800308664 instance=ExtResource("1_bnjis")]
+transform = Transform3D(-11.271329, -5.3412066, -4.9389076, -1.5340215, 7.431913, -6.4786243, 12.127552, -4.024042, -5.4097, -40.28216, 2.7997212, -28.10183)
+
+[node name="Archway" parent="ArchwayStatic2/ArchwayMesh" parent_id_path=PackedInt32Array(1800308664, 353636118) index="0" unique_id=1647693072]
+transform = Transform3D(0.9389326, -0.52947956, -0.509625, -0.10347682, -0.6069722, 1.3980958, -0.68385816, -0.63512933, -0.9112631, -2.1129892, -2.6480987, -2.3622842)
+surface_material_override/0 = ExtResource("1_xor13")
+
+[node name="Arch 01Static2" parent="." unique_id=1124030097 instance=ExtResource("2_xor13")]
+transform = Transform3D(1.801819, 0, -4.011834, 0, 4.397882, 0, 4.011834, 0, 1.801819, 20.027508, 5.3828716, 45.661293)
+
+[node name="Arch" parent="Arch 01Static2/Arch 01Mesh" parent_id_path=PackedInt32Array(1124030097, 1318704810) index="0" unique_id=1723391503]
+surface_material_override/0 = ExtResource("1_xor13")
+
+[node name="Arch 01Static3" parent="." unique_id=348357867 instance=ExtResource("2_xor13")]
+transform = Transform3D(1.801819, 0, -4.011834, 0, 4.397882, 0, 4.011834, 0, 1.801819, 16.820282, 15.162519, 40.023678)
+
+[node name="Arch" parent="Arch 01Static3/Arch 01Mesh" parent_id_path=PackedInt32Array(348357867, 1318704810) index="0" unique_id=1723391503]
+surface_material_override/0 = ExtResource("1_xor13")
+
+[node name="ArchwayStatic3" parent="." unique_id=1446245555 instance=ExtResource("1_bnjis")]
+transform = Transform3D(-1.105673, -2.7594388, -3.9074593, 3.8357062, -2.9078097, 0.9681205, -2.8583393, -2.834677, 2.8106513, -36.72193, 5.0782647, 9.831184)
+
+[node name="Archway" parent="ArchwayStatic3/ArchwayMesh" parent_id_path=PackedInt32Array(1446245555, 353636118) index="0" unique_id=1647693072]
+transform = Transform3D(-0.40099654, 0, 0.9160795, 0, 1, 0, -0.9160795, 0, -0.40099654, 0, 0.13489148, 0)
+surface_material_override/0 = ExtResource("1_xor13")
+
+[node name="Crocodile 01Static2" parent="." unique_id=107197138 instance=ExtResource("3_bxqal")]
+transform = Transform3D(26.918144, -12.850289, 3.2067678, 13.153778, 25.090462, -9.871511, 1.5464134, 10.263461, 28.147285, -56.555313, 3.9782476, -26.944971)
+
+[node name="Crocodile_01" parent="Crocodile 01Static2/Crocodile 01Mesh" parent_id_path=PackedInt32Array(107197138, 1917953980) index="0" unique_id=1139370619]
+transform = Transform3D(-0.34207115, 0.68645704, 0.64168996, 0.21401224, 0.72185206, -0.6581259, -0.9149793, -0.087796286, -0.39383435, -0.011064291, -0.62391305, -0.9391899)
+surface_material_override/0 = ExtResource("1_xor13")
+
+[editable path="ArchwayStatic"]
+[editable path="ArchwayStatic/ArchwayMesh"]
+[editable path="Arch 01Static"]
+[editable path="Arch 01Static/Arch 01Mesh"]
+[editable path="Crocodile 01Static"]
+[editable path="Crocodile 01Static/Crocodile 01Mesh"]
+[editable path="ArchwayStatic2"]
+[editable path="ArchwayStatic2/ArchwayMesh"]
+[editable path="Arch 01Static2"]
+[editable path="Arch 01Static2/Arch 01Mesh"]
+[editable path="Arch 01Static3"]
+[editable path="Arch 01Static3/Arch 01Mesh"]
+[editable path="ArchwayStatic3"]
+[editable path="ArchwayStatic3/ArchwayMesh"]
+[editable path="Crocodile 01Static2"]
+[editable path="Crocodile 01Static2/Crocodile 01Mesh"]

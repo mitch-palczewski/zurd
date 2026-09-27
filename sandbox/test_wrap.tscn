@@ -1,0 +1,31 @@
+[gd_scene format=3 uid="uid://bsyndy6sdqnj8"]
+
+[ext_resource type="PackedScene" uid="uid://bxuwjngngmiju" path="res://sandbox/test_ground.tscn" id="1_uew61"]
+
+[node name="TesWrap" type="Node3D" unique_id=1633266827]
+
+[node name="TestGround" parent="." unique_id=2013099410 instance=ExtResource("1_uew61")]
+
+[node name="TestGround2" parent="." unique_id=960167484 instance=ExtResource("1_uew61")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 200, 0, 0)
+
+[node name="TestGround3" parent="." unique_id=610667873 instance=ExtResource("1_uew61")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 200, 0, 200)
+
+[node name="TestGround4" parent="." unique_id=800142478 instance=ExtResource("1_uew61")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 200, 0, -200)
+
+[node name="TestGround5" parent="." unique_id=1301892669 instance=ExtResource("1_uew61")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 200)
+
+[node name="TestGround6" parent="." unique_id=1355198278 instance=ExtResource("1_uew61")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -200)
+
+[node name="TestGround7" parent="." unique_id=1539871467 instance=ExtResource("1_uew61")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -200, 0, 0)
+
+[node name="TestGround8" parent="." unique_id=648104990 instance=ExtResource("1_uew61")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -200, 0, 200)
+
+[node name="TestGround9" parent="." unique_id=777232498 instance=ExtResource("1_uew61")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -200, 0, -200)
