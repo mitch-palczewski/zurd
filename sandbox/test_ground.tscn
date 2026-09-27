@@ -1,0 +1,31 @@
+[gd_scene format=3 uid="uid://bxuwjngngmiju"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_35kfv"]
+size = Vector3(200, 1, 200)
+
+[sub_resource type="Gradient" id="Gradient_35kfv"]
+offsets = PackedFloat32Array(0.10526316, 1)
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_35kfv"]
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_pv0mm"]
+noise = SubResource("FastNoiseLite_35kfv")
+color_ramp = SubResource("Gradient_35kfv")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_eh7gx"]
+albedo_color = Color(0.23137255, 0.57254905, 0.7058824, 1)
+albedo_texture = SubResource("NoiseTexture2D_pv0mm")
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_35kfv"]
+material = SubResource("StandardMaterial3D_eh7gx")
+size = Vector2(200, 200)
+
+[node name="TestGround" type="Node3D" unique_id=2013099410]
+
+[node name="StaticBody3D" type="StaticBody3D" parent="." unique_id=493951066]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D" unique_id=620850422]
+shape = SubResource("BoxShape3D_35kfv")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="StaticBody3D" unique_id=1903109641]
+mesh = SubResource("PlaneMesh_35kfv")

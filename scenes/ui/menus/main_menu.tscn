@@ -10,7 +10,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_flhq8")
-world_scene_path = "uid://8u5j2653xk4d"
+world_scene_path = "uid://x0l623new2xy"
 
 [node name="CenterContainer" type="CenterContainer" parent="." unique_id=1854115553]
 layout_mode = 1
