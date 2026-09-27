@@ -3,9 +3,14 @@
 [ext_resource type="PackedScene" uid="uid://dxc1xgkqqeqn1" path="res://scenes/objects/mesh/Arch_01_mesh.tscn" id="1_rpctv"]
 [ext_resource type="PackedScene" uid="uid://ckcso7e3q5vt0" path="res://scenes/objects/colliders/Arch_01_collider.tscn" id="2_6tdar"]
 
-[node name="Arch 01Static" type="StaticBody3D" unique_id=1987915247]
+[sub_resource type="BoxShape3D" id="BoxShape3D_fioal"]
+size = Vector3(2.5965843, 3.002373, 0.8439443)
+
+[node name="Arch 01Static" type="StaticBody3D" unique_id=1124030097]
 collision_mask = 0
 
-[node name="Arch 01Mesh" parent="." unique_id=510199131 instance=ExtResource("1_rpctv")]
+[node name="Arch 01Mesh" type="Node3D" parent="." unique_id=1318704810 instance=ExtResource("1_rpctv")]
 
-[node name="Colliders" parent="." unique_id=373460468 instance=ExtResource("2_6tdar")]
+[node name="CollisionBox" type="CollisionShape3D" parent="." unique_id=1481824825 instance=ExtResource("2_6tdar")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.017008662, 0.110180855, 0.00037416816)
+shape = SubResource("BoxShape3D_fioal")

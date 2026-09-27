@@ -3,9 +3,13 @@
 [ext_resource type="PackedScene" uid="uid://b553uvv8rraj2" path="res://scenes/objects/mesh/Archway_mesh.tscn" id="1_mu6xn"]
 [ext_resource type="PackedScene" uid="uid://b77ay3f8hx32k" path="res://scenes/objects/colliders/Archway_collider.tscn" id="2_ugodm"]
 
-[node name="ArchwayStatic" type="StaticBody3D" unique_id=1478703784]
+[sub_resource type="BoxShape3D" id="BoxShape3D_tidsj"]
+size = Vector3(3.6621728, 1.0918481, 0.50554895)
+
+[node name="ArchwayStatic" type="StaticBody3D" unique_id=1800308664]
 collision_mask = 0
 
-[node name="ArchwayMesh" type="Node3D" parent="." unique_id=1975126529 instance=ExtResource("1_mu6xn")]
+[node name="ArchwayMesh" parent="." unique_id=353636118 instance=ExtResource("1_mu6xn")]
 
-[node name="Colliders" type="Node3D" parent="." unique_id=1260582272 instance=ExtResource("2_ugodm")]
+[node name="CollisionBox" parent="." unique_id=1557997232 instance=ExtResource("2_ugodm")]
+shape = SubResource("BoxShape3D_tidsj")

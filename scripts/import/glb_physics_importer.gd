@@ -83,9 +83,6 @@ func _find_all_mesh_instances(node: Node, result: Array[MeshInstance3D]=[]) -> A
 
 func _create_default_box_collider(mesh_nodes: Array[MeshInstance3D], path: String, scene_root: Node) -> PackedScene:
     var aabb: AABB = _calculate_combined_aabb(mesh_nodes, scene_root)
-    
-    var col_root = Node3D.new()
-    col_root.name = "Colliders"
 
     var shape_node = CollisionShape3D.new()
     shape_node.name = "CollisionBox"
@@ -95,10 +92,7 @@ func _create_default_box_collider(mesh_nodes: Array[MeshInstance3D], path: Strin
     shape_node.shape = box
     shape_node.position = aabb.get_center()
 
-    col_root.add_child(shape_node)
-    shape_node.owner = col_root
-
-    return _save_packed_scene(col_root, path)
+    return _save_packed_scene(shape_node, path)
 
 
 func _calculate_combined_aabb(mesh_nodes: Array[MeshInstance3D], scene_root: Node) -> AABB:

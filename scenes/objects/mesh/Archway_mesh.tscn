@@ -45,9 +45,9 @@ vertex_color_use_as_albedo = true
 albedo_color = Color(0.7353506, 0.5883445, 0.51671696, 1)
 roughness = 0.7620333
 
-[node name="ArchwayMesh" type="Node3D" unique_id=1975126529]
+[node name="ArchwayMesh" type="Node3D" unique_id=353636118]
 
-[node name="Archway" type="MeshInstance3D" parent="." unique_id=971435292]
+[node name="Archway" type="MeshInstance3D" parent="." unique_id=1647693072]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1348915, 0)
 mesh = SubResource("ArrayMesh_jve08")
 skeleton = NodePath("")

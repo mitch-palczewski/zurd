@@ -3,8 +3,6 @@
 [sub_resource type="BoxShape3D" id="BoxShape3D_tidsj"]
 size = Vector3(3.6621728, 1.0918481, 0.50554895)
 
-[node name="Colliders" type="Node3D" unique_id=1260582272]
-
-[node name="CollisionBox" type="CollisionShape3D" parent="." unique_id=1802426041]
+[node name="CollisionBox" type="CollisionShape3D" unique_id=1557997232]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.00036108494, 0.07789457, 0.0083197355)
 shape = SubResource("BoxShape3D_tidsj")

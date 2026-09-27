@@ -3,9 +3,14 @@
 [ext_resource type="PackedScene" uid="uid://dh61afpd0hld8" path="res://scenes/objects/mesh/Crocodile_01_mesh.tscn" id="1_m43kb"]
 [ext_resource type="PackedScene" uid="uid://crpbo4s4fl1ys" path="res://scenes/objects/colliders/Crocodile_01_collider.tscn" id="2_icm4s"]
 
-[node name="Crocodile 01Static" type="StaticBody3D" unique_id=394928527]
+[sub_resource type="BoxShape3D" id="BoxShape3D_f2rgt"]
+size = Vector3(0.7864167, 0.7780719, 3.0031245)
+
+[node name="Crocodile 01Static" type="StaticBody3D" unique_id=107197138]
 collision_mask = 0
 
-[node name="Crocodile 01Mesh" type="Node3D" parent="." unique_id=810533341 instance=ExtResource("1_m43kb")]
+[node name="Crocodile 01Mesh" type="Node3D" parent="." unique_id=1917953980 instance=ExtResource("1_m43kb")]
 
-[node name="Colliders" type="Node3D" parent="." unique_id=2136371835 instance=ExtResource("2_icm4s")]
+[node name="CollisionBox" type="CollisionShape3D" parent="." unique_id=681365139 instance=ExtResource("2_icm4s")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.0040451884, 0.09134364, -0.12782025)
+shape = SubResource("BoxShape3D_f2rgt")

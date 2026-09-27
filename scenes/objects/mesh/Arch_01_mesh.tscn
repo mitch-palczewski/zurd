@@ -47,9 +47,9 @@ vertex_color_use_as_albedo = true
 albedo_color = Color(0.74117655, 0.6862746, 0.6000001, 1)
 roughness = 0.5
 
-[node name="Arch 01Mesh" type="Node3D" unique_id=510199131]
+[node name="Arch 01Mesh" type="Node3D" unique_id=1318704810]
 
-[node name="Arch" type="MeshInstance3D" parent="." unique_id=820677754]
+[node name="Arch" type="MeshInstance3D" parent="." unique_id=1723391503]
 mesh = SubResource("ArrayMesh_34eon")
 skeleton = NodePath("")
 surface_material_override/0 = SubResource("StandardMaterial3D_lf24p")
