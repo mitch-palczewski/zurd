@@ -24,6 +24,13 @@ config/icon="res://assets/ui/icon.svg"
 EventBus="*uid://5gdm88785ufq"
 SceneChanger="*uid://c528xbe7n10ya"
 
+[display]
+
+window/size/viewport_width=1920
+window/size/viewport_height=1080
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
+
 [dotnet]
 
 project/assembly_name="zurd"
