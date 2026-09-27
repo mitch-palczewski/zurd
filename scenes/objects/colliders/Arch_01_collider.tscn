@@ -1,0 +1,10 @@
+[gd_scene format=3 uid="uid://ckcso7e3q5vt0"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_fioal"]
+size = Vector3(2.5965843, 3.002373, 0.8439443)
+
+[node name="Colliders" type="Node3D" unique_id=373460468]
+
+[node name="CollisionBox" type="CollisionShape3D" parent="." unique_id=1729395529]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.017008662, 0.110180855, 0.00037416816)
+shape = SubResource("BoxShape3D_fioal")

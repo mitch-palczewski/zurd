@@ -1,0 +1,12 @@
+[gd_scene format=3 uid="uid://b017sf5law80l"]
+
+[ext_resource type="PackedScene" uid="uid://dxc1xgkqqeqn1" path="res://scenes/objects/mesh/Arch_01_mesh.tscn" id="1_1ylu5"]
+[ext_resource type="PackedScene" uid="uid://ckcso7e3q5vt0" path="res://scenes/objects/colliders/Arch_01_collider.tscn" id="2_g8u1m"]
+
+[node name="Arch 01Rigid" type="RigidBody3D" unique_id=1510661288]
+collision_layer = 4
+collision_mask = 15
+
+[node name="Arch 01Mesh" type="Node3D" parent="." unique_id=510199131 instance=ExtResource("1_1ylu5")]
+
+[node name="Colliders" type="Node3D" parent="." unique_id=373460468 instance=ExtResource("2_g8u1m")]
