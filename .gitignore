@@ -2,3 +2,6 @@
 .godot/
 /android/
 .vscode/
+
+# Editor / workspace files
+zurd.code-workspace

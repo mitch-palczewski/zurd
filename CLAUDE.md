@@ -1,0 +1,69 @@
+# CLAUDE.md
+
+Guidance for Claude Code when working in this repository. For a fuller tech-stack
+walkthrough see [claude/ONBOARDING.md](claude/ONBOARDING.md); for game concept, commit
+standards, collision layers and autoloads see [README.md](README.md).
+
+## Project
+
+**zurd** — a multiplayer immersive 3D game by the Feed Collective. Players steer a
+trans-dimensional trophy room through space, deploy objects to build islands of matter,
+and defend against roving *Zurd* skulls that eat objects and, if left unchecked, the ship.
+
+## Stack & versions
+
+- **Godot Engine 4.7 — .NET edition** (see `project.godot` → `config/features = ("4.7", "Forward Plus")`).
+- **GDScript** for all gameplay code. The project is configured for .NET (`[dotnet] project/assembly_name="zurd"`) so C# is *available*, but there are currently **no `.cs` files** — treat this as a GDScript codebase.
+- Renderer: **Forward+**. Viewport 1920×1080, stretch `canvas_items` / `expand`.
+
+## How to run
+
+There is **no CLI build or test loop** and no package-install step (no npm, no `dotnet restore`).
+"Running on localhost" means running the game from the Godot editor:
+
+1. Open the project in the **Godot 4.7 .NET editor** (*Import* → select this folder).
+2. Press **F5** (play main scene) or **F6** (play current scene).
+3. Main scene is `res://scenes/ui/loading_screen/boot.tscn` → main menu → world.
+
+Headless import check (only if a Godot binary is on PATH): `godot --headless --path . --quit`.
+
+## Repo layout
+
+| Path | Contents |
+|---|---|
+| `scenes/` | `world/`, `ui/` (hud, menus, loading_screen), `objects/` (mesh/collider/static/rigid — mostly generated), `characters/` (player, enemy) |
+| `scripts/` | `autoload/` (globals), `import/` (GLB importer), `utils/`, `world/` |
+| `assets/` | `models/` (.glb), `materials/`, `shaders/`, `textures/`, `audio/`, `ui/`, `_misc/` |
+| `sandbox/` | Throwaway playtest scenes/scripts (`test_*`) — not shipped code |
+| `data/` | Data files (currently empty) |
+| `claude/` | `ONBOARDING.md` + `plans/` (planning docs) |
+
+## Entry flow & key systems
+
+- **Entry:** `boot.tscn`/`boot.gd` → `SceneChanger.change_scene(...)` → main menu → `SceneChanger.change_scene_async(...)` → `toroidal_world.tscn` (extends `base_world.tscn`).
+- **Autoloads (globals, registered in `project.godot`):** `EventBus` (`scripts/autoload/event_bus.gd`), `SceneChanger` (`scripts/autoload/scene_changer.gd`, threaded async loading).
+- **GLB physics importer** (`scripts/import/glb_physics_importer.gd`, `@tool EditorScenePostImport`): importing a `.glb` auto-generates `mesh`/`collider`/`static`/`rigid` scenes under `scenes/objects/`.
+- **Toroidal world** (`scenes/world/toroidal_world.gd` + `scripts/utils/toroidal_utils.gd`): wraps RigidBody3D/CharacterBody3D positions at world bounds.
+
+## Conventions Claude must follow
+
+- **Commit messages** (from README): `tag(scope): description`. Tags: `feat`, `fix`, `docs`, `asset`, `tool`, `refactor`. Example: `feat(player): Added flight controls`.
+- **GDScript style:** indent with **tabs** (matches the majority of files); keep typed vars/returns and `class_name` as existing scripts do; use `push_warning`/`push_error` for diagnostics, not `print`.
+- **Collision layers:** 1 Environment · 2 Player · 3 Objects · 4 Enemies · 5 UI.
+- **Globals available everywhere:** `EventBus`, `SceneChanger`.
+- **Do not hand-edit generated files** — `scenes/objects/{mesh,collider,static,rigid}/*`, `*.import`, `*.uid` come from the importer/engine; re-import the source `.glb` instead.
+- **Do not** edit `.godot/` (gitignored) or commit `.vscode/`.
+
+## Git & attribution
+
+- Push to `origin` (`https://github.com/mitch-palczewski/zurd.git`) over HTTPS; auth is via `gh auth login` (see ONBOARDING). Only commit/push when the user asks.
+- End commit messages with:
+  `Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>`
+- End PR descriptions with:
+  `🤖 Generated with [Claude Code](https://claude.com/claude-code)`
+
+## Known gaps (documented, not yet fixed)
+
+- `scenes/ui/loading_screen/boot.gd` default `initial_scene_path` points at `.../menus/main_menu/main_menu.tscn` but the file is at `.../menus/main_menu.tscn` (extra folder). Relies on an Inspector override — likely a bug.
+- `scripts/autoload/scene_changer.gd` calls a global `LoadingScreen`, but `LoadingScreen` is **not** registered under `[autoload]` in `project.godot`.
+- Indentation is inconsistent: `glb_physics_importer.gd` uses spaces; most `.gd` files use tabs. `.editorconfig` sets charset only, not indent style.
