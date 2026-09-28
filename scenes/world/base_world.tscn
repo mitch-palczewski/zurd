@@ -21,6 +21,8 @@ sky = SubResource("Sky_oh0aj")
 script = SubResource("GDScript_rwhoh")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=1743470536]
+transform = Transform3D(0.29243976, 0.8660162, -0.4055798, -0.49999997, 0.49999997, 0.70710677, 0.81515586, -0.003996223, 0.579228, 0, 0, 0)
+shadow_enabled = true
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1561718671]
 environment = SubResource("Environment_s1lny")

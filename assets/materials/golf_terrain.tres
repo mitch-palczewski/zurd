@@ -1,0 +1,13 @@
+[gd_resource type="ShaderMaterial" format=3 uid="uid://qb2mh3co2py5"]
+
+[ext_resource type="Shader" uid="uid://7s6phm6m6rkd" path="res://assets/shaders/golf_terrain.gdshader" id="1_rsuk5"]
+
+[resource]
+render_priority = 0
+shader = ExtResource("1_rsuk5")
+shader_parameter/light_grass = Color(0.35, 0.68, 0.22, 1)
+shader_parameter/dark_grass = Color(0.24, 0.52, 0.14, 1)
+shader_parameter/rock_color = Color(0.4, 0.38, 0.35, 1)
+shader_parameter/stripe_width = 5.0
+shader_parameter/slope_threshold = 0.6
+shader_parameter/slope_blend = 0.1
