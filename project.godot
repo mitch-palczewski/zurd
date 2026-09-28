@@ -27,7 +27,6 @@ SceneChanger="*uid://c528xbe7n10ya"
 [display]
 
 window/stretch/mode="canvas_items"
-window/stretch/aspect="expand"
 
 [dotnet]
 
