@@ -33,71 +33,53 @@ mesh = SubResource("PlaneMesh_35kfv")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.057510376, -0.5000305, 0.340065)
 mesh = SubResource("PlaneMesh_k1w45")
 
-[node name="ArchwayStatic" parent="." unique_id=1478703784 instance=ExtResource("1_bnjis")]
-transform = Transform3D(4.2328305, 0, -2.487651, 0, 4.909711, 0, 2.487651, 0, 4.2328305, -40.28216, 1.8733087, 9.831184)
+[node name="ArchwayStatic" parent="." unique_id=1354349955 instance=ExtResource("1_bnjis")]
+transform = Transform3D(8.659797, 0, -7.659568, 0, 11.561188, 0, 7.659568, 0, 8.659797, 44.578705, 4.3753304, 11.754536)
 
-[node name="Archway" parent="ArchwayStatic/ArchwayMesh" parent_id_path=PackedInt32Array(1478703784, 353636118) index="0" unique_id=1647693072]
-transform = Transform3D(-0.40099654, 0, 0.9160795, 0, 1, 0, -0.9160795, 0, -0.40099654, 0, 0.13489148, 0)
-surface_material_override/0 = ExtResource("3_ykggj")
+[node name="Arch 01Static" parent="." unique_id=511730588 instance=ExtResource("2_xor13")]
+transform = Transform3D(5.7604995, 0, 0.70934784, 0, 5.80401, 0, -0.70934784, 0, 5.7604995, -57.429916, -3.4891672, -65.06399)
 
-[node name="Arch 01Static" parent="." unique_id=1987915247 instance=ExtResource("2_xor13")]
-transform = Transform3D(1.801819, 0, -4.011834, 0, 4.397882, 0, 4.011834, 0, 1.801819, 13.766827, 5.2434387, 34.48603)
+[node name="Crocodile 01Static" parent="." unique_id=2090307263 instance=ExtResource("3_bxqal")]
+transform = Transform3D(50.71372, 1.0098685, -14.384122, -3.3678586, 51.969273, -8.225353, 14.02071, 8.830576, 50.052418, 20.900671, 0.7976923, -38.053543)
 
-[node name="Arch" parent="Arch 01Static/Arch 01Mesh" parent_id_path=PackedInt32Array(1987915247, 1318704810) index="0" unique_id=1723391503]
-surface_material_override/0 = ExtResource("3_ykggj")
+[node name="ArchwayStatic2" parent="." unique_id=1799969814 instance=ExtResource("1_bnjis")]
+transform = Transform3D(11.394978, 0, -1.9533453, 0, 11.561189, 0, 1.9533453, 0, 11.394978, 70.06215, 4.3753295, -8.727774)
 
-[node name="Crocodile 01Static" parent="." unique_id=394928527 instance=ExtResource("3_bxqal")]
-transform = Transform3D(26.918148, -12.85029, 3.2067692, 10.640769, 25.30796, 12.094674, -7.8858957, -9.714791, 27.266014, 24.209703, 3.9782476, -31.018206)
+[node name="ArchwayStatic3" parent="." unique_id=900428061 instance=ExtResource("1_bnjis")]
+transform = Transform3D(6.356763, 0, 9.65674, 0, 11.561188, 0, -9.65674, 0, 6.356763, 68.8614, 14.638807, 8.393688)
 
-[node name="Crocodile_01" parent="Crocodile 01Static/Crocodile 01Mesh" parent_id_path=PackedInt32Array(394928527, 1917953980) index="0" unique_id=1139370619]
-surface_material_override/0 = ExtResource("3_ykggj")
+[node name="ArchwayStatic4" parent="." unique_id=302927152 instance=ExtResource("1_bnjis")]
+transform = Transform3D(6.356763, 0, 9.65674, 0, 11.561188, 0, -9.65674, 0, 6.356763, 68.8614, 3.4931812, 8.393688)
 
-[node name="ArchwayStatic2" parent="." unique_id=1800308664 instance=ExtResource("1_bnjis")]
-transform = Transform3D(-11.271329, -5.3412066, -4.9389076, -1.5340215, 7.431913, -6.4786243, 12.127552, -4.024042, -5.4097, -40.28216, 2.7997212, -28.10183)
+[node name="ArchwayStatic5" parent="." unique_id=594476214 instance=ExtResource("1_bnjis")]
+transform = Transform3D(6.356763, 0, 9.65674, 0, 11.561188, 0, -9.65674, 0, 6.356763, 68.8614, 25.51654, 8.393688)
 
-[node name="Archway" parent="ArchwayStatic2/ArchwayMesh" parent_id_path=PackedInt32Array(1800308664, 353636118) index="0" unique_id=1647693072]
-transform = Transform3D(0.9389326, -0.52947956, -0.509625, -0.10347682, -0.6069722, 1.3980958, -0.68385816, -0.63512933, -0.9112631, -2.1129892, -2.6480987, -2.3622842)
-surface_material_override/0 = ExtResource("3_ykggj")
+[node name="Arch 01Static2" parent="." unique_id=850082061 instance=ExtResource("2_xor13")]
+transform = Transform3D(5.7604995, 0, 0.70934784, 0, 5.80401, 0, -0.70934784, 0, 5.7604995, -51.873863, -3.489152, -62.01037)
 
-[node name="Arch 01Static2" parent="." unique_id=1124030097 instance=ExtResource("2_xor13")]
-transform = Transform3D(1.801819, 0, -4.011834, 0, 4.397882, 0, 4.011834, 0, 1.801819, 20.027508, 5.3828716, 45.661293)
+[node name="Arch 01Static3" parent="." unique_id=1192195964 instance=ExtResource("2_xor13")]
+transform = Transform3D(5.4870152, 0, 1.8918772, 0, 5.80401, 0, -1.8918772, 0, 5.4870152, -34.53634, -3.4891748, -71.85622)
 
-[node name="Arch" parent="Arch 01Static2/Arch 01Mesh" parent_id_path=PackedInt32Array(1124030097, 1318704810) index="0" unique_id=1723391503]
-surface_material_override/0 = ExtResource("3_ykggj")
+[node name="Crocodile 01Static2" parent="." unique_id=862317011 instance=ExtResource("3_bxqal")]
+transform = Transform3D(11.192922, 33.591705, -48.909996, -15.061495, 49.750916, 30.722473, 57.39112, 6.5050755, 17.601538, -45.705704, 0.7976923, -23.708172)
 
-[node name="Arch 01Static3" parent="." unique_id=348357867 instance=ExtResource("2_xor13")]
-transform = Transform3D(1.801819, 0, -4.011834, 0, 4.397882, 0, 4.011834, 0, 1.801819, 16.820282, 15.162519, 40.023678)
+[node name="Arch 01Static4" parent="." unique_id=941507593 instance=ExtResource("2_xor13")]
+transform = Transform3D(18.07526, 14.424178, 2.7119188, -2.8440588, -0.77839845, 23.09614, 14.3987055, -18.260988, 1.157615, -78.53647, 0.5575199, 52.481377)
 
-[node name="Arch" parent="Arch 01Static3/Arch 01Mesh" parent_id_path=PackedInt32Array(348357867, 1318704810) index="0" unique_id=1723391503]
-surface_material_override/0 = ExtResource("3_ykggj")
+[node name="Arch 01Static5" parent="." unique_id=1842640166 instance=ExtResource("2_xor13")]
+transform = Transform3D(-4.993598, 22.204174, 4.915826, 0.14016734, -5.002792, 22.73936, 22.741388, 4.9064665, 0.9392722, -36.211937, 0.5575199, 48.16736)
 
-[node name="ArchwayStatic3" parent="." unique_id=1446245555 instance=ExtResource("1_bnjis")]
-transform = Transform3D(-1.105673, -2.7594388, -3.9074593, 3.8357062, -2.9078097, 0.9681205, -2.8583393, -2.834677, 2.8106513, -36.72193, 5.0782647, 9.831184)
+[node name="Arch 01Static6" parent="." unique_id=1583256444 instance=ExtResource("2_xor13")]
+transform = Transform3D(1.8775024, 23.161034, -1.472578, 0.042132143, 1.4739882, 23.236858, 23.207756, -1.8764029, 0.076946914, 7.1502285, -3.6579227, 55.772266)
 
-[node name="Archway" parent="ArchwayStatic3/ArchwayMesh" parent_id_path=PackedInt32Array(1446245555, 353636118) index="0" unique_id=1647693072]
-transform = Transform3D(-0.40099654, 0, 0.9160795, 0, 1, 0, -0.9160795, 0, -0.40099654, 0, 0.13489148, 0)
-surface_material_override/0 = ExtResource("3_ykggj")
+[node name="Arch 01Static7" parent="." unique_id=1302600413 instance=ExtResource("2_xor13")]
+transform = Transform3D(5.256767, 0, -2.4602714, 0, 5.80401, 0, 2.4602714, 0, 5.256767, 6.890255, 7.1825733, -74.07594)
 
-[node name="Crocodile 01Static2" parent="." unique_id=107197138 instance=ExtResource("3_bxqal")]
-transform = Transform3D(26.918144, -12.850289, 3.2067678, 13.153778, 25.090462, -9.871511, 1.5464134, 10.263461, 28.147285, -56.555313, 3.9782476, -26.944971)
+[node name="ArchwayStatic6" parent="." unique_id=1261645876 instance=ExtResource("1_bnjis")]
+transform = Transform3D(3.7272418, -5.2634363, 44.057686, -43.44918, -9.39823, 2.552988, 8.99734, -43.20469, -5.922698, 69.73837, -8.032236, -30.779224)
 
-[node name="Crocodile_01" parent="Crocodile 01Static2/Crocodile 01Mesh" parent_id_path=PackedInt32Array(107197138, 1917953980) index="0" unique_id=1139370619]
-transform = Transform3D(-0.34207115, 0.68645704, 0.64168996, 0.21401224, 0.72185206, -0.6581259, -0.9149793, -0.087796286, -0.39383435, -0.011064291, -0.62391305, -0.9391899)
-surface_material_override/0 = ExtResource("3_ykggj")
+[node name="Arch 01Static8" parent="." unique_id=862726365 instance=ExtResource("2_xor13")]
+transform = Transform3D(-2.494346, 17.834225, -14.759579, -1.7441597, 14.658051, 18.00627, 23.083822, 3.0346193, -0.23434931, 39.943092, -3.6579456, 67.610214)
 
-[editable path="ArchwayStatic"]
-[editable path="ArchwayStatic/ArchwayMesh"]
-[editable path="Arch 01Static"]
-[editable path="Arch 01Static/Arch 01Mesh"]
-[editable path="Crocodile 01Static"]
-[editable path="Crocodile 01Static/Crocodile 01Mesh"]
-[editable path="ArchwayStatic2"]
-[editable path="ArchwayStatic2/ArchwayMesh"]
-[editable path="Arch 01Static2"]
-[editable path="Arch 01Static2/Arch 01Mesh"]
-[editable path="Arch 01Static3"]
-[editable path="Arch 01Static3/Arch 01Mesh"]
-[editable path="ArchwayStatic3"]
-[editable path="ArchwayStatic3/ArchwayMesh"]
-[editable path="Crocodile 01Static2"]
-[editable path="Crocodile 01Static2/Crocodile 01Mesh"]
+[node name="Arch 01Static9" parent="." unique_id=273321076 instance=ExtResource("2_xor13")]
+transform = Transform3D(-8.368125, 3.4530098, -21.451744, 1.8511201, 23.01744, 2.9829242, 21.648891, -0.6334238, -8.546978, 67.133255, 10.138842, 76.569565)
