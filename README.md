@@ -28,6 +28,12 @@ cd zurd
 3. Open the *Zurd* folder in VS Code. Again go to **File -> Open Folder** and select the newly create *Zurd* folder.
 > Success you are all set up in VS code. This is where you will be making git commits and editing scripts.
 
+> ***OPTIONAL:* VScode Extensions**
+> - godot-tools
+> - Godot Files
+> - C# Tools for Godot
+
+
 ### Opening the project in Godot 
 1. Open Godot (the .net version)
 2. Select *Import* in the top left.
