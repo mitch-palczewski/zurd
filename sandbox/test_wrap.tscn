@@ -1,6 +1,11 @@
 [gd_scene format=3 uid="uid://bsyndy6sdqnj8"]
 
 [ext_resource type="PackedScene" uid="uid://bxuwjngngmiju" path="res://sandbox/test_ground.tscn" id="1_uew61"]
+[ext_resource type="Material" uid="uid://qb2mh3co2py5" path="res://assets/materials/golf_terrain.tres" id="2_akv7f"]
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_s63al"]
+material = ExtResource("2_akv7f")
+size = Vector2(2000, 2000)
 
 [node name="TesWrap" type="Node3D" unique_id=1633266827]
 
@@ -29,3 +34,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -200, 0, 200)
 
 [node name="TestGround9" parent="." unique_id=777232498 instance=ExtResource("1_uew61")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -200, 0, -200)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=112616657]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -12.550636, -6.2368774)
+mesh = SubResource("PlaneMesh_s63al")

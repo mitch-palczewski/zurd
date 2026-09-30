@@ -33,8 +33,8 @@ CLAUDE.md                     # NEW – Claude Code project guidance (root, auto
 claude/
   ONBOARDING.md               # NEW – tech-stack onboarding + localhost dependencies
   plans/
-    .gitkeep                  # NEW – keeps the empty plans folder tracked
-    lets-create-a-claude-*.md # this plan, copied in during implementation
+	.gitkeep                  # NEW – keeps the empty plans folder tracked
+	lets-create-a-claude-*.md # this plan, copied in during implementation
 ```
 
 ### 1. `CLAUDE.md` (repo root) — Claude Code guidance
