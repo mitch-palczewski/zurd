@@ -1,0 +1,13 @@
+[gd_scene format=3 uid="uid://cowu2kfv43nte"]
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_rmgw8"]
+flip_faces = true
+height = 0.66986084
+cap_top = false
+cap_bottom = false
+
+[node name="ShipInterior" type="Node3D" unique_id=140507501]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=169843375]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.6650696, 0)
+mesh = SubResource("CylinderMesh_rmgw8")

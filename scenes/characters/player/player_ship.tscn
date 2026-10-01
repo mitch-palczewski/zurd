@@ -1,0 +1,44 @@
+[gd_scene format=3 uid="uid://catisab22bqfg"]
+
+[ext_resource type="Script" uid="uid://jfs4dbkhlsyt" path="res://scenes/characters/player/player_ship.gd" id="1_8qptg"]
+[ext_resource type="Script" uid="uid://dih30hrmp3d57" path="res://scenes/characters/player/player_flight_controller.gd" id="2_h8aw4"]
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_rmgw8"]
+radius = 0.71374303
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_gweqi"]
+albedo_color = Color(0.78863233, 0.67894554, 0.563103, 1)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_rmgw8"]
+material = SubResource("StandardMaterial3D_gweqi")
+flip_faces = true
+top_radius = 1.8442383
+bottom_radius = 1.8442383
+height = 0.17210388
+cap_top = false
+
+[node name="PlayerShip" type="CharacterBody3D" unique_id=1780835481]
+collision_layer = 2
+collision_mask = 13
+motion_mode = 1
+script = ExtResource("1_8qptg")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1349506747]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.2620449)
+shape = SubResource("SphereShape3D_rmgw8")
+
+[node name="Cockpit" type="Node3D" parent="." unique_id=1043712405]
+
+[node name="Interior" type="Node3D" parent="Cockpit" unique_id=1656421329]
+
+[node name="ShipBottom" type="MeshInstance3D" parent="Cockpit/Interior" unique_id=1898735918]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.16050434, -0.4756583, 0.9417443)
+mesh = SubResource("CylinderMesh_rmgw8")
+
+[node name="Camera3D" type="Camera3D" parent="Cockpit" unique_id=660655444]
+current = true
+fov = 90.0
+size = 0.2
+
+[node name="FlightController" type="Node" parent="." unique_id=87340966]
+script = ExtResource("2_h8aw4")
