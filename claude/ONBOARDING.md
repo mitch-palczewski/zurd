@@ -22,8 +22,8 @@ Zurds like flies.
 ### Godot Engine 4.7 — .NET edition
 Godot is an open-source game engine. It is both the **editor** (where you build scenes and
 write scripts) and the **runtime** (pressing Play runs the game inside the editor). This
-project pins **version 4.7** (`project.godot` → `config/features`). Use the **.NET / Mono**
-download, *not* the standard build.
+project runs on **Godot 4.7.2-stable** (the `project.godot` `config/features` tag is `4.7`).
+Use the **.NET / Mono** download, *not* the standard build.
 
 **Why the .NET build if the code is GDScript?** The project is configured for .NET
 (`[dotnet] project/assembly_name="zurd"`), which enables writing gameplay in **C#** later.
@@ -66,7 +66,7 @@ scripts are committed directly to the repo. You only need to install these appli
 
 | Dependency | Why you need it | Notes |
 |---|---|---|
-| **Godot Engine 4.7 — .NET/Mono build** | The editor *is* the runtime; "running on localhost" = pressing Play in the editor | Match the project's version (4.7). Download the **.NET** variant. |
+| **Godot Engine 4.7.2-stable — .NET/Mono build** | The editor *is* the runtime; "running on localhost" = pressing Play in the editor | Match the project's version (4.7.2-stable). Download the **.NET (mono)** variant. |
 | **.NET SDK** | Required by the Godot .NET build to load and run | Install the latest LTS SDK; needed even though there are no `.cs` files yet |
 | **VS Code** (or another IDE) | Editing scripts + git/GitHub integration | Optional extensions: *Godot Tools*, *C#* |
 | **Git** + a **GitHub account with access** to the repo | Clone, commit, push | See [Committing your work](#committing-your-work) |
@@ -80,8 +80,8 @@ scripts are committed directly to the repo. You only need to install these appli
    git clone https://github.com/mitch-palczewski/zurd.git
    cd zurd
    ```
-2. **Open in Godot**: launch the Godot 4.7 **.NET** editor → *Import* → select this project
-   folder → *Import & Edit*.
+2. **Open in Godot**: launch the Godot 4.7.2 **.NET (mono)** editor → *Import* → select this
+   project folder → *Import & Edit*.
 3. **Let Godot reimport assets** on first open (it builds `.godot/`, which is gitignored).
 4. **Press F5** (Play). You'll boot → main menu → press *Start* → the world loads.
 5. **Controls:** movement is **WASD** (`move_up/down/left/right` in the input map). The

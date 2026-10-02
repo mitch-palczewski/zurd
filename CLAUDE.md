@@ -12,7 +12,7 @@ and defend against roving *Zurd* skulls that eat objects and, if left unchecked,
 
 ## Stack & versions
 
-- **Godot Engine 4.7 — .NET edition** (see `project.godot` → `config/features = ("4.7", "Forward Plus")`).
+- **Godot Engine 4.7.2-stable — .NET (mono) edition** (see `project.godot` → `config/features = ("4.7", "Forward Plus")`).
 - **GDScript** for all gameplay code. The project is configured for .NET (`[dotnet] project/assembly_name="zurd"`) so C# is *available*, but there are currently **no `.cs` files** — treat this as a GDScript codebase.
 - Renderer: **Forward+**. Viewport 1920×1080, stretch `canvas_items` / `expand`.
 
@@ -21,7 +21,7 @@ and defend against roving *Zurd* skulls that eat objects and, if left unchecked,
 There is **no CLI build or test loop** and no package-install step (no npm, no `dotnet restore`).
 "Running on localhost" means running the game from the Godot editor:
 
-1. Open the project in the **Godot 4.7 .NET editor** (*Import* → select this folder).
+1. Open the project in the **Godot 4.7.2 .NET (mono) editor** (*Import* → select this folder).
 2. Press **F5** (play main scene) or **F6** (play current scene).
 3. Main scene is `res://scenes/ui/loading_screen/boot.tscn` → main menu → world.
 
