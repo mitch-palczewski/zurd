@@ -67,7 +67,7 @@ scripts are committed directly to the repo. You only need to install these appli
 | Dependency | Why you need it | Notes |
 |---|---|---|
 | **Godot Engine 4.7.2-stable — .NET/Mono build** | The editor *is* the runtime; "running on localhost" = pressing Play in the editor | Match the project's version (4.7.2-stable). Download the **.NET (mono)** variant. |
-| **.NET SDK 10.0.x** | Only needed to build/run C# code | **Optional today** — the project is GDScript-only, so the game runs without it. The mono editor prints `.NET Sdk not found. The required version is '10.0.12'` at startup if it's missing; install the .NET 10 SDK to silence that and before adding any `.cs` files |
+| **.NET 10 SDK** | Required by the Godot 4.7.2 **mono** editor; needed to build/run any C# code | The mono editor looks for the .NET runtime **10.0.12** (bundled with SDK `10.0.x`). Install with `winget install Microsoft.DotNet.SDK.10 --source winget`, then restart the editor and any terminals so they pick up the PATH. Without it the GDScript game still runs, but the editor warns `.NET Sdk not found. The required version is '10.0.12'` at startup |
 | **VS Code** (or another IDE) | Editing scripts + git/GitHub integration | Optional extensions (see README): *godot-tools*, *Godot Files*, *C# Tools for Godot* |
 | **Git** + a **GitHub account with access** to the repo | Clone, commit, push | See [Committing your work](#committing-your-work) |
 

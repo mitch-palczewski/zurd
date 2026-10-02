@@ -14,6 +14,7 @@ and defend against roving *Zurd* skulls that eat objects and, if left unchecked,
 
 - **Godot Engine 4.7.2-stable — .NET (mono) edition** (see `project.godot` → `config/features = ("4.7", "Forward Plus")`).
 - **GDScript** for all gameplay code. The project is configured for .NET (`[dotnet] project/assembly_name="zurd"`) so C# is *available*, but there are currently **no `.cs` files** — treat this as a GDScript codebase.
+- The mono editor expects the **.NET 10 SDK** (runtime `10.0.12`, from SDK `10.0.x`; `winget install Microsoft.DotNet.SDK.10 --source winget`). Missing it only warns at startup — the GDScript game still runs; it's required once C# is added.
 - Renderer: **Forward+**. Stretch `canvas_items` / `expand` (explicit viewport size was removed from `project.godot`).
 
 ## How to run
