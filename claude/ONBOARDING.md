@@ -22,8 +22,8 @@ Zurds like flies.
 ### Godot Engine 4.7 — .NET edition
 Godot is an open-source game engine. It is both the **editor** (where you build scenes and
 write scripts) and the **runtime** (pressing Play runs the game inside the editor). This
-project pins **version 4.7** (`project.godot` → `config/features`). Use the **.NET / Mono**
-download, *not* the standard build.
+project runs on **Godot 4.7.2-stable** (the `project.godot` `config/features` tag is `4.7`).
+Use the **.NET / Mono** download, *not* the standard build.
 
 **Why the .NET build if the code is GDScript?** The project is configured for .NET
 (`[dotnet] project/assembly_name="zurd"`), which enables writing gameplay in **C#** later.
@@ -66,9 +66,9 @@ scripts are committed directly to the repo. You only need to install these appli
 
 | Dependency | Why you need it | Notes |
 |---|---|---|
-| **Godot Engine 4.7 — .NET/Mono build** | The editor *is* the runtime; "running on localhost" = pressing Play in the editor | Match the project's version (4.7). Download the **.NET** variant. |
-| **.NET SDK** | Required by the Godot .NET build to load and run | Install the latest LTS SDK; needed even though there are no `.cs` files yet |
-| **VS Code** (or another IDE) | Editing scripts + git/GitHub integration | Optional extensions: *Godot Tools*, *C#* |
+| **Godot Engine 4.7.2-stable — .NET/Mono build** | The editor *is* the runtime; "running on localhost" = pressing Play in the editor | Match the project's version (4.7.2-stable). Download the **.NET (mono)** variant. |
+| **.NET 10 SDK** | Required by the Godot 4.7.2 **mono** editor; needed to build/run any C# code | The mono editor looks for the .NET runtime **10.0.12** (bundled with SDK `10.0.x`). Install with `winget install Microsoft.DotNet.SDK.10 --source winget`, then restart the editor and any terminals so they pick up the PATH. Without it the GDScript game still runs, but the editor warns `.NET Sdk not found. The required version is '10.0.12'` at startup |
+| **VS Code** (or another IDE) | Editing scripts + git/GitHub integration | Optional extensions (see README): *godot-tools*, *Godot Files*, *C# Tools for Godot* |
 | **Git** + a **GitHub account with access** to the repo | Clone, commit, push | See [Committing your work](#committing-your-work) |
 
 ---
@@ -80,8 +80,8 @@ scripts are committed directly to the repo. You only need to install these appli
    git clone https://github.com/mitch-palczewski/zurd.git
    cd zurd
    ```
-2. **Open in Godot**: launch the Godot 4.7 **.NET** editor → *Import* → select this project
-   folder → *Import & Edit*.
+2. **Open in Godot**: launch the Godot 4.7.2 **.NET (mono)** editor → *Import* → select this
+   project folder → *Import & Edit*.
 3. **Let Godot reimport assets** on first open (it builds `.godot/`, which is gitignored).
 4. **Press F5** (Play). You'll boot → main menu → press *Start* → the world loads.
 5. **Controls:** movement is **WASD** (`move_up/down/left/right` in the input map). The
@@ -102,17 +102,27 @@ scripts are committed directly to the repo. You only need to install these appli
   `scripts/utils/toroidal_utils.gd`.
 - **GLB physics importer** (`scripts/import/glb_physics_importer.gd`): a `@tool`
   `EditorScenePostImport` script. Drop a `.glb` into `assets/models/` and, on import, it
-  auto-generates four scenes under `scenes/objects/`:
-  - `mesh/<name>_mesh.tscn` — visuals (with vertex colors enabled)
-  - `collider/<name>_collider.tscn` — a box collider sized to the model's AABB
-  - `static/<name>_static.tscn` — `StaticBody3D`, collision layer 1 (Environment)
-  - `rigid/<name>_rigid.tscn` — `RigidBody3D`, collision layer 3 (Objects)
+  auto-generates **two** scenes under `scenes/objects/`, each with the mesh embedded (there
+  are no longer separate `mesh/` or `collider/` scenes):
+  - `static/<name>_static.tscn` — `StaticBody3D`, collision layer 1 (Environment). Uses
+    **convex-hull colliders** (one `CollisionConvex` per mesh surface, from
+    `mesh.create_convex_shape`) so terrain/structures collide at mesh detail, and applies the
+    shared `assets/materials/golf_terrain.tres` material (falls back to vertex colors if the
+    material is missing).
+  - `rigid/<name>_rigid.tscn` — `RigidBody3D`, collision layer 3 (Objects), mask 1–4. Uses a
+    single **box collider** sized to the combined AABB (cheap dynamic physics), with vertex
+    colors enabled on the mesh.
 
   Don't hand-edit the generated scenes; re-import the source `.glb` instead.
+- **Terrain:** `sandbox/tileable_terrain.gd` (`class_name TileableTerrain`, a `@tool`
+  `MeshInstance3D`) procedurally builds a seamless, tileable terrain mesh from
+  `FastNoiseLite` — exported `terrain_size`, `resolution`, `height_scale`, and `noise`
+  regenerate the mesh live in the editor. It's paired with the `golf_terrain` shader/material
+  (`assets/shaders/golf_terrain.gdshader`, `assets/materials/golf_terrain.tres`).
 - **Spawning:** `scripts/world/scene_spawner.gd` (`class_name SceneSpawner`) instances a
   `PackedScene` at a location under a container node.
 - **`sandbox/`:** a scratch area for playtesting (`test_player`, `test_ground`, `test_wrap`,
-  controller experiments). Not part of the shipped game.
+  `tileable_terrain`, controller experiments). Not part of the shipped game.
 
 ---
 
