@@ -1,0 +1,25 @@
+[gd_resource type="ShaderMaterial" format=3 uid="uid://bxh1xybfmrcoy"]
+
+[ext_resource type="Shader" uid="uid://cy281wa1e3xl4" path="res://assets/shaders/terrain.gdshader" id="1_t3g22"]
+
+[resource]
+render_priority = 0
+shader = ExtResource("1_t3g22")
+shader_parameter/light_grass = Color(0.35, 0.68, 0.22, 1)
+shader_parameter/dark_grass = Color(0.24, 0.52, 0.14, 1)
+shader_parameter/rock_color = Color(0.4, 0.38, 0.35, 1)
+shader_parameter/dirt_color = Color(0.32, 0.24, 0.16, 1)
+shader_parameter/show_wireframe = true
+shader_parameter/wireframe_color = Color(0, 0, 0, 1)
+shader_parameter/grid_scale = 1.0
+shader_parameter/wireframe_thickness = 1.0
+shader_parameter/stripe_width = 5.0
+shader_parameter/stripe_angle_degrees = 45.0
+shader_parameter/stripe_warp = 0.3
+shader_parameter/slope_threshold = 0.5
+shader_parameter/slope_blend = 0.1
+shader_parameter/edge_noise_strength = 0.15
+shader_parameter/dirt_width = 0.2
+shader_parameter/detail_scale = 0.2
+shader_parameter/macro_scale = 0.03
+shader_parameter/macro_blend = 0.5
