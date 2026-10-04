@@ -2,6 +2,8 @@
 
 [ext_resource type="Script" uid="uid://jfs4dbkhlsyt" path="res://scenes/characters/player/player_ship.gd" id="1_8qptg"]
 [ext_resource type="Script" uid="uid://dih30hrmp3d57" path="res://scenes/characters/player/player_flight_controller.gd" id="2_h8aw4"]
+[ext_resource type="Script" uid="uid://p3af3swpbjjl" path="res://scenes/characters/player/launch_object_component.gd" id="3_gweqi"]
+[ext_resource type="PackedScene" uid="uid://b017sf5law80l" path="res://scenes/objects/rigid/Arch_01_rigid.tscn" id="4_6job2"]
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_rmgw8"]
 radius = 0.71374303
@@ -42,3 +44,9 @@ size = 0.2
 
 [node name="FlightController" type="Node" parent="." unique_id=87340966]
 script = ExtResource("2_h8aw4")
+
+[node name="LaunchMuzzle" type="Node3D" parent="." unique_id=112342162 node_paths=PackedStringArray("player_ship")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.9575137)
+script = ExtResource("3_gweqi")
+projectile_scene = ExtResource("4_6job2")
+player_ship = NodePath("..")
