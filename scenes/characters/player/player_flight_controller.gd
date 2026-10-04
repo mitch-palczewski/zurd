@@ -6,7 +6,7 @@ signal impact_occured(collider: Object, force: float)
 @export_group("Speed")
 @export var base_speed: float = 5.0
 @export var boost_speed: float = 20.0
-@export var acceleration: float = 10.0
+@export var acceleration: float = 3.0
 @export var deceleration: float = 10.0
 
 @export_group("Agility")
@@ -14,6 +14,7 @@ signal impact_occured(collider: Object, force: float)
 @export var boost_pitch_speed: float = 0.8
 @export var yaw_speed: float = 0.5
 @export var boost_yaw_speed: float = 0.8
+@export var auto_level_speed: float = 3.0
 
 @export_group("Pitch Thresholds & Return")
 @export var hard_max_pitch: float = deg_to_rad(80.0)
@@ -75,6 +76,7 @@ func _process_flight(delta:float) -> void:
     _apply_thrust(is_boosting, delta)
     _apply_pitch(pitch_input,  delta)
     _apply_yaw(yaw_input, delta)
+    _auto_level_ship(delta)
 
     ship.velocity = -ship.transform.basis.z * current_speed
     var pre_slide_velocity = ship.velocity
@@ -113,6 +115,19 @@ func _apply_yaw(yaw_input: float, delta: float) -> void:
     ship.rotate_object_local(Vector3.UP, yaw_input * active_yaw_speed * delta)
 
 
+func _auto_level_ship(delta: float) -> void:
+    var forward := -ship.global_transform.basis.z.normalized()
+
+    if absf(forward.dot(Vector3.UP)) > 0.98:
+        return 
+    
+    var target_right := forward.cross(Vector3.UP).normalized()
+    var target_up := target_right.cross(forward).normalized()
+    var target_basis := Basis(target_right, target_up, -forward)
+
+    ship.global_transform.basis = ship.global_transform.basis.slerp(target_basis, auto_level_speed * delta)
+
+
 func _update_cockpit_visuals(pitch_input:float, yaw_input: float, delta: float) -> void:
     var target_lean_x = current_pitch * (max_pitch_lean / hard_max_pitch)
     current_visual_pitch = lerp_angle(current_visual_pitch, target_lean_x, lean_smoothing * delta)
@@ -120,6 +135,8 @@ func _update_cockpit_visuals(pitch_input:float, yaw_input: float, delta: float) 
 
     var target_bank_z = yaw_input * max_roll_bank
     current_bank = lerp_angle(current_bank, target_bank_z, lean_smoothing * delta)
+    if yaw_input == 0.0 and absf(current_bank) < 0.001:
+        current_bank = 0.0
     cockpit.rotation.z = current_bank
 
     if camera:
