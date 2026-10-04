@@ -34,7 +34,7 @@ shape = SubResource("SphereShape3D_rmgw8")
 [node name="Interior" type="Node3D" parent="Cockpit" unique_id=1656421329]
 
 [node name="ShipBottom" type="MeshInstance3D" parent="Cockpit/Interior" unique_id=1898735918]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.16050434, -0.4756583, 0.9417443)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.476, 0.942)
 mesh = SubResource("CylinderMesh_rmgw8")
 
 [node name="Camera3D" type="Camera3D" parent="Cockpit" unique_id=660655444]

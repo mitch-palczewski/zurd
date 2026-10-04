@@ -1,6 +1,11 @@
 extends Node
 
-## Fired when a 3D world scene finishes setting up its scene tree. 
-## Passes the level instance so listeners can query children.
-#@warning_ignore("unused_signal")
-#signal level_ready(level_node: Node3D)
+## Fired when requesting a 3D object to be spawned into the active world.
+##
+## [b]Contract:[/b]
+## - [param spawnable]: An instantiated [Node3D] (e.g., RigidBody3D, item, particle).
+## - The caller is responsible for instantiating the node and setting initial properties 
+##   (e.g., velocity, scale, angular momentum, damping).
+## - The receiving world/level container takes ownership of [param spawnable] via [method Node.add_child].
+@warning_ignore("unused_signal")
+signal spawn_requested(spawnable: Node3D)
