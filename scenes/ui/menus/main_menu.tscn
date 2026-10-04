@@ -26,3 +26,18 @@ layout_mode = 2
 [node name="Button" type="Button" parent="CenterContainer/VBoxContainer" unique_id=1536681961]
 layout_mode = 2
 text = "Base World"
+
+[node name="Label" type="Label" parent="." unique_id=124524051]
+layout_mode = 0
+offset_left = 68.0
+offset_top = 57.0
+offset_right = 181.0
+offset_bottom = 132.0
+text = "--- Controls ---
+W - pitch up 
+S - pitch down 
+A - yaw left
+D - yaw right
+shift - boost
+space - launch object
+"
