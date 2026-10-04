@@ -70,7 +70,16 @@ func _setup_physics(projectile: RigidBody3D) -> void:
 func _calculate_launch_velocity() -> Vector3:
 	var forward_dir = -global_transform.basis.z.normalized()
 
+	if spread_degrees > 0.0:
+		var spread_rad := deg_to_rad(spread_degrees)
+		var pitch_offset := randf_range(-spread_rad, spread_rad)
+		var yaw_offset := randf_range(-spread_rad, spread_rad)
 
+		var local_x := global_transform.basis.x.normalized()
+		var local_y := global_transform.basis.y.normalized()
+
+		forward_dir = forward_dir.rotated(local_x, pitch_offset)
+		forward_dir = forward_dir.rotated(local_y, yaw_offset)
 
 	var launch_velocity = forward_dir * launch_speed
 
