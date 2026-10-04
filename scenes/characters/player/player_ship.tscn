@@ -46,7 +46,7 @@ size = 0.2
 script = ExtResource("2_h8aw4")
 
 [node name="LaunchMuzzle" type="Node3D" parent="." unique_id=112342162 node_paths=PackedStringArray("player_ship")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.9575137)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1.813218)
 script = ExtResource("3_gweqi")
 projectile_scene = ExtResource("4_6job2")
 player_ship = NodePath("..")

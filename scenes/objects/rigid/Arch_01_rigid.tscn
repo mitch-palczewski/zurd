@@ -1,5 +1,7 @@
 [gd_scene format=4 uid="uid://b017sf5law80l"]
 
+[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_6job2"]
+
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_rpctv"]
 resource_name = "Material.005"
 cull_mode = 2
@@ -48,11 +50,16 @@ albedo_color = Color(0.74117655, 0.6862746, 0.6000001, 1)
 roughness = 0.5
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_dcm75"]
-size = Vector3(2.5965843, 3.002373, 0.8439443)
+size = Vector3(2.025611, 2.7540722, 0.8439443)
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_rmgw8"]
+radius = 0.33080402
 
 [node name="Arch 01Rigid" type="RigidBody3D" unique_id=319090675]
 collision_layer = 4
 collision_mask = 15
+mass = 10.0
+physics_material_override = SubResource("PhysicsMaterial_6job2")
 
 [node name="Arch" type="MeshInstance3D" parent="." unique_id=753539826]
 mesh = SubResource("ArrayMesh_wlva4")
@@ -60,5 +67,21 @@ skeleton = NodePath("")
 surface_material_override/0 = SubResource("StandardMaterial3D_tr0jq")
 
 [node name="CollisionBox" type="CollisionShape3D" parent="." unique_id=1420928947]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.017008662, 0.110180855, 0.00037416816)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.09426725, 0.18053234, 0.00037416816)
 shape = SubResource("BoxShape3D_dcm75")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=952719779]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.0171058, 1.4363143, 0)
+shape = SubResource("SphereShape3D_rmgw8")
+
+[node name="CollisionShape3D2" type="CollisionShape3D" parent="." unique_id=1723032260]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.0251749, 1.4363143, 0)
+shape = SubResource("SphereShape3D_rmgw8")
+
+[node name="CollisionShape3D3" type="CollisionShape3D" parent="." unique_id=2061172030]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.0171058, -1.4684191, 0)
+shape = SubResource("SphereShape3D_rmgw8")
+
+[node name="CollisionShape3D4" type="CollisionShape3D" parent="." unique_id=1167525669]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.1588509, -1.463948, 0)
+shape = SubResource("SphereShape3D_rmgw8")
