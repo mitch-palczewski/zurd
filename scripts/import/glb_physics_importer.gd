@@ -1,3 +1,5 @@
+# TODO: Add bumper spheres to the four corners of the rigid body collision shape.
+
 @tool
 extends EditorScenePostImport
 

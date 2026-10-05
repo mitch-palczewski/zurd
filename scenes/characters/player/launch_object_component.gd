@@ -2,7 +2,7 @@ class_name LaunchObjectComponent
 extends Node3D
 
 @export_group("Launch Settings")
-@export var projectile_scene: PackedScene
+@export var projectile_scenes: Array[PackedScene] = []
 @export var launch_speed: float = 20.0
 @export var target_stop_distance: float = 70.0
 @export var cooldown_time: float = 1.5
@@ -62,11 +62,16 @@ func _re_enable_player_collision_when_clear(projectile: RigidBody3D) -> void:
 
 
 func _instantiate_projectile() -> RigidBody3D:
-	if not projectile_scene:
-		push_warning("LaunchObjectComponent: No projectile_scene assigned in Inspector!")
+	if projectile_scenes.is_empty():
+		push_warning("LaunchObjectComponent: No scenes assigned to projectile_scenes array!")
+		return null
+
+	var selected_scene: PackedScene = projectile_scenes.pick_random()
+	if not selected_scene:
+		push_warning("LaunchObjectComponent: Selected projectile scene slot is empty/null!")
 		return null
 	
-	var instance := projectile_scene.instantiate()
+	var instance := selected_scene.instantiate()
 	if not (instance is RigidBody3D):
 		push_error("LaunchObjectComponent: Projectile scene root must be a RigidBody3D!")
 		instance.queue_free()
