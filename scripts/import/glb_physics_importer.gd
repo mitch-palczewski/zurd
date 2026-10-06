@@ -97,6 +97,56 @@ func _attach_primitive_box_collider(parent_node: Node3D, mesh_nodes: Array[MeshI
     shape_node.owner = parent_node
 
 
+# Not used currently but could be used to prevent edge-snagging
+func _attach_bumper_box_collider(parent_node: Node3D, mesh_nodes: Array[MeshInstance3D], scene_root: Node) -> void:
+    var aabb: AABB = _calculate_combined_aabb(mesh_nodes, scene_root)
+    var center: Vector3 = aabb.get_center()
+    var extents: Vector3 = aabb.size *0.5
+
+    var min_extent: float = minf(extents.x, minf(extents.y, extents.z))
+    var sphere_radius: float = clampf(min_extent * 0.2, 0.02, .5)
+
+    var main_box_node = CollisionShape3D.new()
+    main_box_node.name = "CollisionBox_Main"
+
+    var box_shape = BoxShape3D.new()
+    box_shape.size = Vector3(
+        maxf((extents.x - sphere_radius) * 2.0, 0.01),
+		maxf((extents.y - sphere_radius) * 2.0, 0.01),
+		maxf((extents.z - sphere_radius) * 2.0, 0.01)
+    )
+    main_box_node.shape = box_shape
+    main_box_node.position = center
+
+    parent_node.add_child(main_box_node)
+    main_box_node.owner = parent_node
+
+    var sphere_res = SphereShape3D.new()
+    sphere_res.radius = sphere_radius
+
+    var corner_offset := Vector3(
+        maxf(extents.x - sphere_radius, 0.0),
+		maxf(extents.y - sphere_radius, 0.0),
+		maxf(extents.z - sphere_radius, 0.0)
+    )
+
+    var corner_directions := [
+        Vector3(-1, -1, -1), Vector3(1, -1, -1),
+		Vector3(-1,  1, -1), Vector3(1,  1, -1),
+		Vector3(-1, -1,  1), Vector3(1, -1,  1),
+		Vector3(-1,  1,  1), Vector3(1,  1,  1)
+    ]
+
+    for i in corner_directions.size():
+        var sphere_node = CollisionShape3D.new()
+        sphere_node.name = "BumperSphere_" + str(i + 1)
+        sphere_node.shape = sphere_res
+        sphere_node.position = center + (corner_directions[i] * corner_offset)
+
+        parent_node.add_child(sphere_node)
+        sphere_node.owner = parent_node
+
+
 func _attach_convex_colliders(parent_node: Node3D, mesh_nodes: Array[MeshInstance3D], scene_root: Node) -> void:
     for i in mesh_nodes.size():
         var mesh_node = mesh_nodes[i]
