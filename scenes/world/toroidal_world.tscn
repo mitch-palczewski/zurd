@@ -6,7 +6,7 @@
 
 [node name="ToroidalWorld" unique_id=1406931788 instance=ExtResource("1_xgj68")]
 script = ExtResource("2_rwhoh")
-bounds_xz = Vector2(100, 100)
+bounds_xz = Vector2(300, 300)
 
 [node name="TesWrap" parent="." index="3" unique_id=1633266827 instance=ExtResource("3_m11wk")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -30, 0)

@@ -46,6 +46,7 @@ size = 0.2
 
 [node name="FlightController" type="Node" parent="." unique_id=87340966]
 script = ExtResource("2_h8aw4")
+base_speed = 10.0
 
 [node name="LaunchMuzzle" type="Node3D" parent="." unique_id=112342162 node_paths=PackedStringArray("player_ship")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1.813218)

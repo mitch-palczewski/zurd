@@ -12,10 +12,10 @@ size = Vector2(2000, 2000)
 [node name="TestGround" parent="." unique_id=2013099410 instance=ExtResource("1_uew61")]
 
 [node name="TestGround2" parent="." unique_id=960167484 instance=ExtResource("1_uew61")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 200, 0, 0)
+transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 200, 0, 0)
 
 [node name="TestGround3" parent="." unique_id=610667873 instance=ExtResource("1_uew61")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 200, 0, 200)
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 200, 0, 200)
 
 [node name="TestGround4" parent="." unique_id=800142478 instance=ExtResource("1_uew61")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 200, 0, -200)
@@ -24,16 +24,16 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 200, 0, -200)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 200)
 
 [node name="TestGround6" parent="." unique_id=1355198278 instance=ExtResource("1_uew61")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -200)
+transform = Transform3D(1.1924881e-08, 0, -1, 0, 1, 0, 1, 0, 1.1924881e-08, 0, 0, -200)
 
 [node name="TestGround7" parent="." unique_id=1539871467 instance=ExtResource("1_uew61")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -200, 0, 0)
 
 [node name="TestGround8" parent="." unique_id=648104990 instance=ExtResource("1_uew61")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -200, 0, 200)
+transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, -200, 0, 200)
 
 [node name="TestGround9" parent="." unique_id=777232498 instance=ExtResource("1_uew61")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -200, 0, -200)
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -200, 0, -200)
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=112616657]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -12.550636, -6.2368774)
