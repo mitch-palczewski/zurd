@@ -2,6 +2,7 @@
 
 [ext_resource type="Texture2D" uid="uid://bqwcx5o4ofubv" path="res://assets/_misc/citrus_orchard_road.hdr" id="1_s1lny"]
 [ext_resource type="PackedScene" uid="uid://catisab22bqfg" path="res://scenes/characters/player/player_ship.tscn" id="2_oh0aj"]
+[ext_resource type="PackedScene" uid="uid://bxjnraf4ofxwq" path="res://scenes/characters/enemy/zurd.tscn" id="3_sxtq4"]
 
 [sub_resource type="GDScript" id="GDScript_rwhoh"]
 script/source = "extends Node3D
@@ -30,3 +31,6 @@ environment = SubResource("Environment_s1lny")
 [node name="ObjectContainer" type="Node3D" parent="." unique_id=1341661257]
 
 [node name="PlayerShip" parent="ObjectContainer" unique_id=1780835481 instance=ExtResource("2_oh0aj")]
+
+[node name="Zurd" parent="ObjectContainer" unique_id=1857394916 instance=ExtResource("3_sxtq4")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.386339, 0, -8.351191)
