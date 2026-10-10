@@ -43,6 +43,7 @@ func launch_object() -> void:
 		projectile.add_collision_exception_with(player_ship)
 
 	EventBus.spawn_requested.emit(projectile)
+	ObjectTracker.register_object(projectile)
 
 	if player_ship:
 		_re_enable_player_collision_when_clear(projectile)
