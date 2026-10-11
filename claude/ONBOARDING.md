@@ -46,16 +46,19 @@ follow that style.
 
 ### Autoloads (singletons)
 Scripts registered as **autoloads** are global — accessible from anywhere by name without
-instancing a scene. This project registers two (in `project.godot`):
+instancing a scene. This project registers three (in `project.godot`):
 
 | Name | Script | Responsibility |
 |---|---|---|
-| `EventBus` | `scripts/autoload/event_bus.gd` | Central signal bus for global events (interaction, spawning, UI). Currently a stub. |
+| `EventBus` | `scripts/autoload/event_bus.gd` | Central signal bus. Signals: `spawn_requested(Node3D)` (ask the world to parent a spawnable) and `object_eaten(actor, obj)` (a Zurd consumed a projectile). |
 | `SceneChanger` | `scripts/autoload/scene_changer.gd` | Synchronous and threaded/async scene loading + transitions. |
+| `ObjectTracker` | `scripts/autoload/object_tracker.gd` | Tracks all active launched `RigidBody3D`s and auto-cleans freed ones. API: `register_object`, `get_random_object`, `get_closest_object`. Zurds query it to pick targets. |
 
-### Forward+ renderer
-The high-end desktop rendering backend (vs. Mobile / Compatibility). Chosen for richer
-lighting and effects.
+### Forward+ renderer & Jolt physics
+**Forward+** is the high-end desktop rendering backend (vs. Mobile / Compatibility), chosen
+for richer lighting. The 3D physics engine is **Jolt Physics**
+(`project.godot` → `[physics] 3d/physics_engine="Jolt Physics"`), switched in to reduce
+objects snagging on collider edges.
 
 ---
 
@@ -84,8 +87,9 @@ scripts are committed directly to the repo. You only need to install these appli
    project folder → *Import & Edit*.
 3. **Let Godot reimport assets** on first open (it builds `.godot/`, which is gitignored).
 4. **Press F5** (Play). You'll boot → main menu → press *Start* → the world loads.
-5. **Controls:** movement is **WASD** (`move_up/down/left/right` in the input map). The
-   sandbox player also hot-swaps control schemes with number keys **1–4**.
+5. **Controls (ship):** **W/S** pitch, **A/D** yaw, **Shift** boost, **Space** launch an
+   object (`ship_pitch_up/down`, `ship_yaw_left/right`, `ship_boost`, `ship_launch` in the
+   input map). The main menu also shows a controls label.
 
 ---
 
@@ -96,10 +100,25 @@ scripts are committed directly to the repo. You only need to install these appli
   (`scenes/ui/menus/main_menu.tscn`). The menu's *Start* button calls
   `SceneChanger.change_scene_async(...)` to load the **world**.
 - **World:** `scenes/world/base_world.gd` (`class_name BaseWorld`) holds an
-  `ObjectContainer`. `toroidal_world.gd` (`class_name ToroidalWorld`) extends it and, each
-  physics frame, wraps any `RigidBody3D`/`CharacterBody3D` that leaves the play bounds —
-  fly straight and the world repeats. The wrap math lives in
+  `ObjectContainer` and, on ready, listens for `EventBus.spawn_requested` — when fired it
+  parents the spawnable under `ObjectContainer`. `toroidal_world.gd` (`class_name
+  ToroidalWorld`) extends it and, each physics frame, wraps any `RigidBody3D`/`CharacterBody3D`
+  that leaves the play bounds — fly straight and the world repeats. The wrap math lives in
   `scripts/utils/toroidal_utils.gd`.
+- **Player ship** (`scenes/characters/player/`): `PlayerShip` (`class_name PlayerShip`, a
+  `CharacterBody3D`) wires up two pieces on ready — `PlayerFlightController` (handles flight
+  physics from the `ship_*` inputs and emits `impact_occured` on collision) and
+  `LaunchObjectComponent`. The launcher picks a random scene from its `projectile_scenes`,
+  spawns it gravity-free with linear-damp "braking" so it coasts to a stop, adds random
+  scale/spin/spread, briefly excludes the player from collision until the object clears, then
+  emits `EventBus.spawn_requested` and registers it with `ObjectTracker`.
+- **Zurd enemy** (`scenes/characters/enemy/`): `Zurd` (`class_name Zurd`, a `CharacterBody3D`)
+  is a thin coordinator that delegates to three components each physics frame:
+  `ZurdTargetComponent` (asks `ObjectTracker` for a target — `CLOSEST` or `RANDOM`),
+  `ZurdMovementComponent` (steers toward the target with slerped turning plus a forward
+  raycast for obstacle avoidance against layer 1), and `ZurdMouthComponent` (an area that
+  eats the targeted object and emits `object_eaten`). This component pattern is the intended
+  style for new actors.
 - **GLB physics importer** (`scripts/import/glb_physics_importer.gd`): a `@tool`
   `EditorScenePostImport` script. Drop a `.glb` into `assets/models/` and, on import, it
   auto-generates **two** scenes under `scenes/objects/`, each with the mesh embedded (there
@@ -117,8 +136,9 @@ scripts are committed directly to the repo. You only need to install these appli
 - **Terrain:** `sandbox/tileable_terrain.gd` (`class_name TileableTerrain`, a `@tool`
   `MeshInstance3D`) procedurally builds a seamless, tileable terrain mesh from
   `FastNoiseLite` — exported `terrain_size`, `resolution`, `height_scale`, and `noise`
-  regenerate the mesh live in the editor. It's paired with the `golf_terrain` shader/material
-  (`assets/shaders/golf_terrain.gdshader`, `assets/materials/golf_terrain.tres`).
+  regenerate the mesh live in the editor. Several terrain shaders/materials exist in
+  `assets/` — `golf_terrain` (what the importer currently applies to static bodies) and a
+  newer `terrain.gdshader`/`terrain.tres` intended as the primary static/ground shader.
 - **Spawning:** `scripts/world/scene_spawner.gd` (`class_name SceneSpawner`) instances a
   `PackedScene` at a location under a container node.
 - **`sandbox/`:** a scratch area for playtesting (`test_player`, `test_ground`, `test_wrap`,
