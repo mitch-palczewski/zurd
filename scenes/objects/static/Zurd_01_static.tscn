@@ -1,19 +1,19 @@
 [gd_scene format=3 uid="uid://ru3xtax6veg8"]
 
-[ext_resource type="ArrayMesh" uid="uid://dq3spjgcv1af2" path="res://assets/meshes/generated/Zurd_01_0.res" id="1_omf3t"]
+[ext_resource type="ArrayMesh" uid="uid://dcufgdrmyxyoi" path="res://assets/meshes/Zurd_01.res" id="1_omf3t"]
 [ext_resource type="Material" uid="uid://qb2mh3co2py5" path="res://assets/materials/golf_terrain.tres" id="2_3c74o"]
 
-[sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_omf3t"]
+[sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_3c74o"]
 points = PackedVector3Array(-0.13744755, -0.11787136, -0.5210903, -0.15359202, -0.18547575, -0.5000305, 0.5566642, -0.23995617, -0.019707695, 0.1385461, 0.5369809, -0.10545395, -0.46596527, -0.35998678, 0.1877773, -0.4475303, 0.3136178, 0.015119171, 0.17536104, -0.5205525, 0.17189066, 0.31125194, 0.037592556, 0.5323414, -0.30981106, 0.037602402, 0.532812, 0.035561312, -0.3610982, 0.56993014, 0.05298357, -0.51879257, -0.28063712, 0.29470152, -0.13508117, -0.43433863, -0.016159676, 0.5685788, 0.16931412, 0.4510436, 0.29747218, -0.036919475, -0.5544598, -0.23976043, -0.037065618, -0.3397926, 0.173761, -0.34244058, 0.13765243, 0.25991565, -0.39531922, 0.4331152, -0.39445674, 0.20507774, -0.13711067, 0.53792757, -0.10560262, -0.3451931, -0.46401158, 0.1878901, -0.10310184, -0.41326353, -0.41859213, 0.22347766, 0.517148, 0.1179398, -0.24040143, -0.30700916, 0.532185, -0.44837746, -0.16955721, -0.295835, 0.34119797, 0.17359339, -0.34200644, -0.51637965, -0.15181331, 0.20461853, -0.22057502, 0.36120322, 0.33884284, 0.45130083, -0.048815444, 0.3440742, 0.24178153, -0.30653033, 0.53131497, 0.10476226, -0.41266963, -0.41798675, 0.5227292, -0.066504315, -0.17640989, 0.2564015, 0.3611746, 0.32184702)
 
-[node name="Zurd01Static" type="StaticBody3D" unique_id=2102169186]
+[node name="Zurd01Static" type="StaticBody3D" unique_id=1477168435]
 collision_mask = 0
 
-[node name="Zurd_01" type="Node3D" parent="." unique_id=9327435]
+[node name="Zurd_01" type="Node3D" parent="." unique_id=1169701260]
 
-[node name="Zardoz" type="MeshInstance3D" parent="Zurd_01" unique_id=1626162984]
+[node name="Zardoz" type="MeshInstance3D" parent="Zurd_01" unique_id=4140421]
 mesh = ExtResource("1_omf3t")
 surface_material_override/0 = ExtResource("2_3c74o")
 
-[node name="CollisionConvex" type="CollisionShape3D" parent="." unique_id=2026370517]
-shape = SubResource("ConvexPolygonShape3D_omf3t")
+[node name="CollisionConvex" type="CollisionShape3D" parent="." unique_id=1104035936]
+shape = SubResource("ConvexPolygonShape3D_3c74o")

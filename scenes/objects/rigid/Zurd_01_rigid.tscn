@@ -1,21 +1,21 @@
 [gd_scene format=3 uid="uid://dh22ookwttran"]
 
-[ext_resource type="ArrayMesh" uid="uid://dq3spjgcv1af2" path="res://assets/meshes/generated/Zurd_01_0.res" id="1_4okl2"]
-[ext_resource type="Material" uid="uid://e242bnkxsjea" path="res://assets/materials/objects/Zurd_01_mat.res" id="2_p2wy7"]
+[ext_resource type="ArrayMesh" uid="uid://dcufgdrmyxyoi" path="res://assets/meshes/Zurd_01.res" id="1_4okl2"]
+[ext_resource type="Material" uid="uid://2ns0mab6gk6l" path="res://assets/materials/objects/Zurd_01_mat.res" id="2_p2wy7"]
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_4okl2"]
+[sub_resource type="BoxShape3D" id="BoxShape3D_n7jg5"]
 size = Vector3(1.1339225, 1.123572, 1.1358142)
 
-[node name="Zurd01Rigid" type="RigidBody3D" unique_id=1053183919]
+[node name="Zurd01Rigid" type="RigidBody3D" unique_id=2118318112]
 collision_layer = 4
 collision_mask = 15
 
-[node name="Zurd_01" type="Node3D" parent="." unique_id=110800252]
+[node name="Zurd_01" type="Node3D" parent="." unique_id=1113134078]
 
-[node name="Zardoz" type="MeshInstance3D" parent="Zurd_01" unique_id=1025920028]
+[node name="Zardoz" type="MeshInstance3D" parent="Zurd_01" unique_id=323876497]
 mesh = ExtResource("1_4okl2")
 surface_material_override/0 = ExtResource("2_p2wy7")
 
-[node name="CollisionBox" type="CollisionShape3D" parent="." unique_id=1040460938]
+[node name="CollisionBox" type="CollisionShape3D" parent="." unique_id=1539965883]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.1503696e-05, 0.03200817, 0.03232473)
-shape = SubResource("BoxShape3D_4okl2")
+shape = SubResource("BoxShape3D_n7jg5")

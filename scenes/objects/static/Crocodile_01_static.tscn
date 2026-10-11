@@ -1,19 +1,19 @@
 [gd_scene format=3 uid="uid://b5m20rugrd7ay"]
 
-[ext_resource type="ArrayMesh" uid="uid://sgt7hndoccfh" path="res://assets/meshes/generated/Crocodile_01_0.res" id="1_m43kb"]
+[ext_resource type="ArrayMesh" uid="uid://bmi4mfd0dmuff" path="res://assets/meshes/Crocodile_01.res" id="1_m43kb"]
 [ext_resource type="Material" uid="uid://qb2mh3co2py5" path="res://assets/materials/golf_terrain.tres" id="2_m43kb"]
 
 [sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_icm4s"]
 points = PackedVector3Array(-0.03532062, 0.2976509, -0.36121005, 0.34305784, 0.18914267, 0.25185028, 0.341671, -0.021513043, 0.2503835, -0.087344356, -0.13084243, 1.3975344, -0.039671436, -0.3215341, -1.6532342, -0.3738271, 0.18880807, 0.16650645, 0.1508616, 0.2503823, 1.1111515, -0.37338188, -0.22618827, -0.31837365, 0.103188686, -0.17851534, 1.3497541, -0.1826902, 0.2503823, 1.1111515, 0.08704703, 0.4339317, 0.16026562, 0.055515766, -0.17851534, -1.605454, 0.30879903, -0.15449652, -0.38745227, -0.087344356, -0.13084243, -1.4624119, -0.11782224, 0.4303104, 0.116407186, 0.3322939, 0.26799655, 0.15858951, 0.055515766, -0.3215341, -1.6532342, -0.1826902, 0.012176335, 1.206712, -0.37338188, -0.083169505, -0.41363552, -0.087344356, -0.17851534, 1.3497541, 0.19853453, 0.20270938, 1.1111515, -0.30930555, 0.25968307, 0.028273385, 0.15737145, 0.372479, -0.012742073, -0.3749424, -0.06415204, 0.083022095, 0.24794188, -0.18024978, 0.15600441, 0.33088553, -0.059150234, -0.2909407, 0.33528307, -0.102286786, 0.20246723, -0.039671436, -0.3215341, -1.510192, -0.13501728, -0.13084243, 1.3019738, -0.32063195, 0.26647994, 0.19696176, 0.31184122, 0.2571696, 0.026044251, 0.076182984, 0.36005688, -0.16456904)
 
-[node name="Crocodile01Static" type="StaticBody3D" unique_id=1429176672]
+[node name="Crocodile01Static" type="StaticBody3D" unique_id=2120618683]
 collision_mask = 0
 
-[node name="Crocodile_01" type="Node3D" parent="." unique_id=535606538]
+[node name="Crocodile_01" type="Node3D" parent="." unique_id=1978415939]
 
-[node name="Crocodile_01" type="MeshInstance3D" parent="Crocodile_01" unique_id=33974124]
+[node name="Crocodile_01" type="MeshInstance3D" parent="Crocodile_01" unique_id=650173703]
 mesh = ExtResource("1_m43kb")
 surface_material_override/0 = ExtResource("2_m43kb")
 
-[node name="CollisionConvex" type="CollisionShape3D" parent="." unique_id=1940507992]
+[node name="CollisionConvex" type="CollisionShape3D" parent="." unique_id=164568644]
 shape = SubResource("ConvexPolygonShape3D_icm4s")

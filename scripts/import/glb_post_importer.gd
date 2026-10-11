@@ -3,7 +3,7 @@ extends EditorScenePostImport
  
 const STATIC_MATERIAL_PATH = "res://assets/materials/golf_terrain.tres"
 const MATERIAL_DIR = "res://assets/materials/objects/"
-const MESH_DIR = "res://assets/meshes/generated/"
+const MESH_DIR = "res://assets/meshes/"
  
 const STATIC_DIR = "res://scenes/objects/static/"
 const RIGID_DIR = "res://scenes/objects/rigid/"
@@ -80,6 +80,7 @@ func _export_shared_meshes(item_name: String, mesh_nodes: Array[MeshInstance3D])
 
     if mesh_count > 1:
         mesh_dir = MESH_DIR + item_name + "/"
+        DirAccess.make_dir_recursive_absolute(mesh_dir)
  
     for mesh_node in mesh_nodes:
         var source := mesh_node.mesh
@@ -145,20 +146,27 @@ func _apply_material_to_instance(parent_node: Node3D, mat_path: String) -> void:
  
 func _setup_vertex_color_materials(parent_node: Node3D, item_name: String) -> void:
     var saved_materials := {} 
- 
-    for mesh_instance in _find_all_mesh_instances(parent_node):
+    var mesh_instances := _find_all_mesh_instances(parent_node)
+    for mesh_instance in mesh_instances:
         var mesh := mesh_instance.mesh
         if mesh == null:
             continue
- 
-        for i in mesh.get_surface_count():
+
+        var surface_count = mesh.get_surface_count()
+
+        for i in surface_count:
             if not _surface_has_colors(mesh, i):
                 continue
  
             var source := mesh_instance.get_active_material(i)
             if not saved_materials.has(source):
+                var path =  ""
+                if mesh_instances.size() == 1 and surface_count == 1:
+                    path = "%s%s_mat.res" % [MATERIAL_DIR, item_name]
+                else:
+                    path = "%s%s_mat_%d.res" % [MATERIAL_DIR, item_name, saved_materials.size()]
+                saved_materials[source] = _save_vertex_color_material(source, path)
 
-                saved_materials[source] = _save_vertex_color_material(source, item_name, saved_materials.size())
             mesh_instance.set_surface_override_material(i, saved_materials[source])
  
  
@@ -171,7 +179,7 @@ func _surface_has_colors(mesh: Mesh, surface: int) -> bool:
     return arrays.size() > Mesh.ARRAY_COLOR and arrays[Mesh.ARRAY_COLOR] != null
  
  
-func _save_vertex_color_material(source: Material, item_name: String, index: int) -> Material:
+func _save_vertex_color_material(source: Material, path: String) -> Material:
     var mat: BaseMaterial3D
     if source is BaseMaterial3D:
         mat = source.duplicate() as BaseMaterial3D
@@ -179,8 +187,6 @@ func _save_vertex_color_material(source: Material, item_name: String, index: int
         mat = StandardMaterial3D.new()
  
     mat.vertex_color_use_as_albedo = true
- 
-    var path := "%s%s_mat_%d.res" % [MATERIAL_DIR, item_name, index]
     mat.take_over_path(path)
  
     var err := ResourceSaver.save(mat, path)

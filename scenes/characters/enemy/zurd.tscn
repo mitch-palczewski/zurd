@@ -1,9 +1,9 @@
 [gd_scene format=3 uid="uid://bxjnraf4ofxwq"]
 
 [ext_resource type="Script" uid="uid://bgxbr7s8ac1k0" path="res://scenes/characters/enemy/zurd.gd" id="1_amhp2"]
-[ext_resource type="ArrayMesh" uid="uid://dq3spjgcv1af2" path="res://assets/meshes/generated/Zurd_01_0.res" id="2_554ls"]
+[ext_resource type="ArrayMesh" uid="uid://dcufgdrmyxyoi" path="res://assets/meshes/Zurd_01.res" id="2_554ls"]
 [ext_resource type="Script" uid="uid://cqd8fa1ql4y8m" path="res://scenes/characters/enemy/zurd_mouth_component.gd" id="2_frfjf"]
-[ext_resource type="Material" uid="uid://e242bnkxsjea" path="res://assets/materials/objects/Zurd_01_mat.res" id="3_kn0us"]
+[ext_resource type="Material" uid="uid://2ns0mab6gk6l" path="res://assets/materials/objects/Zurd_01_mat.res" id="3_kn0us"]
 [ext_resource type="Script" uid="uid://dbai6h2yowqtu" path="res://scenes/characters/enemy/zurd_target_component.gd" id="3_xxxsl"]
 [ext_resource type="Script" uid="uid://wfds7lbabu6q" path="res://scenes/characters/enemy/zurd_movement_component.gd" id="4_554ls"]
 

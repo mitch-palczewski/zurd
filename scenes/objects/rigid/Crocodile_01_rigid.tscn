@@ -1,21 +1,21 @@
 [gd_scene format=3 uid="uid://de5u3qjy3l6ap"]
 
-[ext_resource type="ArrayMesh" uid="uid://sgt7hndoccfh" path="res://assets/meshes/generated/Crocodile_01_0.res" id="1_bg8n6"]
-[ext_resource type="Material" uid="uid://ct1h28o8dthsv" path="res://assets/materials/objects/Crocodile_01_mat_0.res" id="2_26mrt"]
+[ext_resource type="ArrayMesh" uid="uid://bmi4mfd0dmuff" path="res://assets/meshes/Crocodile_01.res" id="1_bg8n6"]
+[ext_resource type="Material" uid="uid://ssa570wuq6yd" path="res://assets/materials/objects/Crocodile_01_mat.res" id="2_26mrt"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_fuimh"]
 size = Vector3(0.7864167, 0.7780719, 3.0031245)
 
-[node name="Crocodile01Rigid" type="RigidBody3D" unique_id=1499513669]
+[node name="Crocodile01Rigid" type="RigidBody3D" unique_id=1033774700]
 collision_layer = 4
 collision_mask = 15
 
-[node name="Crocodile_01" type="Node3D" parent="." unique_id=1006535922]
+[node name="Crocodile_01" type="Node3D" parent="." unique_id=964375117]
 
-[node name="Crocodile_01" type="MeshInstance3D" parent="Crocodile_01" unique_id=1454821063]
+[node name="Crocodile_01" type="MeshInstance3D" parent="Crocodile_01" unique_id=2002513660]
 mesh = ExtResource("1_bg8n6")
 surface_material_override/0 = ExtResource("2_26mrt")
 
-[node name="CollisionBox" type="CollisionShape3D" parent="." unique_id=1435673291]
+[node name="CollisionBox" type="CollisionShape3D" parent="." unique_id=1890436269]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.0040451884, 0.09134364, -0.12782025)
 shape = SubResource("BoxShape3D_fuimh")

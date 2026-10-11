@@ -1,22 +1,22 @@
 [gd_scene format=3 uid="uid://dpqwpgb74ljan"]
 
-[ext_resource type="ArrayMesh" uid="uid://l3kewp13uvmu" path="res://assets/meshes/generated/Archway_0.res" id="1_vg4hj"]
-[ext_resource type="Material" uid="uid://cueusb4xfjejl" path="res://assets/materials/objects/Archway_mat_0.res" id="2_nfc13"]
+[ext_resource type="ArrayMesh" uid="uid://bjg38fj074apf" path="res://assets/meshes/Archway.res" id="1_vg4hj"]
+[ext_resource type="Material" uid="uid://pnxsygjfwkn4" path="res://assets/materials/objects/Archway_mat.res" id="2_nfc13"]
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_vg4hj"]
+[sub_resource type="BoxShape3D" id="BoxShape3D_vxj7g"]
 size = Vector3(3.6621728, 1.0918481, 0.50554895)
 
-[node name="ArchwayRigid" type="RigidBody3D" unique_id=738857450]
+[node name="ArchwayRigid" type="RigidBody3D" unique_id=511066899]
 collision_layer = 4
 collision_mask = 15
 
-[node name="Archway" type="Node3D" parent="." unique_id=838335294]
+[node name="Archway" type="Node3D" parent="." unique_id=256669868]
 
-[node name="Archway" type="MeshInstance3D" parent="Archway" unique_id=546385005]
+[node name="Archway" type="MeshInstance3D" parent="Archway" unique_id=189025091]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1348915, 0)
 mesh = ExtResource("1_vg4hj")
 surface_material_override/0 = ExtResource("2_nfc13")
 
-[node name="CollisionBox" type="CollisionShape3D" parent="." unique_id=983338319]
+[node name="CollisionBox" type="CollisionShape3D" parent="." unique_id=522860449]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.00036108494, 0.07789457, 0.0083197355)
-shape = SubResource("BoxShape3D_vg4hj")
+shape = SubResource("BoxShape3D_vxj7g")

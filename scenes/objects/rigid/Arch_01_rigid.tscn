@@ -1,21 +1,21 @@
 [gd_scene format=3 uid="uid://b017sf5law80l"]
 
-[ext_resource type="ArrayMesh" uid="uid://cqxlxma0aip28" path="res://assets/meshes/generated/Arch_01_0.res" id="1_1ylu5"]
-[ext_resource type="Material" uid="uid://b1tv0n1snxqk5" path="res://assets/materials/objects/Arch_01_mat_0.res" id="2_g8u1m"]
+[ext_resource type="ArrayMesh" uid="uid://cq466ko7hfssn" path="res://assets/meshes/Arch_01.res" id="1_1ylu5"]
+[ext_resource type="Material" uid="uid://b8hno08r0ahmj" path="res://assets/materials/objects/Arch_01_mat.res" id="2_g8u1m"]
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_1ylu5"]
+[sub_resource type="BoxShape3D" id="BoxShape3D_7mev3"]
 size = Vector3(2.5965843, 3.002373, 0.8439443)
 
-[node name="Arch01Rigid" type="RigidBody3D" unique_id=1572306779]
+[node name="Arch01Rigid" type="RigidBody3D" unique_id=1935739915]
 collision_layer = 4
 collision_mask = 15
 
-[node name="Arch_01" type="Node3D" parent="." unique_id=539675822]
+[node name="Arch_01" type="Node3D" parent="." unique_id=942567749]
 
-[node name="Arch" type="MeshInstance3D" parent="Arch_01" unique_id=1204452048]
+[node name="Arch" type="MeshInstance3D" parent="Arch_01" unique_id=1353243927]
 mesh = ExtResource("1_1ylu5")
 surface_material_override/0 = ExtResource("2_g8u1m")
 
-[node name="CollisionBox" type="CollisionShape3D" parent="." unique_id=2087412853]
+[node name="CollisionBox" type="CollisionShape3D" parent="." unique_id=1366691505]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.017008662, 0.110180855, 0.00037416816)
-shape = SubResource("BoxShape3D_1ylu5")
+shape = SubResource("BoxShape3D_7mev3")

@@ -1,21 +1,21 @@
 [gd_scene format=3 uid="uid://c4aciywu4i5np"]
 
-[ext_resource type="ArrayMesh" uid="uid://l3kewp13uvmu" path="res://assets/meshes/generated/Archway_0.res" id="1_mu6xn"]
+[ext_resource type="ArrayMesh" uid="uid://bjg38fj074apf" path="res://assets/meshes/Archway.res" id="1_mu6xn"]
 [ext_resource type="Material" uid="uid://qb2mh3co2py5" path="res://assets/materials/golf_terrain.tres" id="2_mu6xn"]
 
-[sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_mu6xn"]
+[sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_ugodm"]
 points = PackedVector3Array(-1.3954357, -0.05067861, -0.27356428, 1.685333, -0.5155479, -0.21541294, -1.7439339, -0.6319643, 0.24951321, 1.685333, -0.5155479, 0.24951321, 1.7432339, 0.41430444, -0.15726162, -1.8021991, 0.41430444, 0.24951321, -1.686033, 0.2980018, -0.27356428, -1.8021991, -0.45739654, -0.21541294, 1.7432339, 0.3561531, 0.24951321, -1.2789054, 0.2980018, 0.30772144, 0.9297071, -0.6319643, -0.21541294, 1.8597642, -0.6319643, 0.19136187, 1.1616751, 0.2980018, -0.27356428, -0.9883081, -0.6319643, -0.21541294, -1.2210045, 0.4724558, 0.07511611, 1.8597642, 0.41430444, -0.041015852, -1.1044742, 0.0073589236, 0.30772144, 1.5109018, 0.41430444, 0.24951321, 1.8014991, 0.18181291, -0.21541294, -1.6420269, 0.37297058, -0.19474602, -1.8021991, -0.5736992, 0.24951321, -0.25295866, 0.45525184, -0.08409761, -1.6988132, -0.5814484, -0.1421108, -0.365734, 0.47147378, 0.12144772, 1.8597642, 0.41430444, 0.13326743, -1.7931526, 0.17339979, -0.1509528, 1.1616751, 0.18181291, -0.27356428, 0.91784525, 0.40859887, -0.18703364, 1.7432339, -0.45739654, -0.21541294, 1.7005491, -0.5822096, -0.1423391, 1.8014991, 0.18181291, 0.24951321, 1.8014991, -0.34109387, 0.24951321)
 
-[node name="ArchwayStatic" type="StaticBody3D" unique_id=1625429416]
+[node name="ArchwayStatic" type="StaticBody3D" unique_id=525894933]
 collision_mask = 0
 
-[node name="Archway" type="Node3D" parent="." unique_id=117928763]
+[node name="Archway" type="Node3D" parent="." unique_id=1697022759]
 
-[node name="Archway" type="MeshInstance3D" parent="Archway" unique_id=422399439]
+[node name="Archway" type="MeshInstance3D" parent="Archway" unique_id=1300073135]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1348915, 0)
 mesh = ExtResource("1_mu6xn")
 surface_material_override/0 = ExtResource("2_mu6xn")
 
-[node name="CollisionConvex" type="CollisionShape3D" parent="." unique_id=1809742409]
+[node name="CollisionConvex" type="CollisionShape3D" parent="." unique_id=1994946458]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1348915, 0)
-shape = SubResource("ConvexPolygonShape3D_mu6xn")
+shape = SubResource("ConvexPolygonShape3D_ugodm")

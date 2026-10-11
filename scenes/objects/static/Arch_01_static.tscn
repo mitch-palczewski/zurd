@@ -1,19 +1,19 @@
 [gd_scene format=3 uid="uid://dxmbj1qghxp3"]
 
-[ext_resource type="ArrayMesh" uid="uid://cqxlxma0aip28" path="res://assets/meshes/generated/Arch_01_0.res" id="1_rpctv"]
+[ext_resource type="ArrayMesh" uid="uid://cq466ko7hfssn" path="res://assets/meshes/Arch_01.res" id="1_rpctv"]
 [ext_resource type="Material" uid="uid://qb2mh3co2py5" path="res://assets/materials/golf_terrain.tres" id="2_6tdar"]
 
-[sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_rpctv"]
+[sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_6tdar"]
 points = PackedVector3Array(-1.1914423, -1.2825372, -0.18849249, -1.1142416, -1.1762817, -0.25477666, 1.3159771, -1.3670595, 0.22172011, 0.07675029, 1.3492112, -0.44542855, -0.9713328, 0.63416743, 0.3169131, 1.1728117, -1.1285125, -0.25468802, -1.3051286, -1.4148287, 0.22172011, 0.02902852, 1.3492112, 0.46005714, -0.9949916, 0.8661366, -0.19278476, 1.0931289, 0.6871416, -0.19245674, -0.20881066, 1.6352288, 0.22172011, 0.9821812, 0.72970563, 0.3169131, 0.5783681, 1.4398814, -0.19897176, -0.59007174, 1.3011435, -0.3022845, 1.1253464, -1.1285125, 0.26940525, -1.0187981, 0.395919, -0.3022845, 1.2043985, -1.2849898, -0.18883732, -1.3051286, -0.9380332, -0.20709153, 1.0776248, 0.4436881, -0.30237314, 0.21965906, 1.6352288, 0.22172011, -1.1142416, -1.1288111, 0.26940525, 1.3159771, -0.89026415, -0.20709153, 1.0286887, 0.9285205, 0.1664257, -0.69754267, 1.2893385, 0.1205977, -1.3051286, -0.9380332, 0.22172011, -0.16134545, 1.4922199, -0.3500583, -1.0991975, 0.60599583, -0.19556378, 1.3159771, -0.9380332, 0.22172011, 0.55319834, 1.3492112, 0.3169131, -0.54234993, 1.3011435, 0.3169131, -0.066158466, 1.3011435, -0.44542855, 1.2682552, -1.4148287, 0.22172011)
 
-[node name="Arch01Static" type="StaticBody3D" unique_id=864744573]
+[node name="Arch01Static" type="StaticBody3D" unique_id=132838332]
 collision_mask = 0
 
-[node name="Arch_01" type="Node3D" parent="." unique_id=1485459096]
+[node name="Arch_01" type="Node3D" parent="." unique_id=529766218]
 
-[node name="Arch" type="MeshInstance3D" parent="Arch_01" unique_id=710369088]
+[node name="Arch" type="MeshInstance3D" parent="Arch_01" unique_id=1021454563]
 mesh = ExtResource("1_rpctv")
 surface_material_override/0 = ExtResource("2_6tdar")
 
-[node name="CollisionConvex" type="CollisionShape3D" parent="." unique_id=1502845863]
-shape = SubResource("ConvexPolygonShape3D_rpctv")
+[node name="CollisionConvex" type="CollisionShape3D" parent="." unique_id=323619410]
+shape = SubResource("ConvexPolygonShape3D_6tdar")
