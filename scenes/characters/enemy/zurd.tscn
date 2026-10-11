@@ -1,6 +1,9 @@
 [gd_scene format=4 uid="uid://bxjnraf4ofxwq"]
 
 [ext_resource type="Script" uid="uid://bgxbr7s8ac1k0" path="res://scenes/characters/enemy/zurd.gd" id="1_amhp2"]
+[ext_resource type="Script" uid="uid://cqd8fa1ql4y8m" path="res://scenes/characters/enemy/zurd_mouth_component.gd" id="2_frfjf"]
+[ext_resource type="Script" uid="uid://dbai6h2yowqtu" path="res://scenes/characters/enemy/zurd_target_component.gd" id="3_xxxsl"]
+[ext_resource type="Script" uid="uid://wfds7lbabu6q" path="res://scenes/characters/enemy/zurd_movement_component.gd" id="4_554ls"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_omf3t"]
 resource_name = "material_0"
@@ -155,7 +158,14 @@ shape = SubResource("SphereShape3D_vadmx")
 [node name="MouthArea" type="Area3D" parent="." unique_id=463051619]
 collision_layer = 0
 collision_mask = 4
+script = ExtResource("2_frfjf")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="MouthArea" unique_id=1302982195]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.78170943)
 shape = SubResource("SphereShape3D_rmgw8")
+
+[node name="TargetComponent" type="Node" parent="." unique_id=1916322248]
+script = ExtResource("3_xxxsl")
+
+[node name="MovementComponent" type="Node" parent="." unique_id=999820958]
+script = ExtResource("4_554ls")
