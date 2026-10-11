@@ -35,19 +35,11 @@ animation/fps=30
 animation/trimming=false
 animation/remove_immutable_tracks=true
 animation/import_rest_as_RESET=false
-import_script/path="uid://c1jm4ng2i0e33"
+import_script/path="uid://bvn4a22k5odgd"
 materials/extract=0
 materials/extract_format=0
 materials/extract_path=""
-_subresources={
-"materials": {
-"material_0": {
-"use_external/enabled": true,
-"use_external/fallback_path": "res://assets/materials/objects/Zurd_01.tres",
-"use_external/path": "uid://ccega4kcl3w0h"
-}
-}
-}
+_subresources={}
 gltf/naming_version=2
 gltf/embedded_image_handling=1
 gltf/texture_map_mode=1

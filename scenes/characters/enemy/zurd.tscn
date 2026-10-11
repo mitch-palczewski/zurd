@@ -1,8 +1,9 @@
 [gd_scene format=3 uid="uid://bxjnraf4ofxwq"]
 
 [ext_resource type="Script" uid="uid://bgxbr7s8ac1k0" path="res://scenes/characters/enemy/zurd.gd" id="1_amhp2"]
+[ext_resource type="ArrayMesh" uid="uid://dq3spjgcv1af2" path="res://assets/meshes/generated/Zurd_01_0.res" id="2_554ls"]
 [ext_resource type="Script" uid="uid://cqd8fa1ql4y8m" path="res://scenes/characters/enemy/zurd_mouth_component.gd" id="2_frfjf"]
-[ext_resource type="PackedScene" uid="uid://c5f5m6qxtjorg" path="res://assets/models/Zurd_01.glb" id="2_xxxsl"]
+[ext_resource type="Material" uid="uid://e242bnkxsjea" path="res://assets/materials/objects/Zurd_01_mat.res" id="3_kn0us"]
 [ext_resource type="Script" uid="uid://dbai6h2yowqtu" path="res://scenes/characters/enemy/zurd_target_component.gd" id="3_xxxsl"]
 [ext_resource type="Script" uid="uid://wfds7lbabu6q" path="res://scenes/characters/enemy/zurd_movement_component.gd" id="4_554ls"]
 
@@ -17,8 +18,10 @@ collision_layer = 8
 collision_mask = 7
 script = ExtResource("1_amhp2")
 
-[node name="Zurd_01" parent="." unique_id=287752055 instance=ExtResource("2_xxxsl")]
+[node name="ZurdMesh" type="MeshInstance3D" parent="." unique_id=12317764]
 transform = Transform3D(-3, 0, -2.6226832e-07, 0, 3, 0, 2.6226832e-07, 0, -3, 0, 0, 0)
+mesh = ExtResource("2_554ls")
+surface_material_override/0 = ExtResource("3_kn0us")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=856739639]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.1503696e-05, 0.03200817, -0.19594675)
