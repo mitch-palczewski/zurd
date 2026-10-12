@@ -1,0 +1,9 @@
+[gd_scene format=3 uid="uid://7rn8yfug4u75"]
+
+[ext_resource type="PackedScene" uid="uid://8u5j2653xk4d" path="res://scenes/world/base_world.tscn" id="1_fcwnh"]
+[ext_resource type="PackedScene" uid="uid://ci2p33j6akk6t" path="res://sandbox/test_lg_ground.tscn" id="2_ldw7b"]
+
+[node name="BaseWorld" unique_id=1406931788 instance=ExtResource("1_fcwnh")]
+
+[node name="TestLgGround" parent="." index="3" unique_id=212240361 instance=ExtResource("2_ldw7b")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -54.004906, -22.758781, -176.61786)

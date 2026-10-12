@@ -11,6 +11,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_flhq8")
 world_scene_path = "uid://x0l623new2xy"
+world2 = "uid://7rn8yfug4u75"
 
 [node name="CenterContainer" type="CenterContainer" parent="." unique_id=1854115553]
 layout_mode = 1
@@ -23,9 +24,14 @@ grow_vertical = 2
 [node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer" unique_id=255606425]
 layout_mode = 2
 
-[node name="Button" type="Button" parent="CenterContainer/VBoxContainer" unique_id=1536681961]
+[node name="BaseWorld" type="Button" parent="CenterContainer/VBoxContainer" unique_id=1536681961]
 layout_mode = 2
 text = "Base World"
+
+[node name="MapIdeaWorld" type="Button" parent="CenterContainer/VBoxContainer" unique_id=2138525740]
+layout_mode = 2
+text = "Map Idea World
+"
 
 [node name="Label" type="Label" parent="." unique_id=124524051]
 layout_mode = 0
