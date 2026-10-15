@@ -13,10 +13,13 @@ radius = 1.6277677
 [sub_resource type="SphereShape3D" id="SphereShape3D_rmgw8"]
 radius = 1.3654847
 
-[node name="Zurd" type="CharacterBody3D" unique_id=1857394916]
+[node name="Zurd" type="CharacterBody3D" unique_id=1857394916 node_paths=PackedStringArray("target_component", "movement_componet", "mouth_componet")]
 collision_layer = 8
 collision_mask = 7
 script = ExtResource("1_amhp2")
+target_component = NodePath("TargetComponent")
+movement_componet = NodePath("MovementComponent")
+mouth_componet = NodePath("MouthArea")
 
 [node name="ZurdMesh" type="MeshInstance3D" parent="." unique_id=12317764]
 transform = Transform3D(-3, 0, -2.6226832e-07, 0, 3, 0, 2.6226832e-07, 0, -3, 0, 0, 0)

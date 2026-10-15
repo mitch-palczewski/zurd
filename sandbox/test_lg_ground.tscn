@@ -26,6 +26,13 @@ roughness = 0.32
 material = SubResource("StandardMaterial3D_k1w45")
 size = Vector2(2000, 2000)
 
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_rh7cj"]
+albedo_color = Color(0.15294118, 0.8235294, 1, 1)
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_k1w45"]
+material = SubResource("StandardMaterial3D_rh7cj")
+size = Vector2(2000, 2000)
+
 [sub_resource type="ArrayMesh" id="ArrayMesh_pyqhl"]
 _surfaces = [{
 "aabb": AABB(-100, -10.704168, -100, 200, 18.946575, 200),
@@ -634,6 +641,10 @@ mesh = SubResource("QuadMesh_p1t0x")
 [node name="MeshInstance3D" type="MeshInstance3D" parent="WaterBiom" unique_id=1447288821]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.19226074, 0.100234985, -0.47479248)
 mesh = SubResource("PlaneMesh_rmgw8")
+
+[node name="MeshInstance3D2" type="MeshInstance3D" parent="WaterBiom" unique_id=1822710403]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -16.896164, 0)
+mesh = SubResource("PlaneMesh_k1w45")
 
 [node name="meadows" type="Node3D" parent="." unique_id=220533389]
 

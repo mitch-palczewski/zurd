@@ -1,6 +1,19 @@
 [gd_scene format=3 uid="uid://68dobhnbf23d"]
 
 [ext_resource type="Script" uid="uid://bo1xq5oh5kpnl" path="res://scenes/ui/menus/main_menu.gd" id="1_flhq8"]
+[ext_resource type="Script" uid="uid://d3fjs43kfsd3m" path="res://scenes/ui/menus/scene_entry.gd" id="2_h1kbi"]
+
+[sub_resource type="Resource" id="Resource_flhq8"]
+script = ExtResource("2_h1kbi")
+label = "Test World 0.1 (Teleporting)"
+path = "uid://x0l623new2xy"
+metadata/_custom_type_script = "uid://d3fjs43kfsd3m"
+
+[sub_resource type="Resource" id="Resource_h1kbi"]
+script = ExtResource("2_h1kbi")
+label = "1000 x 1000 Map Example"
+path = "uid://7rn8yfug4u75"
+metadata/_custom_type_script = "uid://d3fjs43kfsd3m"
 
 [node name="MainMenu" type="Control" unique_id=408600085]
 layout_mode = 3
@@ -10,8 +23,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_flhq8")
-world_scene_path = "uid://x0l623new2xy"
-world2 = "uid://7rn8yfug4u75"
+scenes = Array[ExtResource("2_h1kbi")]([SubResource("Resource_flhq8"), SubResource("Resource_h1kbi")])
 
 [node name="CenterContainer" type="CenterContainer" parent="." unique_id=1854115553]
 layout_mode = 1
@@ -23,15 +35,6 @@ grow_vertical = 2
 
 [node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer" unique_id=255606425]
 layout_mode = 2
-
-[node name="BaseWorld" type="Button" parent="CenterContainer/VBoxContainer" unique_id=1536681961]
-layout_mode = 2
-text = "Base World"
-
-[node name="MapIdeaWorld" type="Button" parent="CenterContainer/VBoxContainer" unique_id=2138525740]
-layout_mode = 2
-text = "Map Idea World
-"
 
 [node name="Label" type="Label" parent="." unique_id=124524051]
 layout_mode = 0

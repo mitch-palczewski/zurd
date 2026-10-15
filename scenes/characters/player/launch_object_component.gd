@@ -35,6 +35,8 @@ func _process(delta: float) -> void:
 
 func launch_object() -> void:
 	var projectile := _instantiate_projectile()
+	if projectile == null:
+		return
 
 	_setup_transform_and_scale(projectile)
 	_setup_physics(projectile)

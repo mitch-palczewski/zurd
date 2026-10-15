@@ -1,12 +1,9 @@
 [gd_scene format=3 uid="uid://8u5j2653xk4d"]
 
 [ext_resource type="Texture2D" uid="uid://bqwcx5o4ofubv" path="res://assets/_misc/citrus_orchard_road.hdr" id="1_s1lny"]
+[ext_resource type="Script" uid="uid://dacd63gayji04" path="res://scenes/world/base_world.gd" id="1_simjs"]
 [ext_resource type="PackedScene" uid="uid://catisab22bqfg" path="res://scenes/characters/player/player_ship.tscn" id="2_oh0aj"]
 [ext_resource type="PackedScene" uid="uid://bxjnraf4ofxwq" path="res://scenes/characters/enemy/zurd.tscn" id="3_sxtq4"]
-
-[sub_resource type="GDScript" id="GDScript_rwhoh"]
-script/source = "extends Node3D
-"
 
 [sub_resource type="PanoramaSkyMaterial" id="PanoramaSkyMaterial_sxtq4"]
 panorama = ExtResource("1_s1lny")
@@ -19,7 +16,7 @@ background_mode = 2
 sky = SubResource("Sky_oh0aj")
 
 [node name="BaseWorld" type="Node3D" unique_id=1406931788]
-script = SubResource("GDScript_rwhoh")
+script = ExtResource("1_simjs")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=1743470536]
 transform = Transform3D(0.29243976, 0.8660162, -0.4055798, -0.49999997, 0.49999997, 0.70710677, 0.81515586, -0.003996223, 0.579228, 0, 0, 0)
