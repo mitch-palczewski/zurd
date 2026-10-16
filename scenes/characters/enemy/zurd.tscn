@@ -16,6 +16,7 @@ radius = 1.3654847
 [node name="Zurd" type="CharacterBody3D" unique_id=1857394916 node_paths=PackedStringArray("target_component", "movement_componet", "mouth_componet")]
 collision_layer = 8
 collision_mask = 7
+motion_mode = 1
 script = ExtResource("1_amhp2")
 target_component = NodePath("TargetComponent")
 movement_componet = NodePath("MovementComponent")
@@ -42,5 +43,9 @@ shape = SubResource("SphereShape3D_rmgw8")
 [node name="TargetComponent" type="Node" parent="." unique_id=1916322248]
 script = ExtResource("3_xxxsl")
 
-[node name="MovementComponent" type="Node" parent="." unique_id=999820958]
+[node name="MovementComponent" type="Node" parent="." unique_id=999820958 node_paths=PackedStringArray("visual_root")]
 script = ExtResource("4_554ls")
+wander_speed = 10.0
+max_wander_distance = 40.0
+min_wander_distance = 10.0
+visual_root = NodePath("../ZurdMesh")
