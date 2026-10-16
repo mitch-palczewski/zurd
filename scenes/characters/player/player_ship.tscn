@@ -52,4 +52,5 @@ base_speed = 10.0
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1.813218)
 script = ExtResource("3_gweqi")
 projectile_scenes = Array[PackedScene]([ExtResource("4_nfnil"), ExtResource("4_6job2"), ExtResource("6_wg6em")])
+cooldown_time = 0.5
 player_ship = NodePath("..")

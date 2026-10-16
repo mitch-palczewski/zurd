@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://b7xoajoo3px7l"]
+
+[ext_resource type="Script" uid="uid://de4g7t3eymv8m" path="res://scenes/characters/enemy/zurd_spawner.gd" id="1_02d2p"]
+[ext_resource type="PackedScene" uid="uid://bxjnraf4ofxwq" path="res://scenes/characters/enemy/zurd.tscn" id="2_cg10t"]
+
+[node name="ZurdSpawner" type="Node3D" unique_id=701261370]
+script = ExtResource("1_02d2p")
+zurd_scene = ExtResource("2_cg10t")
