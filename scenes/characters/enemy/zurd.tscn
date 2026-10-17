@@ -49,3 +49,5 @@ wander_speed = 10.0
 max_wander_distance = 40.0
 min_wander_distance = 10.0
 visual_root = NodePath("../ZurdMesh")
+bob_height = 0.3
+sway_degrees = 5.0

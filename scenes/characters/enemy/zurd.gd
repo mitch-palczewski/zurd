@@ -3,6 +3,8 @@ extends CharacterBody3D
 
 ## Base Zurd coordinator linking movement, targeting, and mouth components.
 
+@export var obj_scale_factor: float = .1
+
 @export_group("Components")
 @export var target_component: ZurdTargetComponent
 @export var movement_componet: ZurdMovementComponent
@@ -31,5 +33,10 @@ func _validate_components() -> void:
     if not mouth_componet: mouth_componet = get_node_or_null("MouthArea")
 
 func _on_object_eaten(_obj: RigidBody3D) -> void:
+    _scale_zurd()
     pass
 
+func _scale_zurd():
+    var target_scale = scale + Vector3.ONE * obj_scale_factor
+    var tween := create_tween()
+    tween.tween_property(self, "scale", target_scale, 0.25).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)

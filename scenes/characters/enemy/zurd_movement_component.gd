@@ -7,7 +7,7 @@ extends Node
 @export_flags_3d_physics var avoid_obstacle_mask: int = 1
 
 @export_group("Hunting Movement")
-@export var hunting_speed: float = 12.0
+@export var hunting_speed: float = 18.0
 @export var hunting_turn_speed: float = 4.0 
 
 @export_group("Wandering Movement")
@@ -112,7 +112,7 @@ func _steer_and_move(actor: CharacterBody3D, desired_dir: Vector3, move_speed: f
     _turn_towards(actor, final_dir.normalized(), turn_rate, delta)
     _level_roll(actor, delta)
 
-    var target_velocity = _get_forward_direction(actor) * move_speed
+    var target_velocity = _get_forward_direction(actor) * move_speed 
     var velocity_weight := _get_exp_decay_weight(10.0, delta)
     actor.velocity = actor.velocity.lerp(target_velocity, velocity_weight)
     actor.move_and_slide()
@@ -133,7 +133,8 @@ func _turn_towards(actor: Node3D, desired_dir: Vector3, turn_rate: float, delta:
     axis = axis.normalized()
 
     var step := angle * clampf(turn_rate * delta, 0.0, 1.0)
-    actor.global_basis = (Basis(axis, step)* actor.global_basis).orthonormalized()
+    var rotated := Basis(axis, step) * _get_rotation_basis(actor)
+    _set_rotation_keep_scale(actor, rotated)
 
 
 func _level_roll(actor: Node3D, delta:float) -> void:
@@ -147,14 +148,16 @@ func _level_roll(actor: Node3D, delta:float) -> void:
     var level_basis := Basis(right, up, -forward)
     
     var weight := _get_exp_decay_weight(level_speed, delta)
-    actor.global_basis = actor.global_basis.orthonormalized().slerp(level_basis, weight).orthonormalized()
+    var leveled := _get_rotation_basis(actor).slerp(level_basis, weight)
+    _set_rotation_keep_scale(actor, leveled)
 
 
 func _get_avoidance_direction(actor: CharacterBody3D, desired_dir: Vector3) -> Vector3:
     var space_state := actor.get_world_3d().direct_space_state
     var forward := _get_forward_direction(actor)
     var ray_origin := actor.global_position
-    var ray_end := ray_origin + (forward * avoidance_distance)
+    var scale_factor := actor.global_basis.get_scale().x
+    var ray_end := ray_origin + (forward * avoidance_distance * scale_factor)
 
     var query := PhysicsRayQueryParameters3D.create(ray_origin, ray_end, avoid_obstacle_mask)
     query.exclude = [actor.get_rid()]
@@ -175,3 +178,11 @@ func _get_forward_direction(actor: Node3D) -> Vector3:
 
 func _get_exp_decay_weight(speed: float, delta: float) -> float:
     return 1.0 - exp(-speed * delta)
+
+
+func _get_rotation_basis(actor: Node3D) -> Basis:
+    return actor.global_basis.orthonormalized()
+
+func _set_rotation_keep_scale(actor: Node3D, rotation_basis: Basis) -> void:
+    var current_scale := actor.global_basis.get_scale()
+    actor.global_basis = rotation_basis.orthonormalized() * Basis.from_scale(current_scale)

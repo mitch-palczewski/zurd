@@ -17,7 +17,6 @@ func _ready() -> void:
         push_warning("ZurdSpawner: No Scene assigned")
         return 
     
-    _spawn_zurd()
     _setup_timer()
 
 
