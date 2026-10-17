@@ -19,3 +19,17 @@ signal spawn_requested(spawnable: Node3D)
 ## - Useful for global score tracking, spawning reward particles, audio triggers, and HUD updates.[br]
 @warning_ignore("unused_signal")
 signal object_eaten(actor: CharacterBody3D, obj: RigidBody3D)
+
+
+## Firedwhen a swat input (mouse click, LIDAR detection) happens.
+## [br]
+## [param screen_uv]: normalized viewport position, (0,0) top-left to (1,1) botom-right.
+@warning_ignore("unused_signal")
+signal swat_requested(screen_uv: Vector2)
+
+
+## Fired as the pointer moves, so the cursor visual can follow it
+## [br]
+## [param screen_uv]: normalized viewport position, (0,0) top-left to (1,1) botom-right.
+@warning_ignore("unused_signal")
+signal pointer_moved(screen_uv: Vector2)

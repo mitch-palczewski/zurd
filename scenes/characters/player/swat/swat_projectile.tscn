@@ -1,0 +1,24 @@
+[gd_scene format=3 uid="uid://bndgepthv1ak2"]
+
+[ext_resource type="Script" uid="uid://clvrvst1iibg2" path="res://scenes/characters/player/swat/swat_projectile.gd" id="1_atsb1"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_7xn7d"]
+albedo_color = Color(1, 0.42381606, 0.5091997, 1)
+
+[sub_resource type="PrismMesh" id="PrismMesh_k1w45"]
+material = SubResource("StandardMaterial3D_7xn7d")
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_rh7cj"]
+
+[node name="SwatProjectile" type="Area3D" unique_id=2122414700]
+collision_layer = 0
+collision_mask = 15
+script = ExtResource("1_atsb1")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=111008675]
+transform = Transform3D(0.70710677, 1.2802769e-08, -0.7071067, 0.70710677, -3.090862e-08, 0.7071067, -1.2802769e-08, -1, -3.0908616e-08, 0, 0, 0)
+mesh = SubResource("PrismMesh_k1w45")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1442711176]
+transform = Transform3D(0.70710677, -0.70710677, 0, 0.70710677, 0.70710677, 0, 0, 0, 1, 0, 0, 0)
+shape = SubResource("BoxShape3D_rh7cj")

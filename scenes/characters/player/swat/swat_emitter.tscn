@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://bfbugn5xk53wl"]
+
+[ext_resource type="Script" uid="uid://uph10auxloku" path="res://scenes/characters/player/swat/swat_emitter.gd" id="1_xudtj"]
+[ext_resource type="PackedScene" uid="uid://bndgepthv1ak2" path="res://scenes/characters/player/swat/swat_projectile.tscn" id="2_cfmiu"]
+
+[node name="SwatEmitter" type="Node3D" unique_id=1704638152]
+script = ExtResource("1_xudtj")
+projectile_scene = ExtResource("2_cfmiu")
