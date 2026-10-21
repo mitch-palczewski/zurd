@@ -69,7 +69,7 @@ func _build_slots() -> Array[Vector2]:
     var row_count = row_counts.size()
     for row in row_count:
         var row_item_count = row_counts[row]
-        var y = ((row_count - 1) *0.5) * slot_spacing
+        var y = ((row_count - 1) * 0.5 - row) * slot_spacing
         for col in row_item_count:
             var x = (col - (row_item_count -1)* 0.5) * slot_spacing
             slots.append(Vector2(x,y))

@@ -3,7 +3,8 @@
 [ext_resource type="Script" uid="uid://clvrvst1iibg2" path="res://scenes/characters/player/swat/swat_projectile.gd" id="1_atsb1"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_7xn7d"]
-albedo_color = Color(1, 0.42381606, 0.5091997, 1)
+transparency = 1
+albedo_color = Color(1, 0.42352942, 0.50980395, 0.6313726)
 
 [sub_resource type="PrismMesh" id="PrismMesh_k1w45"]
 material = SubResource("StandardMaterial3D_7xn7d")
@@ -12,7 +13,8 @@ material = SubResource("StandardMaterial3D_7xn7d")
 
 [node name="SwatProjectile" type="Area3D" unique_id=2122414700]
 collision_layer = 0
-collision_mask = 15
+collision_mask = 13
+monitorable = false
 script = ExtResource("1_atsb1")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=111008675]

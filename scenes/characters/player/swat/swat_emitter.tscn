@@ -6,3 +6,6 @@
 [node name="SwatEmitter" type="Node3D" unique_id=1704638152]
 script = ExtResource("1_xudtj")
 projectile_scene = ExtResource("2_cfmiu")
+slot_spacing = 0.5
+row_spacing = 0.3
+jitter_degrees = 0.0
