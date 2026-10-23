@@ -1,0 +1,21 @@
+[gd_resource type="ShaderMaterial" format=3 uid="uid://b8rlk38v4voi3"]
+
+[ext_resource type="Shader" uid="uid://bt2hnvioa1d6y" path="res://assets/shaders/cloud.gdshader" id="1_05sxq"]
+
+[resource]
+render_priority = 0
+shader = ExtResource("1_05sxq")
+shader_parameter/transparency_min = 0.400000019
+shader_parameter/transparency_max = 0.6000000285
+shader_parameter/transparency_speed = 0.10000000475
+shader_parameter/lit_color = Color(1, 1, 1, 1)
+shader_parameter/shadow_color = Color(0.62, 0.7, 0.85, 1)
+shader_parameter/rim_color = Color(1, 0.93, 0.8, 1)
+shader_parameter/shade_threshold = 0.5
+shader_parameter/shade_softness = 0.6
+shader_parameter/noise_shading = 0.25
+shader_parameter/rim_power = 3.0
+shader_parameter/rim_strength = 0.5
+shader_parameter/displace_strength = 0.12
+shader_parameter/noise_scale = 2.0
+shader_parameter/billow_speed = 0.08

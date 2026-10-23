@@ -3,6 +3,7 @@
 [ext_resource type="PackedScene" uid="uid://8u5j2653xk4d" path="res://scenes/world/base_world.tscn" id="1_xgj68"]
 [ext_resource type="Script" uid="uid://cbrbxsjoxel3y" path="res://scenes/world/toroidal_world.gd" id="2_rwhoh"]
 [ext_resource type="PackedScene" uid="uid://bsyndy6sdqnj8" path="res://sandbox/test_wrap.tscn" id="3_m11wk"]
+[ext_resource type="PackedScene" uid="uid://bhppoe2sc763u" path="res://scenes/objects/clouds/arch_01_cloud.tscn" id="4_eh7gx"]
 
 [node name="ToroidalWorld" unique_id=1406931788 instance=ExtResource("1_xgj68")]
 script = ExtResource("2_rwhoh")
@@ -10,3 +11,6 @@ bounds_xz = Vector2(300, 300)
 
 [node name="TesWrap" parent="." index="3" unique_id=1633266827 instance=ExtResource("3_m11wk")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -30, 0)
+
+[node name="Arch_01_cloud" parent="." index="6" unique_id=1296508523 instance=ExtResource("4_eh7gx")]
+transform = Transform3D(71.48103, 0, 0, 0, 71.48103, 0, 0, 0, 71.48103, 0, 172.59622, 126.68697)
