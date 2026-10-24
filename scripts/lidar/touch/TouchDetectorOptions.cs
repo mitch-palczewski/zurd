@@ -70,7 +70,7 @@ public sealed class TouchDetectorOptions
     public float MatchRadiusMm { get; set; } = 250f;
 
     /// <summary>Rotations in a row a blob must appear before it counts as a touch. 1 reacts fastest; 2 ignores one-rotation blips.</summary>
-    public int ConfirmRotations { get; set; } = 2;
+    public int ConfirmRotations { get; set; } = 1;
 
     /// <summary>Rotations in a row a touch may go unseen before it ends, so one dropped rotation doesn't split a touch in two.</summary>
     public int ReleaseRotations { get; set; } = 2;

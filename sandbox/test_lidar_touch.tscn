@@ -1,0 +1,6 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://sandbox/TestLidarTouch.cs" id="1_touch"]
+
+[node name="TestLidarTouch" type="Node"]
+script = ExtResource("1_touch")
