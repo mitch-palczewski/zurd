@@ -1,0 +1,6 @@
+# Vendored third-party code (see README.md). Compile it the way upstream does: without nullable
+# annotations and with the warnings upstream suppresses, so warnings in our own code stand out.
+[*.cs]
+generated_code = true
+dotnet_diagnostic.CS0414.severity = none
+dotnet_diagnostic.CS0649.severity = none

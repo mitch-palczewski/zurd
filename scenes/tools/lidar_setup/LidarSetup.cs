@@ -163,11 +163,10 @@ public partial class LidarSetup : Control
         left.AddChild(MakeDimLabel("Scan mode"));
         _modePicker = new OptionButton
         {
-            TooltipText = "Sensitivity is the driver's default. If no data arrives, reconnect with Boost, then Standard.",
+            TooltipText = "Use Sensitivity on an A1. Boost is for the A2 and A3. (The driver can't decode Standard mode.)",
         };
         _modePicker.AddItem("Sensitivity (default)", (int)ScanMode.Sensitivity);
-        _modePicker.AddItem("Boost", (int)ScanMode.Boost);
-        _modePicker.AddItem("Standard", (int)ScanMode.Standard);
+        _modePicker.AddItem("Boost (A2/A3)", (int)ScanMode.Boost);
         left.AddChild(_modePicker);
 
         left.AddChild(MakeDimLabel("Motor speed (PWM)"));

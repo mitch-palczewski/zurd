@@ -41,6 +41,7 @@ Raw scan (angle°, mm)                    LidarDevice / replay source
 |---|---|
 | **1. Device, status, 2D view** | `LidarDevice` (connect on a worker thread, whole rotations by angle wrap, three-stage status with the lidar's own health query), `lidar_setup.tscn` with status panel and zoomable 2D point view. |
 | **2. Baseline, detection, tracking** | `TouchDetector` with per-0.5° low-percentile baseline, depth-change foreground, sweep-order blob clustering with seam merge, and tracking (ids, confirm after N rotations, release grace, Began/Ended events). Setup scene: capture/clear baseline, live tuning, touch markers, event log. Checked against synthetic scans. |
+| **2b. Driver fix** | `RpLidar.NET` vendored into `thirdparty/RpLidar.NET/` and patched: the packaged driver dropped a third to a half of all Sensitivity-mode points (the view blinked between halves of the room) and produced phantom points. See its README. Standard mode is not decoded by the driver; use Sensitivity on an A1. |
 
 ## Step 3 — Recording and replay
 

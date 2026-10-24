@@ -6,6 +6,7 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="RpLidar.NET" Version="1.1.0" />
+    <!-- RpLidar.NET is vendored and patched under thirdparty/RpLidar.NET; this was its only dependency. -->
+    <PackageReference Include="System.IO.Ports" Version="9.0.1" />
   </ItemGroup>
 </Project>

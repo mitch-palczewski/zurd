@@ -8,9 +8,9 @@ namespace Zurd.Lidar;
 /// Stitches the driver's timed batches of points back into whole rotations.
 /// <para>
 /// A rotation ends when the angle wraps (for example 359° followed by 1°). The driver's
-/// <c>StartFlag</c> would be the obvious marker, but in Sensitivity mode the driver discards
-/// alternate seam packets, so counting flags would miss rotations. A wrap is also immune to the
-/// small out-of-order angles the express-mode decoder can produce near the seam.
+/// <c>StartFlag</c> would be the obvious marker, but a wrap still shows up when the packet carrying
+/// the flag is lost (a checksum error, a USB hiccup), and it is immune to the small out-of-order
+/// angles the express-mode decoder can produce near the seam.
 /// </para>
 /// Not thread-safe: call <see cref="Add"/> from one thread only (the driver's scan thread).
 /// </summary>

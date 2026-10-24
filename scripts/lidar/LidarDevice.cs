@@ -566,7 +566,7 @@ public sealed class LidarDevice : IDisposable
             return sinceStart < opt.NoDataTimeoutSec
                 ? new LidarStage(LidarStageState.Pending, $"Waiting for data… {sinceStart:F0} s")
                 : new LidarStage(LidarStageState.Failed,
-                    $"No data after {sinceStart:F0} s. Is the motor spinning? Try another scan mode.");
+                    $"No data after {sinceStart:F0} s. Is the motor spinning? On an A1, use Sensitivity mode.");
         }
 
         if (sinceLast > opt.StallTimeoutSec)

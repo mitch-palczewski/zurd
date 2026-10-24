@@ -15,8 +15,9 @@ public sealed class LidarDeviceOptions
     public int BaudRate { get; set; } = 115200;
 
     /// <summary>
-    /// Sensitivity is the driver's default and the mode its author tested on an A1M8. If no data
-    /// arrives, try Boost, then Standard.
+    /// Use Sensitivity on an A1: it is the driver's default and the mode its author tested on an
+    /// A1M8. Boost is for the A2 and A3. The driver can start a Standard scan but never decodes its
+    /// data, so Standard always ends in "no data".
     /// </summary>
     public ScanMode ScanMode { get; set; } = ScanMode.Sensitivity;
 

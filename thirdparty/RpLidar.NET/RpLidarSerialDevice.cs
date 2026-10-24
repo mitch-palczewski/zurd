@@ -1,0 +1,735 @@
+﻿using RpLidar.NET.Entities;
+using RpLidar.NET.Helpers;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO.Ports;
+using System.Linq;
+using System.Threading;
+
+namespace RpLidar.NET
+{
+    /// <summary>
+    /// RPLidar A2, A3
+    /// </summary>
+    public class RpLidarSerialDevice : ILidarService
+    {
+        /// <summary>
+        /// Initializes a new instance of <see cref="RpLidarSerialDevice"/> and configures the serial port.
+        /// Call <see cref="Start"/> or <see cref="Connect"/> to open the connection.
+        /// </summary>
+        /// <param name="settings">Device configuration settings.</param>
+        public RpLidarSerialDevice(ILidarSettings settings)
+        {
+            _settings = settings;
+            _timeout = 1000;
+            CreateSerial(settings.Port);
+        }
+
+        private readonly ILidarSettings _settings;
+        private readonly int _timeout;
+
+        /// <summary>
+        /// Serial Port Connection
+        /// </summary>
+        private SerialPort _serialPort;
+
+        /// <summary>
+        /// Connection Status
+        /// </summary>
+        private bool _isConnected;
+
+        /// <summary>
+        /// Motor Status
+        /// </summary>
+        private bool _motorRunning;
+
+        /// <summary>
+        /// Scanning Status
+        /// </summary>
+        private bool _isScanning;
+
+        /// <summary>
+        /// Thread was stopped
+        /// </summary>
+        private bool _isStoppedThread;
+
+        private bool _isStop;
+
+        /// <summary>
+        /// Scanning Thread
+        /// </summary>
+        private Thread _scanThread = null;
+
+        private void ScanProcess(List<LidarPoint> points)
+        {
+            if (!points.Any())
+                return;
+            if (!_isScanning)
+                return;
+
+            if (LidarPointScanEvent != null)
+            {
+                LidarPointScanEvent.Invoke(points);
+            }
+            if (LidarPointGroupScanEvent != null)
+            {
+                var group = new LidarPointGroup(0, 0);
+                group.Settings = _settings;
+                group.AddRange(points);
+                LidarPointGroupScanEvent.Invoke(group);
+            }
+        }
+
+        public event LidarPointScanEvenHandler LidarPointScanEvent;
+
+        public event LidarPointGroupScanEvenHandler LidarPointGroupScanEvent;
+
+        private void CreateSerial(string portName)
+        {
+            // Create a new SerialPort
+            _serialPort = new SerialPort();
+            _serialPort.PortName = portName;
+            _serialPort.BaudRate = _settings.BaudRate;
+            //Setup RPLidar specifics
+            _serialPort.Parity = Parity.None;
+            _serialPort.DataBits = 8;
+            _serialPort.StopBits = StopBits.One;
+            // Set the read/write timeouts
+            _serialPort.ReadTimeout = _timeout;
+            _serialPort.WriteTimeout = _timeout;
+        }
+
+        /// <summary>
+        /// Opens the serial connection to the RPLidar device.
+        /// Does nothing if the device is already connected.
+        /// </summary>
+        public void Connect()
+        {
+            if (_isConnected)
+            {
+                Console.WriteLine("Already connected to RPLidar.");
+                return;
+            }
+
+            try
+            {
+                _serialPort.Open();
+                _isConnected = true;
+                Console.WriteLine($"Connected to RPLidar on {_serialPort.PortName}");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"Error connecting to RPLidar on {_serialPort.PortName}: {e.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Disconnect Serial connection to RPLIDAR
+        /// </summary>
+        public void Disconnect()
+        {
+            if (_serialPort != null)
+            {
+                //Stop scan
+                if (_isScanning)
+                {
+                    StopScan();
+                }
+                _isScanning = false;
+                _serialPort.Close();
+                this._isConnected = false;
+            }
+        }
+
+        /// <summary>
+        /// Dispose Object
+        /// </summary>
+        public void Dispose()
+        {
+            try
+            {
+                StopScan();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message, e);
+            }
+
+            _motorRunning = false;
+            if (_serialPort != null)
+            {
+                if (_isConnected)
+                {
+                    Disconnect();
+                }
+
+                _serialPort.Dispose();
+                _serialPort = null;
+            }
+        }
+
+        /// <summary>
+        /// Send Request to RPLidar
+        /// </summary>
+        /// <param name="command"></param>
+        public IDataResponse SendRequest(Command command)
+        {
+            if (_isConnected)
+            {
+                _serialPort.DiscardInBuffer();
+                _serialPort.SendRequest(command);
+
+                var sleep = command.GetSleepInterval();
+                if (sleep > 0)
+                {
+                    Thread.Sleep(sleep);
+                }
+
+                if (!command.HasResponse())
+                    return null;
+
+                var responseDescriptor = ReadResponseDescriptor();
+
+                if (responseDescriptor.RpDataType != RpDataType.Scan)
+                {
+                    var response = GetDataResponse(responseDescriptor.ResponseLength, responseDescriptor.RpDataType);
+                    return response;
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Send Request to RPLidar
+        /// </summary>
+        /// <param name="command"></param>
+        /// <param name="data"></param>
+        public IDataResponse SendCommand(byte command, byte[] data = null)
+        {
+            if (_isConnected)
+            {
+                //Clear input buffer of any junk
+                _serialPort.DiscardInBuffer();
+
+                _serialPort.SendCommand(command, data);
+
+                var hasResponse = CommandHelper.GetHasResponse(command);
+
+                //We must sleep after executing some commands
+                var sleep = command.GetMustSleep();
+                if (sleep > 0)
+                {
+                    Thread.Sleep(sleep);
+                }
+
+                if (!hasResponse)
+                    return null;
+            }
+
+            return null;
+        }
+
+        private IDataResponse GetDataResponse(int len, RpDataType rpDataType)
+        {
+            var bytes = Read(len, 1000);
+            var response = DataResponseHelper.ToDataResponse(rpDataType, bytes);
+            return response;
+        }
+
+        private ResponseDescriptor ReadResponseDescriptor()
+        {
+            var bytes = Read(Constants.DescriptorLength, 1000);
+
+            var descriptor = bytes.ToResponseDescriptor();
+            return descriptor;
+        }
+
+        /// <summary>
+        /// Start RPLidar Motor
+        /// </summary>
+        public void StartMotor()
+        {
+            if (_isConnected)
+            {
+                _serialPort.DtrEnable = false;
+                _motorRunning = true;
+                var pwm = new RplidarPayloadMotorPwm()
+                {
+                    //pwm_value = 660
+                    pwm_value = _settings.Pwm
+                };
+                var data = pwm.GetBytes();
+                this.SendCommand((byte)Command.StartPwm, data);
+            }
+        }
+
+        /// <summary>
+        /// Stop RPLidar Motor
+        /// </summary>
+        public void StopMotor()
+        {
+            if (_isConnected)
+            {
+                var pwm = new RplidarPayloadMotorPwm()
+                {
+                    pwm_value = 0
+                };
+                var data = pwm.GetBytes();
+                this.SendCommand((byte)Command.StartPwm, data);
+                _serialPort.DtrEnable = true;
+                _motorRunning = false;
+                Thread.Sleep(500);
+            }
+        }
+
+        /// <summary>
+        /// Force Start Scanning
+        /// Use with care, returns results without motor rotation synchronization
+        /// </summary>
+        public void ForceScan()
+        {
+            //Not already scanning
+            if (!_isScanning)
+            {
+                //Have to be connected
+                if (_isConnected)
+                {
+                    _isScanning = true;
+                    //Motor must be running
+                    if (!_motorRunning)
+                        this.StartMotor();
+                    //Start Scan
+                    this.SendRequest(Command.ForceScan);
+
+                    //Start Scan read thread
+                    _scanThread = new Thread(ScanThread);
+                    _scanThread.Start();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Force Start Scanning
+        /// Use with care, returns results without motor rotation synchronization
+        /// </summary>
+        public void ForceScanExpress()
+        {
+            //Not already scanning
+            if (!_isScanning)
+            {
+                //Have to be connected
+                if (_isConnected)
+                {
+                    _isScanning = true;
+                    //Motor must be running
+                    if (!_motorRunning)
+                        this.StartMotor();
+                    //Start Scan
+                    var scan = new RplidarPayloadExpressScan()
+                    {
+                        working_mode = (byte)_settings.ScanMode,
+                        working_flags = 1,
+                    };
+                    Console.WriteLine($"Start:{Command.ExpressScan}");
+                    var bytes = scan.GetBytes();
+                    this.SendCommand((byte)Command.ExpressScan, bytes);
+                    Console.WriteLine($"Send:{Command.ExpressScan}");
+
+                    //Start Scan read thread
+                    _scanThread = new Thread(ScanThread);
+                    _scanThread.Start();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Start Scanning
+        /// </summary>
+        public void StartScan()
+        {
+            //Not already scanning
+            if (!_isScanning)
+            {
+                //Have to be connected
+                if (_isConnected)
+                {
+                    _isScanning = true;
+                    //Motor must be running
+                    if (!_motorRunning)
+                        this.StartMotor();
+                    //Start Scan
+                    this.SendRequest(Command.Scan);
+                    //Start Scan read thread
+                    _scanThread = new Thread(ScanThread);
+                    _scanThread.Start();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Stop Scanning
+        /// </summary>
+        public void StopScan()
+        {
+            if (!_isConnected)
+                return;
+
+            while (!_isStoppedThread && _isScanning)
+            {
+                _isScanning = false;
+                Thread.Sleep(10);
+            }
+            Thread.Sleep(20);
+            this.SendCommand((byte)0x25);
+            Thread.Sleep(20);
+            StopMotor();
+        }
+
+        /// <summary>
+        /// Thread used for scanning
+        /// Populates a list of Measurements, and adds that list to
+        /// </summary>
+        public void ScanThread()
+        {
+            var points = new List<LidarPoint>();
+            _isStoppedThread = false;
+            var sw = new Stopwatch();
+            sw.Start();
+            while (_isScanning)
+            {
+                try
+                {
+                    if (!_serialPort.IsOpen)
+                    {
+                        _isConnected = false;
+                        Connect();
+                    }
+
+                    var lidarPoints = WaitAndParseData();
+
+                    foreach (var lidarPoint in lidarPoints)
+                    {
+                        if (!_isScanning)
+                            break;
+
+                        //is new 360 degree scan
+                        if (lidarPoint.StartFlag)
+                        {
+                        }
+
+                        if (lidarPoint.IsValid)
+                        {
+                            points.Add(lidarPoint);
+                        }
+                    }
+
+                    if (sw.ElapsedMilliseconds > _settings.ElapsedMilliseconds)
+                    {
+                        sw.Restart();
+                        ScanProcess(points);
+                        points = new List<LidarPoint>();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message, ex);
+                }
+            }
+
+            _isStoppedThread = true;
+        }
+
+        public byte[] Read(int len, int timeout)
+        {
+            try
+            {
+                var data = _serialPort.Read(len, timeout);
+                return data;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message, ex);
+                this._isConnected = false;
+                this.Disconnect();
+
+                return new byte[0];
+            }
+        }
+
+        private bool _isPreviousCapsuleDataRdy;
+        private RplidarResponseUltraCapsuleMeasurementNodes prev = null;
+
+        private List<LidarPoint> UltraCapsuleToNormal(RplidarResponseUltraCapsuleMeasurementNodes capsule)
+        {
+            var result = new List<LidarPoint>();
+
+            {
+                if (_isPreviousCapsuleDataRdy)
+                {
+                    // exported C++ code
+                    int diffAngle_q8;
+                    int currentStartAngle_q8 = ((capsule.start_angle_sync_q6 & 0x7FFF) << 2);
+                    int prevStartAngle_q8 = ((prev.start_angle_sync_q6 & 0x7FFF) << 2);
+
+                    diffAngle_q8 = (currentStartAngle_q8) - (prevStartAngle_q8);
+                    if (prevStartAngle_q8 > currentStartAngle_q8)
+                    {
+                        diffAngle_q8 += (360 << 8);
+                    }
+
+                    int angleInc_q16 = (diffAngle_q8 << 3) / 3;
+                    int currentAngle_raw_q16 = (prevStartAngle_q8 << 8);
+                    //for (var pos = 0; pos < capsule.ultra_cabins); ++pos)
+                    for (var pos = 0; pos < capsule.ultra_cabins.Length; pos++)
+                    {
+                        var ultraCabin = prev.ultra_cabins[pos];
+                        var dist_q2 = new int[3];
+                        var angle_q6 = new int[3];
+                        var syncBit = new int[3];
+
+                        var combined_x3 = ultraCabin;
+
+                        // unpack ...
+                        int dist_major = (int)(combined_x3 & 0xFFF);
+
+                        // signed partical integer, using the magic shift here
+                        // DO NOT TOUCH
+
+                        int dist_predict1 = (((int)(combined_x3 << 10)) >> 22);
+                        int dist_predict2 = (((int)combined_x3) >> 22);
+
+                        int dist_major2;
+
+                        int scalelvl1, scalelvl2;
+
+                        // prefetch next ...
+                        if (pos == prev.ultra_cabins.Length - 1)
+                        {
+                            dist_major2 = (int)(capsule.ultra_cabins[0] & 0xFFF);
+                        }
+                        else
+                        {
+                            dist_major2 = (int)(prev.ultra_cabins[pos + 1] & 0xFFF);
+                        }
+
+                        // decode with the var bit scale ...
+                        dist_major = (int)DataResponseHelper._varbitscale_decode(dist_major, out scalelvl1);
+                        dist_major2 = (int)DataResponseHelper._varbitscale_decode(dist_major2, out scalelvl2);
+
+                        int dist_base1 = dist_major;
+                        int dist_base2 = dist_major2;
+
+                        //if ((!dist_major) && dist_major2)
+                        if ((dist_major == 0) && dist_major2 != 0)
+                        {
+                            dist_base1 = dist_major2;
+                            scalelvl1 = scalelvl2;
+                        }
+
+                        dist_q2[0] = (dist_major << 2);
+                        // zurd patch: -512 and 511 mark an invalid prediction. The C SDK writes -512 as
+                        // 0xFFFFFE00, which C compares as unsigned; in C# that literal is a uint, so the
+                        // check never matched and invalid predictions came out as phantom points.
+                        if ((dist_predict1 == unchecked((int)0xFFFFFE00)) || (dist_predict1 == 0x1FF))
+                        {
+                            dist_q2[1] = 0;
+                        }
+                        else
+                        {
+                            dist_predict1 = (dist_predict1 << scalelvl1);
+                            dist_q2[1] = (dist_predict1 + dist_base1) << 2;
+                        }
+
+                        if ((dist_predict2 == unchecked((int)0xFFFFFE00)) || (dist_predict2 == 0x1FF)) // zurd patch, see above
+                        {
+                            dist_q2[2] = 0;
+                        }
+                        else
+                        {
+                            dist_predict2 = (dist_predict2 << scalelvl2);
+                            dist_q2[2] = (dist_predict2 + dist_base2) << 2;
+                        }
+
+                        for (int cpos = 0; cpos < 3; ++cpos)
+                        {
+                            syncBit[cpos] = (((currentAngle_raw_q16 + angleInc_q16) % (360 << 16)) < angleInc_q16)
+                                ? 1
+                                : 0;
+
+                            int offsetAngleMean_q16 = (int)(7.5 * Math.PI * (1 << 16) / 180.0);
+
+                            if (dist_q2[cpos] >= (50 * 4))
+                            {
+                                int k1 = 98361;
+                                int k2 = (int)(k1 / dist_q2[cpos]);
+
+                                offsetAngleMean_q16 = (int)(8 * Math.PI * (1 << 16) / 180) - (k2 << 6) -
+                                                      (k2 * k2 * k2) / 98304;
+                            }
+
+                            angle_q6[cpos] =
+                                ((currentAngle_raw_q16 - (int)(offsetAngleMean_q16 * 180 / Math.PI)) >> 10);
+                            currentAngle_raw_q16 += angleInc_q16;
+
+                            if (angle_q6[cpos] < 0) angle_q6[cpos] += (360 << 6);
+                            if (angle_q6[cpos] >= (360 << 6)) angle_q6[cpos] -= (360 << 6);
+
+                            var flag = (syncBit[cpos] | (syncBit[cpos] == 0 ? 2 : 0));
+
+                            var quality = dist_q2[cpos] > 0 ? (0x2F << DataResponseHelper.RPLIDAR_RESP_MEASUREMENT_QUALITY_SHIFT) : 0;
+                            var convert = (flag & DataResponseHelper.RpLidarRespMeasurementSyncBit) | ((quality >> DataResponseHelper.RPLIDAR_RESP_MEASUREMENT_QUALITY_SHIFT) << DataResponseHelper.RPLIDAR_RESP_MEASUREMENT_QUALITY_SHIFT);
+
+                            var node = new LidarPoint();
+                            node.Flag = flag;
+                            node.Quality = (ushort)convert;
+                            var angle = (ushort)((angle_q6[cpos] << 8) / 90);
+                            var distance = dist_q2[cpos];
+                            node.Angle = angle * 90f / 16384f;
+                            node.Distance = distance > (ushort.MaxValue) ? 0 : (UInt16)(distance);
+                            //if (node.Distance < 0)
+                            //	node.Distance = -node.Distance;
+                            if ((flag & 1) > 0)
+                            {
+                                node.StartFlag = true;
+                            }
+
+                            if (node.Distance > 0 && node.Quality > 0)
+                            {
+                                node.Distance = node.Distance / 4f;
+                                result.Add(node);
+                            }
+                        }
+                    }
+                }
+
+                prev = capsule;
+                _isPreviousCapsuleDataRdy = true;
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// zurd patch: bytes received but not yet parsed, i.e. the start of a capsule that has not
+        /// fully arrived. Upstream also kept already-parsed bytes here in some cases, which made
+        /// them get parsed a second time.
+        /// </summary>
+        private readonly List<byte[]> _prevData = new List<byte[]>(100);
+
+        private List<LidarPoint> WaitAndParseData()
+        {
+            var bufSize = 2002;
+            if (_settings.ScanMode != ScanMode.Standard)
+                bufSize = 132 * 3;
+            byte[] data = null;
+            var i = 0;
+            while (_serialPort.BytesToRead < bufSize && _isScanning && i < 5)
+            {
+                Thread.Sleep(5);
+                i++;
+            }
+            if (_serialPort.BytesToRead > 0)
+            {
+                switch (_settings.ScanMode)
+                {
+                    case ScanMode.Boost:
+                    case ScanMode.Sensitivity:
+                        var bytesToRead = _serialPort.BytesToRead;
+
+                        data = new byte[bytesToRead];
+                        _serialPort.Read(data, 0, data.Length);
+                        return ParseExpressData(data);
+                }
+            }
+            return new List<LidarPoint>(0);
+        }
+
+        /// <summary>
+        /// zurd patch: the express-scan half of <see cref="WaitAndParseData"/>, split out so it can be
+        /// fed bytes without a serial port, and fixed to keep every capsule:
+        /// <list type="bullet">
+        /// <item>The parser's trailing item no longer resets the previous capsule. A capsule's points
+        /// can only be decoded once the next capsule arrives, so upstream lost one capsule (96 points,
+        /// a wedge of roughly 25°) at every serial read, which is a third to a half of all points.</item>
+        /// <item>Capsules that cross 0° are kept, and the previous capsule is kept across 0°. Upstream
+        /// reset it there and dropped the 0° capsule on every other rotation. The angle maths in
+        /// <see cref="UltraCapsuleToNormal"/> already handles the wrap, as in the C SDK.</item>
+        /// <item><c>_prevData</c> holds exactly the unparsed bytes afterwards.</item>
+        /// </list>
+        /// </summary>
+        private List<LidarPoint> ParseExpressData(byte[] data)
+        {
+            var points = new List<LidarPoint>();
+            _prevData.Add(data);
+            var aggregates = _prevData.SelectMany(x => x).ToArray();
+            var result = aggregates.WaitUltraCapsuledNode();
+
+            // Less than one capsule received so far: keep it all for the next read.
+            if (result.Count == 0)
+                return points;
+
+            _prevData.Clear();
+            while (result.Count > 0)
+            {
+                var item = result.Dequeue();
+
+                if (item.IsTrailer)
+                {
+                    if (item.RemainderData != null)
+                        _prevData.Add(item.RemainderData);
+                    continue;
+                }
+
+                // A bad packet, or the first capsule of a new scan: the next capsule can't be paired
+                // with the one before it.
+                if (!item.IsRpLidarRespMeasurementSyncBitExp)
+                {
+                    _isPreviousCapsuleDataRdy = false;
+                    prev = null;
+                }
+
+                if (item.IsStartAngleSyncQ6)
+                    points.AddRange(UltraCapsuleToNormal(item.Value));
+            }
+
+            return points;
+        }
+
+        public void Start()
+        {
+            _isStop = false;
+            while (!_isScanning)
+            {
+                try
+                {
+                    Connect();
+                    StopScan();
+                    switch (_settings.ScanMode)
+                    {
+                        case ScanMode.Boost:
+                        case ScanMode.Sensitivity:
+                            ForceScanExpress();
+                            break;
+
+                        default:
+                            StartScan();
+                            break;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message, ex);
+                    Thread.Sleep(2000);
+                }
+            }
+        }
+
+        public void Stop()
+        {
+            _isStop = true;
+            StopScan();
+        }
+    }
+}
