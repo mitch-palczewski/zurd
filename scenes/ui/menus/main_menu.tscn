@@ -15,6 +15,12 @@ label = "1000 x 1000 Map Example"
 path = "uid://7rn8yfug4u75"
 metadata/_custom_type_script = "uid://d3fjs43kfsd3m"
 
+[sub_resource type="Resource" id="Resource_jtlqt"]
+script = ExtResource("2_h1kbi")
+label = "Lidar Setup"
+path = "res://scenes/tools/lidar_setup/lidar_setup.tscn"
+metadata/_custom_type_script = "uid://d3fjs43kfsd3m"
+
 [node name="MainMenu" type="Control" unique_id=408600085]
 layout_mode = 3
 anchors_preset = 15
@@ -23,7 +29,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_flhq8")
-scenes = Array[ExtResource("2_h1kbi")]([SubResource("Resource_flhq8"), SubResource("Resource_h1kbi")])
+scenes = Array[ExtResource("2_h1kbi")]([SubResource("Resource_flhq8"), SubResource("Resource_h1kbi"), SubResource("Resource_jtlqt")])
 
 [node name="CenterContainer" type="CenterContainer" parent="." unique_id=1854115553]
 layout_mode = 1
@@ -38,10 +44,10 @@ layout_mode = 2
 
 [node name="Label" type="Label" parent="." unique_id=124524051]
 layout_mode = 0
-offset_left = 68.0
-offset_top = 57.0
-offset_right = 181.0
-offset_bottom = 132.0
+offset_left = 27.0
+offset_top = 12.0
+offset_right = 385.0
+offset_bottom = 496.0
 text = "--- Controls ---
 W - pitch up 
 S - pitch down 
@@ -49,4 +55,11 @@ A - yaw left
 D - yaw right
 shift - boost
 space - launch object
-"
+right click - swat zurd
+
+Zurd Behavior - Current
+- For every 10 objects deployed a new Zurd is spawned
+- Zurds pick any object at random to eat
+- zurds grow in size when they eat objects
+- swatting zurds makes them smaller and forces them to pick a new target"
+autowrap_mode = 2

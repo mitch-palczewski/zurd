@@ -7,7 +7,7 @@ a centimetre or two in front of it. When a hand breaks that plane, the game lear
 projected image* it happened, and acts on it.
 
 ```
-Raw scan (angle°, mm)                    LidarDevice / replay source
+Raw scan (angle°, mm)                    LidarDevice (or mouse source)
   → lidar-local 2D (x, y mm)             LidarGeometry.ToLocal
   → touch (id, centroid, down/up)        TouchDetector  (baseline → foreground → blobs → tracking)
   → projected-image UV (0..1, 0..1)      WallCalibration (homography, 5-point touch calibration)
@@ -43,28 +43,7 @@ Raw scan (angle°, mm)                    LidarDevice / replay source
 | **2. Baseline, detection, tracking** | `TouchDetector` with per-0.5° low-percentile baseline, depth-change foreground, sweep-order blob clustering with seam merge, and tracking (ids, confirm after N rotations, release grace, Began/Ended events). Setup scene: capture/clear baseline, live tuning, touch markers, event log. Checked against synthetic scans. |
 | **2b. Driver fix** | `RpLidar.NET` vendored into `thirdparty/RpLidar.NET/` and patched: the packaged driver dropped a third to a half of all Sensitivity-mode points (the view blinked between halves of the room) and produced phantom points. See its README. Standard mode is not decoded by the driver; use Sensitivity on an A1. |
 
-## Step 3 — Recording and replay
-
-**Why now:** every later step needs real scans with real hands. Recording once at the wall lets
-calibration and game hookup be developed and re-tested at a desk.
-
-**Build**
-- `ILidarSource`: what consumers actually use from `LidarDevice` (state, status, device info,
-  `TryGetNewScan`, connect/disconnect, dispose). `LidarDevice` implements it.
-- `ScanRecorder`: writes each `LidarScan` to a compact binary file under
-  `user://lidar_recordings/`, named by serial and time. The header carries device info. About
-  80 KB/s, so a minute is about 5 MB.
-- `ReplaySource`: plays a recording back at real-time pace, with loop, pause and speed, and
-  reports itself as streaming.
-- Setup scene: choose **Live** or a **recording**, plus a **Record** toggle.
-
-**Make a reference set** at the wall: empty room, single touches at each corner and the centre,
-a slow drag, two hands, a person walking past, and a full calibration run.
-
-**Done when** a recording made at the wall replays at a desk with the same touches and events.
-Replaying the same file twice gives identical events.
-
-## Step 4 — Calibration wizard and UV
+## Step 3 — Calibration wizard and UV
 
 **Targets on the projected image.** The wizard has to show targets *on the wall*, so the setup
 scene opens a fullscreen target window on the chosen projector's screen.
@@ -99,7 +78,7 @@ mirror). Connecting to a lidar loads its calibration automatically.
 **Done when** the follow-test dot lands within about 2 cm of the fingertip across the whole image,
 and calibration survives a restart and a USB replug to a different port.
 
-## Step 5 — `LidarManager` and game hookup, one wall
+## Step 4 — `LidarManager` and game hookup, one wall
 
 **Build**
 - `LidarManager`, a C# `Node` that owns one wall's pipeline (source, detector, calibration),
@@ -112,6 +91,9 @@ and calibration survives a restart and a USB replug to a different port.
   baseline behind an on-screen "keep the wall clear" prompt.
 - **Mouse source:** a fake source where clicking the game window produces touches, so gameplay
   can be built without a lidar. Keyboard controls keep working.
+- **`ILidarSource`:** a small interface over `LidarDevice` (state, `TryGetNewScan`, connect,
+  dispose), so `LidarManager` can take either the real lidar or the mouse source. Introduced here
+  because the mouse source is the first thing that needs it.
 - **Measure latency** from touch to game event. The A1 turns about 5.5 times a second, so
   confirming after 2 rotations costs roughly 200–400 ms. Try confirming after 1 rotation
   and a higher motor speed.
@@ -119,7 +101,7 @@ and calibration survives a restart and a USB replug to a different port.
 **Done when** touching the projected wall makes the game act at that point, with acceptable
 latency, and the same gameplay works with the mouse source.
 
-## Step 6 — Multiple walls
+## Step 5 — Multiple walls
 
 **Build**
 - N walls at once: config per serial, one pipeline per wall in `LidarManager`, and per-wall tabs
@@ -128,7 +110,7 @@ latency, and the same gameplay works with the mouse source.
 - **Duplicates at shared edges:** filtering touches to each wall's calibrated area already stops
   most double reports. Only overlapping projections need explicit merging.
 - **3D room view (optional):** walls, lidar positions and live touches in one 3D scene. Decide
-  after step 5 whether it's still needed; with each wall mapped through its own camera, the 2D
+  after step 4 whether it's still needed; with each wall mapped through its own camera, the 2D
   views and follow test may be enough.
 
 **Done when** all walls run together and each touch is reported once, by the right wall.
@@ -139,20 +121,25 @@ latency, and the same gameplay works with the mouse source.
 - Save the baseline alongside the calibration for faster start-up.
 - Push touch centroids back by a finger radius (the lidar sees only the near side of a hand).
 - Correct projector lens distortion, if the follow test shows curved errors near the edges.
+- **Recording and replay** (dropped from the main steps: the lidar is at hand, and calibration
+  needs the real wall anyway). Build it if:
+  - the lidar ends up installed somewhere you can't easily stand at it;
+  - an intermittent detection bug can't be reproduced on demand;
+  - tuning several walls needs identical input across changes.
+
+  Start with a record-only button (raw scans to a file, about 40 lines) and add replay only when
+  needed. `TouchDetector` only consumes `LidarScan`, so adding it later needs no rework.
 
 ## Housekeeping
 
-- Update `CLAUDE.md`: the project now has C# (`scripts/lidar/`, the setup scene), needs the .NET
-  SDK, and builds in the mono editor.
 - Commit after each step, as `feat(lidar): ...`.
-- Turn the replay reference set into regression checks for the detector.
 
 ## Open questions
 
 1. **How many walls, and do their projected images touch or overlap?**
-2. **What does a touch do in the game?** Tap to launch, hold, drag? This decides whether step 5
+2. **What does a touch do in the game?** Tap to launch, hold, drag? This decides whether step 4
    needs "moved" events as well as began/ended.
 3. **Where is each lidar mounted relative to its projected image?** This affects the corner inset
    and the detection range.
 4. **How does the game render several camera views on one computer?** One Godot window per
-   projector, or one big window spanning them? Decide by step 6.
+   projector, or one big window spanning them? Decide by step 5.
