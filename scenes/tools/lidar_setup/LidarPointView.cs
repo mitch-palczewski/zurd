@@ -8,7 +8,8 @@ namespace Zurd.Lidar;
 /// Face-on 2D view of the latest <see cref="LidarScan"/>: range rings, the sensor at the centre,
 /// and every point coloured by distance. Given a <see cref="Baseline"/> and a <see cref="Detection"/>
 /// it also draws the baseline outline, highlights points that came closer, and marks blobs and
-/// touches. Mouse wheel zooms, left-drag pans, double-click recentres.
+/// touches. Given a <see cref="Calibration"/> it outlines the projected image and labels touches
+/// with their UV. Mouse wheel zooms, left-drag pans, double-click recentres.
 /// </summary>
 public partial class LidarPointView : Control
 {
@@ -31,10 +32,17 @@ public partial class LidarPointView : Control
     private static readonly Color TouchColor = new(1f, 0.35f, 0.65f);
     private static readonly Color TouchFillColor = new(1f, 0.35f, 0.65f, 0.22f);
     private static readonly Color RejectedBlobColor = new(1f, 1f, 1f, 0.30f);
+    private static readonly Color ImageOutlineColor = new(0.55f, 0.75f, 1f, 0.85f);
+    private static readonly Color DetectionAreaColor = new(0.55f, 0.75f, 1f, 0.35f);
+
+    /// <summary>How much points outside the detection area are dimmed.</summary>
+    private const float OutsideAreaAlpha = 0.3f;
 
     private LidarScan? _scan;
     private LidarBaseline? _baseline;
     private TouchFrame? _detection;
+    private WallCalibration? _calibration;
+    private IReadOnlyList<Vector2>? _detectionArea;
     private float _rangeMm = 4000f;
     private float _angleOffsetDeg;
     private bool _mirror;
@@ -72,6 +80,28 @@ public partial class LidarPointView : Control
         set
         {
             _detection = value;
+            QueueRedraw();
+        }
+    }
+
+    /// <summary>Outlines the projected image and labels touches with UV. Null shows distance and angle instead.</summary>
+    public WallCalibration? Calibration
+    {
+        get => _calibration;
+        set
+        {
+            _calibration = value;
+            QueueRedraw();
+        }
+    }
+
+    /// <summary>Where touches can happen (lidar-local mm, convex). Drawn dashed; points outside it are dimmed.</summary>
+    public IReadOnlyList<Vector2>? DetectionArea
+    {
+        get => _detectionArea;
+        set
+        {
+            _detectionArea = value;
             QueueRedraw();
         }
     }
@@ -164,6 +194,7 @@ public partial class LidarPointView : Control
 
         DrawGrid(origin, size, pxPerMm, font, fontSize);
         DrawBaseline(origin, pxPerMm);
+        DrawCalibration(origin, pxPerMm, font, fontSize);
         DrawPoints(origin, size, pxPerMm, detection);
         DrawDetection(origin, pxPerMm, detection, font, fontSize);
 
@@ -245,6 +276,31 @@ public partial class LidarPointView : Control
         segment.Clear();
     }
 
+    private void DrawCalibration(Vector2 origin, float pxPerMm, Font font, int fontSize)
+    {
+        if (_detectionArea is { Count: >= 2 } area)
+        {
+            for (int i = 0; i < area.Count; i++)
+            {
+                DrawDashedLine(ToScreen(area[i], origin, pxPerMm), ToScreen(area[(i + 1) % area.Count], origin, pxPerMm),
+                    DetectionAreaColor, 1f, 6f);
+            }
+        }
+
+        if (_calibration is null || !_calibration.TryGetArea(0f, out Vector2[] outline))
+            return;
+
+        var screen = new Vector2[outline.Length + 1];
+        for (int i = 0; i < outline.Length; i++)
+            screen[i] = ToScreen(outline[i], origin, pxPerMm);
+        screen[^1] = screen[0];
+        DrawPolyline(screen, ImageOutlineColor, 2f, true);
+
+        // Mark two corners so the image's orientation is obvious.
+        DrawString(font, screen[0] + new Vector2(4f, -4f), "UV 0,0", HorizontalAlignment.Left, -1f, fontSize - 3, ImageOutlineColor);
+        DrawString(font, screen[2] + new Vector2(4f, -4f), "UV 1,1", HorizontalAlignment.Left, -1f, fontSize - 3, ImageOutlineColor);
+    }
+
     private void DrawPoints(Vector2 origin, Vector2 size, float pxPerMm, TouchFrame? detection)
     {
         if (_scan is null)
@@ -275,7 +331,14 @@ public partial class LidarPointView : Control
             else
             {
                 float t = Mathf.Clamp(s.DistanceMm / _rangeMm, 0f, 1f);
-                color = Color.FromHsv(Mathf.Lerp(0.13f, 0.60f, t), 0.75f, 1f, backgroundAlpha);
+                float alpha = backgroundAlpha;
+                if (_detectionArea is not null &&
+                    !LidarGeometry.IsInsideConvex(LidarGeometry.ToLocal(s.AngleDeg, s.DistanceMm), _detectionArea))
+                {
+                    alpha *= OutsideAreaAlpha;
+                }
+
+                color = Color.FromHsv(Mathf.Lerp(0.13f, 0.60f, t), 0.75f, 1f, alpha);
             }
 
             float half = sizePx * 0.5f;
@@ -315,9 +378,7 @@ public partial class LidarPointView : Control
             DrawArc(p, radius, 0f, Mathf.Tau, 48, ring, 2f);
             DrawCircle(p, 2.5f, ring);
 
-            (float angle, float distance) = LidarGeometry.ToPolar(touch.PositionMm);
-            DrawString(font, p + new Vector2(radius + 4f, fontSize * 0.35f),
-                $"#{touch.Id} · {distance / 1000f:0.00} m · {angle:0}°",
+            DrawString(font, p + new Vector2(radius + 4f, fontSize * 0.35f), $"#{touch.Id} · {DescribePosition(touch.PositionMm)}",
                 HorizontalAlignment.Left, -1f, fontSize - 2, ring);
         }
     }
@@ -338,6 +399,16 @@ public partial class LidarPointView : Control
     {
         Vector2 oriented = LidarGeometry.Orient(local, _angleOffsetDeg, _mirror);
         return origin + new Vector2(oriented.X, -oriented.Y) * pxPerMm;
+    }
+
+    /// <summary>UV on the projected image when calibrated, otherwise distance and heading from the sensor.</summary>
+    private string DescribePosition(Vector2 localMm)
+    {
+        if (_calibration is not null && _calibration.TryMapToUv(localMm, out Vector2 uv))
+            return $"u {uv.X:0.00} · v {uv.Y:0.00}";
+
+        (float angle, float distance) = LidarGeometry.ToPolar(localMm);
+        return $"{distance / 1000f:0.00} m · {angle:0}°";
     }
 
     private static float BlobRadiusPx(float widthMm, float pxPerMm) =>

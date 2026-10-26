@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Godot;
 
 namespace Zurd.Lidar;
@@ -35,6 +36,28 @@ public static class LidarGeometry
         Vector2 p = mirror ? new Vector2(-local.X, local.Y) : local;
         // Headings grow clockwise in this frame, while Rotated() turns counter-clockwise.
         return p.Rotated(-Mathf.DegToRad(angleOffsetDeg));
+    }
+
+    /// <summary>True if <paramref name="p"/> is inside or on the edge of a convex polygon, in either winding order.</summary>
+    public static bool IsInsideConvex(Vector2 p, IReadOnlyList<Vector2> polygon)
+    {
+        int sign = 0;
+        for (int i = 0; i < polygon.Count; i++)
+        {
+            Vector2 a = polygon[i];
+            Vector2 b = polygon[(i + 1) % polygon.Count];
+            float cross = (b - a).Cross(p - a);
+            if (cross == 0f)
+                continue;
+
+            int s = cross > 0f ? 1 : -1;
+            if (sign == 0)
+                sign = s;
+            else if (s != sign)
+                return false;
+        }
+
+        return true;
     }
 
     /// <summary>Inverse of <see cref="ToLocal"/> with no offset or mirror: heading 0..360 and distance in millimetres.</summary>

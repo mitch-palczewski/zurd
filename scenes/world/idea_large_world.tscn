@@ -6,4 +6,4 @@
 [node name="BaseWorld" unique_id=1406931788 instance=ExtResource("1_fcwnh")]
 
 [node name="TestLgGround" parent="." index="3" unique_id=212240361 instance=ExtResource("2_ldw7b")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -54.004906, -22.758781, -176.61786)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 2, -54.004906, -22.758781, -176.61786)

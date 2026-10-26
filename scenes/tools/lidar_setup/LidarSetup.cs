@@ -7,11 +7,13 @@ namespace Zurd.Lidar;
 
 /// <summary>
 /// Utility scene for bringing a lidar up: pick the port, connect, and watch the sweep plus a
-/// three-stage status checklist; then capture a baseline and watch touches being detected.
-/// Run it on its own (F6); it is not part of the game flow.
+/// three-stage status checklist; capture a baseline and watch touches being detected; then
+/// calibrate the lidar against its wall's projected image. Run it on its own (F6) or from the
+/// main menu; it is not part of the game flow.
 /// <para>
-/// All device logic lives in <see cref="LidarDevice"/> and all detection logic in
-/// <see cref="TouchDetector"/>. This node only builds the controls and shows what they report.
+/// Device logic lives in <see cref="LidarDevice"/>, detection in <see cref="TouchDetector"/> and
+/// calibration in <see cref="CalibrationPanel"/> and the classes it uses. This node builds the
+/// controls, remembers settings per lidar in <see cref="LidarConfigStore"/>, and shows what they report.
 /// </para>
 /// </summary>
 public partial class LidarSetup : Control
@@ -19,10 +21,16 @@ public partial class LidarSetup : Control
     private const double StatusRefreshSec = 0.25;
     private const double PwmApplyDelaySec = 0.4;
     private const int EventLogLines = 12;
+    private const string ConfigPath = "user://lidar_config.json";
+
+    /// <summary>Touches this far outside the projected image (as a fraction of it) still count.</summary>
+    private const float DetectionMarginUv = 0.05f;
 
     private LidarDevice _device = null!;
     private TouchDetector _detector = null!;
+    private LidarConfigStore _config = null!;
     private LidarStatusPanel _statusPanel = null!;
+    private CalibrationPanel _calibrationPanel = null!;
     private LidarPointView _view = null!;
 
     private OptionButton _portPicker = null!;
@@ -32,6 +40,8 @@ public partial class LidarSetup : Control
     private Label _pwmValue = null!;
     private HSlider _rangeSlider = null!;
     private Label _rangeValue = null!;
+    private SpinBox _rotation = null!;
+    private CheckBox _mirror = null!;
 
     private Button _captureButton = null!;
     private Button _clearBaselineButton = null!;
@@ -46,10 +56,19 @@ public partial class LidarSetup : Control
     private double _pwmCountdown = -1.0;
     private LidarConnectionState _shownState = LidarConnectionState.Disconnected;
 
+    /// <summary>Serial of the connected (or last connected) lidar, once it has reported one.</summary>
+    private string? _serial;
+    private WallCalibration? _calibration;
+    private Vector2[]? _detectionArea;
+
     public override void _Ready()
     {
         _device = new LidarDevice(new LidarDeviceOptions());
         _detector = new TouchDetector(new TouchDetectorOptions());
+
+        _config = new LidarConfigStore(ProjectSettings.GlobalizePath(ConfigPath));
+        if (_config.LoadError is not null)
+            GD.PushWarning($"[LidarSetup] {_config.LoadError}");
 
         BuildUi();
         RefreshPorts();
@@ -73,6 +92,7 @@ public partial class LidarSetup : Control
             _view.Detection = frame;
             _view.Scan = scan;
 
+            _calibrationPanel.Process(frame);
             LogEvents(frame);
             ShowTouchSummary(frame);
             RefreshBaselineControls();
@@ -239,7 +259,7 @@ public partial class LidarSetup : Control
             "How much closer than the baseline a point must be to count. Raise it if pink points flicker along the baseline.");
         AddSetting(settings, "Max range", "mm", 500, 12000, 100, touch.MaxRangeMm,
             v => touch.MaxRangeMm = (float)v,
-            "Ignore anything farther than this from the sensor.");
+            "Ignore anything farther than this from the sensor. Once calibrated, only the projected image (plus a small margin) counts anyway.");
         AddSetting(settings, "Cluster gap", "mm", 10, 300, 5, touch.ClusterGapMm,
             v => touch.ClusterGapMm = (float)v,
             "Points closer together than this belong to the same blob. Raise it if one hand splits into several touches.");
@@ -259,6 +279,14 @@ public partial class LidarSetup : Control
         left.AddChild(MakeDimLabel("Events, newest first"));
         _eventLog = new Label { Text = "—" };
         left.AddChild(_eventLog);
+
+        // -- Calibration
+        left.AddChild(new HSeparator());
+        left.AddChild(MakeHeading("Calibration"));
+        _calibrationPanel = new CalibrationPanel();
+        _calibrationPanel.CalibrationAccepted += OnCalibrationAccepted;
+        _calibrationPanel.CalibratingChanged += _ => ApplyDetectionArea();
+        left.AddChild(_calibrationPanel);
 
         // -- View controls
         left.AddChild(new HSeparator());
@@ -292,25 +320,33 @@ public partial class LidarSetup : Control
         };
 
         left.AddChild(MakeDimLabel("Rotate picture"));
-        var rotation = new SpinBox
+        _rotation = new SpinBox
         {
             MinValue = -180,
             MaxValue = 180,
             Step = 1,
             Value = 0,
             Suffix = "°",
-            TooltipText = "Turn the picture so the wall's top is up. Display only for now.",
+            TooltipText = "Turn the picture so the wall's top is up. Display only; remembered per lidar.",
         };
-        rotation.ValueChanged += value => _view.AngleOffsetDeg = (float)value;
-        left.AddChild(rotation);
+        _rotation.ValueChanged += value =>
+        {
+            _view.AngleOffsetDeg = (float)value;
+            SaveDisplaySettings();
+        };
+        left.AddChild(_rotation);
 
-        var mirror = new CheckBox
+        _mirror = new CheckBox
         {
             Text = "Mirror left/right",
-            TooltipText = "Flip the sweep direction if the picture looks reversed.",
+            TooltipText = "Flip the sweep direction if the picture looks reversed. Display only; remembered per lidar.",
         };
-        mirror.Toggled += on => _view.Mirror = on;
-        left.AddChild(mirror);
+        _mirror.Toggled += on =>
+        {
+            _view.Mirror = on;
+            SaveDisplaySettings();
+        };
+        left.AddChild(_mirror);
 
         // Right: the point view.
         root.AddChild(_view);
@@ -468,7 +504,95 @@ public partial class LidarSetup : Control
             _lastSequence = -1;
         }
 
+        if (state == LidarConnectionState.Streaming)
+        {
+            string? serial = _device.Info?.Serial;
+            if (string.IsNullOrEmpty(serial))
+                serial = null;
+
+            if (serial != _serial)
+            {
+                _serial = serial;
+                LoadSettingsForLidar();
+            }
+        }
+
         RefreshBaselineControls();
+    }
+
+    // ------------------------------------------------------------------ per-lidar settings and calibration
+
+    /// <summary>Applies what was saved for the connected lidar: its calibration, target screen and view settings.</summary>
+    private void LoadSettingsForLidar()
+    {
+        LidarConfigEntry? entry = _serial is null ? null : _config.Get(_serial);
+
+        // Without a saved entry, keep whatever the view is set to now.
+        if (entry is not null)
+        {
+            _rotation.SetValueNoSignal(entry.AngleOffsetDeg);
+            _view.AngleOffsetDeg = entry.AngleOffsetDeg;
+            _mirror.SetPressedNoSignal(entry.Mirror);
+            _view.Mirror = entry.Mirror;
+            _calibrationPanel.PreferScreen(entry.TargetScreen);
+        }
+
+        ApplyCalibration(entry?.Calibration);
+    }
+
+    private void ApplyCalibration(WallCalibration? calibration)
+    {
+        _calibration = calibration;
+        _detectionArea = calibration is not null && calibration.TryGetArea(DetectionMarginUv, out Vector2[] area)
+            ? area
+            : null;
+
+        _view.Calibration = calibration;
+        _calibrationPanel.SetCalibration(calibration);
+        ApplyDetectionArea();
+    }
+
+    /// <summary>
+    /// Limits detection to the calibrated image, except while calibrating: if the sensor has moved,
+    /// the old area could hide the very touches the new calibration needs.
+    /// </summary>
+    private void ApplyDetectionArea()
+    {
+        IReadOnlyList<Vector2>? area = _calibrationPanel.IsCalibrating ? null : _detectionArea;
+        _detector.DetectionArea = area;
+        _view.DetectionArea = area;
+    }
+
+    private void OnCalibrationAccepted(WallCalibration calibration)
+    {
+        if (_serial is null)
+            return;
+
+        LidarConfigEntry entry = _config.GetOrCreate(_serial);
+        entry.Calibration = calibration;
+        entry.AngleOffsetDeg = (float)_rotation.Value;
+        entry.Mirror = _mirror.ButtonPressed;
+        entry.TargetScreen = _calibrationPanel.SelectedScreen;
+        SaveConfig();
+
+        ApplyCalibration(calibration);
+    }
+
+    private void SaveDisplaySettings()
+    {
+        if (_serial is null)
+            return;
+
+        LidarConfigEntry entry = _config.GetOrCreate(_serial);
+        entry.AngleOffsetDeg = (float)_rotation.Value;
+        entry.Mirror = _mirror.ButtonPressed;
+        SaveConfig();
+    }
+
+    private void SaveConfig()
+    {
+        if (!_config.Save(out string? error))
+            GD.PushError($"[LidarSetup] {error}");
     }
 
     private void RefreshBaselineControls()
@@ -492,6 +616,9 @@ public partial class LidarSetup : Control
         }
 
         _clearBaselineButton.Disabled = baseline is null && !_detector.IsCapturingBaseline;
+
+        // Calibration needs a streaming lidar with a baseline; keep the panel in step.
+        _calibrationPanel.SetContext(_device.State == LidarConnectionState.Streaming, baseline is not null, _serial);
     }
 
     private void ShowTouchSummary(TouchFrame frame)
@@ -511,9 +638,19 @@ public partial class LidarSetup : Control
 
         foreach (TouchEvent evt in frame.Events)
         {
-            (float angle, float distance) = LidarGeometry.ToPolar(evt.PositionMm);
+            string where;
+            if (_calibration is not null && _calibration.TryMapToUv(evt.PositionMm, out Vector2 uv))
+            {
+                where = $"u {uv.X:0.00} · v {uv.Y:0.00}";
+            }
+            else
+            {
+                (float angle, float distance) = LidarGeometry.ToPolar(evt.PositionMm);
+                where = $"{distance / 1000f:0.00} m · {angle:0}°";
+            }
+
             string line = evt.Kind == TouchEventKind.Began
-                ? $"#{evt.TouchId} down · {distance / 1000f:0.00} m · {angle:0}°"
+                ? $"#{evt.TouchId} down · {where}"
                 : $"#{evt.TouchId} up · held {evt.DurationSec:0.00} s";
             _eventLines.Insert(0, $"{DateTime.Now:HH:mm:ss.f}  {line}");
         }

@@ -29,6 +29,13 @@ public sealed class TouchDetector
     /// <summary>The reference that detection compares against, or null if none has been captured.</summary>
     public LidarBaseline? Baseline { get; private set; }
 
+    /// <summary>
+    /// Optional convex polygon in lidar-local millimetres. When set, only points inside it can become
+    /// foreground, so nothing outside the wall's projected image is ever a touch. Calibration sets
+    /// it (see <see cref="WallCalibration.TryGetArea"/>); null means everywhere within range.
+    /// </summary>
+    public IReadOnlyList<Vector2>? DetectionArea { get; set; }
+
     public bool IsCapturingBaseline => _capture is not null;
 
     /// <summary>0..1 while a capture runs.</summary>
@@ -86,6 +93,7 @@ public sealed class TouchDetector
     private bool[] MarkForeground(LidarScan scan, LidarBaseline baseline)
     {
         TouchDetectorOptions opt = Options;
+        IReadOnlyList<Vector2>? area = DetectionArea;
         ReadOnlySpan<LidarSample> samples = scan.Samples;
         var foreground = new bool[samples.Length];
 
@@ -93,6 +101,9 @@ public sealed class TouchDetector
         {
             LidarSample s = samples[i];
             if (s.DistanceMm < opt.MinRangeMm || s.DistanceMm > opt.MaxRangeMm)
+                continue;
+
+            if (area is not null && !LidarGeometry.IsInsideConvex(LidarGeometry.ToLocal(s.AngleDeg, s.DistanceMm), area))
                 continue;
 
             float reference = baseline.NearestAround(baseline.BinOf(s.AngleDeg), opt.BaselineSpreadBins);
