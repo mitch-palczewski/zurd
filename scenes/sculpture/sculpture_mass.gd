@@ -179,6 +179,22 @@ func get_point_velocity(point: Vector3) -> Vector3:
 	return linear_velocity + angular_velocity.cross(point - get_global_center_of_mass())
 
 
+## Rough moment of inertia about the centre of mass, the same around every axis, with each object
+## as a box of its collision size. Only used to turn hits into spin; Jolt still simulates the real
+## shape.
+func get_inertia_estimate() -> float:
+	var center := get_global_center_of_mass()
+	var estimate := 0.0
+	for piece in pieces:
+		# Averaged over the three axes, a point at distance r gives 2/3·r² and a box of size s adds |s|²/18.
+		estimate += piece.get_center().distance_squared_to(center) * 2.0 / 3.0
+		for shape in piece.shapes:
+			var box := shape.shape as BoxShape3D
+			if box:
+				estimate += (box.size * shape.global_basis.get_scale()).length_squared() / 18.0
+	return estimate * manager.object_mass
+
+
 ## Updates the physics mass, centre of mass, cloud progress and look after pieces were added or
 ## removed. Turns the mass into a cloud when it reaches the threshold.
 func refresh() -> void:

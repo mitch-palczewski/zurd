@@ -52,6 +52,10 @@ an editor parse check. Things added during the build that the plan didn't have:
   shape enter/exit signals, whose indices go stale when shapes move between bodies.
 - **Zurds push only masses,** not loose objects, so their existing behaviour with loose objects
   is unchanged.
+- **`fuse_push` (1) and `fuse_spin` (0)** on `MassManager`, to make masses react more to a
+  fusing object. `fuse_push` counts the incoming object as that many objects in the momentum
+  formula. `fuse_spin` adds the spin from an off-centre hit, using an estimated inertia. The
+  defaults are the spec's behaviour.
 
 ## Architecture
 

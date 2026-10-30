@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://vifapcgf3chx"]
+
+[ext_resource type="Script" path="res://sandbox/_tmp_trace_test.gd" id="1"]
+
+[node name="Test" type="Node" unique_id=749690849]
+script = ExtResource("1")

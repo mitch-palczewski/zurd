@@ -23,6 +23,13 @@ const LOOSE_CONTACTS_REPORTED := 4
 @export var object_mass: float = 1.0
 @export var mass_linear_damp: float = 0.3
 @export var mass_angular_damp: float = 0.5
+## How hard a fusing object pushes the mass. 1 = plain momentum (Design Doc §5), where the object
+## weighs the same as each fused object. Higher counts it as that many objects, so masses get
+## knocked around more.
+@export_range(0.0, 10.0, 0.05, "or_greater") var fuse_push: float = 1.0
+## How much an off-centre fuse spins the mass. 0 = no spin (the Design Doc's simplification),
+## 1 = roughly physical.
+@export_range(0.0, 10.0, 0.05, "or_greater") var fuse_spin: float = 0.0
 @export var mass_scene: PackedScene
 
 @export_group("Breaking Off")
@@ -238,9 +245,17 @@ func _fuse(body: RigidBody3D, mass: SculptureMass, touched: MassPiece) -> MassPi
 		# Always link to something, so the structure stays connected.
 		neighbors.append(mass.get_closest_piece(body.global_position))
 
-	# Momentum: the mass-weighted average of the mass and the incoming object (Design Doc §5).
+	# Momentum: the mass-weighted average of the mass and the incoming object (Design Doc §5), with
+	# the object's weight scaled by fuse_push. A mass with one object is two loose objects meeting,
+	# so neither pushes harder.
 	var mass_weight := mass.pieces.size() * object_mass
-	mass.linear_velocity = (mass.linear_velocity * mass_weight + body.linear_velocity * object_mass) / (mass_weight + object_mass)
+	var incoming := object_mass * (fuse_push if mass.pieces.size() > 1 else 1.0)
+	var hit_velocity := body.linear_velocity - mass.linear_velocity
+	var old_center := mass.get_global_center_of_mass()
+	if mass.pieces.is_empty():
+		mass.linear_velocity = body.linear_velocity
+	else:
+		mass.linear_velocity += hit_velocity * incoming / (mass_weight + incoming)
 
 	var piece := mass.add_piece(body)
 	for neighbor in neighbors:
@@ -251,7 +266,21 @@ func _fuse(body: RigidBody3D, mass: SculptureMass, touched: MassPiece) -> MassPi
 	ObjectTracker.register_object(piece)
 	EventBus.object_fused.emit(mass, piece)
 	mass.refresh()
+
+	if fuse_spin > 0.0 and mass_weight > 0.0 and not mass.is_cloud:
+		var reduced_weight := mass_weight * incoming / (mass_weight + incoming)
+		_spin_from_hit(mass, piece.get_center() - old_center, hit_velocity, reduced_weight)
 	return piece
+
+
+## Spins [param mass] for an object that fused [param offset] from its old centre of mass, moving at
+## [param hit_velocity] relative to it. For two bodies that stick together, the spin about the new
+## centre is offset × hit_velocity × [param reduced_weight] (the two-body reduced mass).
+func _spin_from_hit(mass: SculptureMass, offset: Vector3, hit_velocity: Vector3, reduced_weight: float) -> void:
+	var inertia := mass.get_inertia_estimate()
+	if inertia <= 0.0:
+		return
+	mass.angular_velocity += offset.cross(hit_velocity) * reduced_weight * fuse_spin / inertia
 
 
 ## Moves every piece of [param absorb] into [param keep] (Design Doc §4.2). [param a] and [param b]
