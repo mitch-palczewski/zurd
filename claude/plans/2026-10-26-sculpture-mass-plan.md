@@ -36,6 +36,23 @@ objects' meshes and shapes as its children**.
     Off-center ship hits already add torque through `apply_impulse`.
   - All objects have the same mass, whatever their launch scale (spec §5).
 
+## Status (2026-10-30)
+
+All seven build steps are written. They have **not been play-tested yet** and haven't been through
+an editor parse check. Things added during the build that the plan didn't have:
+
+- **`refuse_delay` (1 s) and `detach_speed` (1 u/s)** on `MassManager`. An object that leaves a
+  mass spawns touching its old neighbours, so without a delay it would fuse straight back on its
+  next contact, and a falling-off chunk would re-form as a new mass at once. This bends the spec's "no
+  cooldown" rule, but only for objects that just left a mass. Set both to 0 for the strict spec.
+- **Zurds hold on while eating** (`ZurdMovementComponent.process_eating`, `hold_strength`). A
+  hunting Zurd flies through its target at full speed, so the target would never stay in the
+  mouth for the whole eat duration.
+- **The mouth checks the exact piece with a shape query every frame,** instead of relying on
+  shape enter/exit signals, whose indices go stale when shapes move between bodies.
+- **Zurds push only masses,** not loose objects, so their existing behaviour with loose objects
+  is unchanged.
+
 ## Architecture
 
 ```

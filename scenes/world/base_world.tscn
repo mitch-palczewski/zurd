@@ -4,8 +4,10 @@
 [ext_resource type="Script" uid="uid://dacd63gayji04" path="res://scenes/world/base_world.gd" id="1_simjs"]
 [ext_resource type="PackedScene" uid="uid://catisab22bqfg" path="res://scenes/characters/player/player_ship.tscn" id="2_oh0aj"]
 [ext_resource type="PackedScene" uid="uid://bxjnraf4ofxwq" path="res://scenes/characters/enemy/zurd.tscn" id="3_sxtq4"]
-[ext_resource type="PackedScene" uid="uid://b7xoajoo3px7l" path="res://scenes/characters/enemy/zurd_spawner.tscn" id="5_r886c"]
 [ext_resource type="Script" uid="uid://b3fwxl5c0urfu" path="res://scenes/characters/player/swat/mouse_swat_input.gd" id="6_a0k6d"]
+[ext_resource type="Script" uid="uid://ddsa51mwf45mx" path="res://scenes/sculpture/mass_manager.gd" id="7_mmgr"]
+[ext_resource type="PackedScene" path="res://scenes/sculpture/sculpture_mass.tscn" id="8_smass"]
+[ext_resource type="Script" uid="uid://dbnhn3if4i3xu" path="res://scenes/sculpture/sculpture_fx.gd" id="9_sfx"]
 
 [sub_resource type="PanoramaSkyMaterial" id="PanoramaSkyMaterial_sxtq4"]
 panorama = ExtResource("1_s1lny")
@@ -35,7 +37,12 @@ environment = SubResource("Environment_s1lny")
 [node name="Zurd" parent="ObjectContainer" unique_id=1857394916 instance=ExtResource("3_sxtq4")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.386339, 0, -8.351191)
 
-[node name="ZurdSpawner" parent="." unique_id=701261370 instance=ExtResource("5_r886c")]
-
-[node name="MousSwatInput" type="Node" parent="." unique_id=1683797661]
+[node name="MouseSwatInput" type="Node" parent="." unique_id=1683797661]
 script = ExtResource("6_a0k6d")
+
+[node name="MassManager" type="Node" parent="." unique_id=1093488417]
+script = ExtResource("7_mmgr")
+mass_scene = ExtResource("8_smass")
+
+[node name="SculptureFx" type="Node" parent="." unique_id=1577201930]
+script = ExtResource("9_sfx")

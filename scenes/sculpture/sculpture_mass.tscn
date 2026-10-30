@@ -1,0 +1,14 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scenes/sculpture/sculpture_mass.gd" id="1_smass"]
+
+[node name="SculptureMass" type="RigidBody3D" unique_id=864392011]
+collision_layer = 4
+collision_mask = 15
+gravity_scale = 0.0
+center_of_mass_mode = 1
+contact_monitor = true
+max_contacts_reported = 32
+linear_damp_mode = 1
+angular_damp_mode = 1
+script = ExtResource("1_smass")

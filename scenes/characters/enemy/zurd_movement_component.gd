@@ -30,6 +30,16 @@ extends Node
 @export var level_speed: float = 6.0
 
 
+@export_group("Eating")
+## How hard the Zurd pulls its mouth back onto the target while eating it.
+@export var hold_strength: float = 4.0
+
+
+@export_group("Pushing")
+## How hard the Zurd shoves sculpture masses it bumps into.
+@export var push_force: float = 6.0
+
+
 var _wander_target: Vector3
 var _has_wander_target: bool = false
 var _wander_timer: float = 0.0 
@@ -49,6 +59,20 @@ func process_movement(actor: CharacterBody3D, target: Node3D, delta: float) -> v
         _process_wandering(actor, delta)
     else:
         _process_hunting(actor, target, delta)
+    _process_bobbing(actor, delta)
+
+
+## Holds the mouth on [param target] while the Zurd eats it: match the target's velocity and pull
+## the mouth onto it, so the target stays in the mouth for the whole eat duration.
+func process_eating(actor: CharacterBody3D, target: Node3D, mouth_position: Vector3, delta: float) -> void:
+    _turn_towards(actor, actor.global_position.direction_to(target.global_position), hunting_turn_speed, delta)
+    _level_roll(actor, delta)
+
+    var hold_velocity := _get_target_velocity(target) + (target.global_position - mouth_position) * hold_strength
+    actor.velocity = actor.velocity.lerp(hold_velocity, _get_exp_decay_weight(10.0, delta))
+    var speed := actor.velocity.length()
+    actor.move_and_slide()
+    _push_masses(actor, speed, delta)
     _process_bobbing(actor, delta)
 
 
@@ -115,7 +139,29 @@ func _steer_and_move(actor: CharacterBody3D, desired_dir: Vector3, move_speed: f
     var target_velocity = _get_forward_direction(actor) * move_speed 
     var velocity_weight := _get_exp_decay_weight(10.0, delta)
     actor.velocity = actor.velocity.lerp(target_velocity, velocity_weight)
+    var speed := actor.velocity.length()
     actor.move_and_slide()
+    _push_masses(actor, speed, delta)
+
+
+## Zurds running into a sculpture mass push it (Sculpture-Mass Design Doc §4.3).
+func _push_masses(actor: CharacterBody3D, speed: float, delta: float) -> void:
+    var impulse_force := speed * push_force * delta
+    for i in actor.get_slide_collision_count():
+        var collision := actor.get_slide_collision(i)
+        var mass := collision.get_collider() as SculptureMass
+        if not mass:
+            continue
+        var impact_offset := collision.get_position() - mass.global_position
+        mass.apply_impulse(-collision.get_normal() * impulse_force, impact_offset)
+
+
+func _get_target_velocity(target: Node3D) -> Vector3:
+    if target is MassPiece:
+        return (target as MassPiece).get_velocity()
+    if target is RigidBody3D:
+        return (target as RigidBody3D).linear_velocity
+    return Vector3.ZERO
 
 
 func _turn_towards(actor: Node3D, desired_dir: Vector3, turn_rate: float, delta: float) -> void:

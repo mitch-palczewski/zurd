@@ -4,10 +4,11 @@ extends Node
 enum TargetStrategy {CLOSEST, RANDOM}
 @export var strategy: TargetStrategy = TargetStrategy.RANDOM
 
-var current_target: RigidBody3D = null
+## A loose object or one object of a sculpture mass.
+var current_target: Node3D = null
 
-func get_or_update_target(from_position: Vector3) -> RigidBody3D:
-    if not is_instance_valid(current_target):
+func get_or_update_target(from_position: Vector3) -> Node3D:
+    if not ObjectTracker.is_trackable(current_target):
         match strategy:
             TargetStrategy.CLOSEST:
                 current_target = ObjectTracker.get_closest_object(from_position)

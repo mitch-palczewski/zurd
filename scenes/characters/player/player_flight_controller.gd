@@ -1,7 +1,9 @@
 class_name PlayerFlightController
 extends Node
 
-signal impact_occured(collider: Object, force: float)
+## [param collider_shape]: the shape the ship hit (a [CollisionShape3D]), so a sculpture mass knows
+## which of its objects to break off.
+signal impact_occured(collider: Object, force: float, collider_shape: Object)
 
 @export_group("Speed")
 @export var base_speed: float = 5.0
@@ -174,6 +176,6 @@ func _handle_collisions(pre_slide_velocity: Vector3 ,delta: float) -> void:
         var incoming_speed := -pre_slide_velocity.dot(collision.get_normal())
 
         if incoming_speed >= min_impact_speed:
-            impact_occured.emit(collider, impulse_force)
+            impact_occured.emit(collider, impulse_force, collision.get_collider_shape())
 
 

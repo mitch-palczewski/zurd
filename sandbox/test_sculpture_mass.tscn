@@ -1,0 +1,10 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" uid="uid://x0l623new2xy" path="res://scenes/world/toroidal_world.tscn" id="1_world"]
+
+[node name="TestSculptureMass" unique_id=1406931788 instance=ExtResource("1_world")]
+
+[node name="MassManager" parent="." unique_id=1093488417]
+cloud_threshold_count = 5
+hits_to_fuse = 1
+debug_labels = true

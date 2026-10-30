@@ -21,7 +21,10 @@ func _physics_process(delta: float) -> void:
     
     var target := target_component.get_or_update_target(global_position)
     mouth_componet.set_target(target)
-    movement_componet.process_movement(self, target, delta)
+    if target and mouth_componet.is_eating():
+        movement_componet.process_eating(self, target, mouth_componet.get_mouth_position(), delta)
+    else:
+        movement_componet.process_movement(self, target, delta)
 
     if not target:
         target_component.clear_target()
@@ -33,7 +36,7 @@ func _validate_components() -> void:
     if not mouth_componet: mouth_componet = get_node_or_null("MouthArea")
 
 
-func _on_object_eaten(_obj: RigidBody3D) -> void:
+func _on_object_eaten(_obj: Node3D) -> void:
     _scale_zurd(obj_scale_factor)
 
 
@@ -41,6 +44,7 @@ func take_swat(_swat_velocity: Vector3) -> void:
     print("Zurd Swatted")
     _scale_zurd(-obj_scale_factor)
     target_component.clear_target()
+    mouth_componet.cancel_eating()
 
 
 func _scale_zurd(scale_increase_factor: float):
