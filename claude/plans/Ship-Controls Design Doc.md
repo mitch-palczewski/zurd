@@ -61,11 +61,12 @@ All parameters are exported values so they can be tuned. Speeds will be refined 
 | Input ramp time | Time for a digital input to reach full strength (fakes an analog stick) | 0.3 s |
 | Max turn rate | Turn speed at full input | 45°/s |
 | Rise / sink speed | Vertical speed at full input | 5 m/s |
-| Ground clearance | Closest the ship may sink toward the ground below it | Tune in editor |
-| Lowest altitude | Floor used where there is no ground under the ship | Tune in editor |
+| Ground clearance | Closest the ship may sink toward the ground below it | 4 m |
+| Lowest altitude | Floor used where there is no ground under the ship | −50 m (the toroidal world's ground is at about −30 m) |
 | Altitude ceiling | Highest the ship may rise. Stays below the cloud band (`MassManager.atmosphere_y_range` starts at 150 m). | 120 m |
 | Idle drift speed | Gentle wander while hovering. Must stay below the flight controller's `min_impact_speed` (2.0) so a resting ship never breaks objects off a mass. | 0.5 m/s max |
-| Hover bob | Height of the slow up-and-down bob while hovering | Tune by feel |
+| Drift loop | Time for one slow drift loop around the hover spot | 40 s |
+| Hover bob | Height and rate of the slow up-and-down bob while hovering | 0.2 m, 0.15 bobs/s |
 | Launch speed | Speed of a launched object relative to the ship. Keep it at least about 2.5× the max forward speed. | 45 m/s (currently 20) |
 | Launch stop distance | How far an object launched from a hovering ship travels before it stops | 70 m (current value) |
 | Ship velocity carry-over | Share of the ship's velocity added to a launched object | 50% (currently 100%) |
@@ -82,9 +83,7 @@ All parameters are exported values so they can be tuned. Speeds will be refined 
 - The view only turns left and right (yaw). It never pitches or rolls, not even as a visual effect. The visible ship floor and ceiling don't lean either.
 - The camera's field of view is fixed. No speed-based field-of-view change. With three walls, a changing field of view would also break the image at the wall corners.
 - Turning starts and stops with a short ease (input ramp time). On three surrounding walls a sudden turn is the most likely cause of motion sickness.
-- The sense of motion comes from things that don't tilt the view:
-  - space dust streaming past the ship, faster at higher speed,
-  - a slow hover bob while the ship is idle.
+- The sense of motion comes from things that don't tilt the view, such as a slow hover bob while the ship is idle.
 - **Three walls (later):** all three wall cameras turn together and share one fixed field of view, so the image stays continuous across the wall corners. The first build uses the single front camera.
 
 ### 5.2 Movement
@@ -138,8 +137,8 @@ Replace the current `ship_pitch_up/down`, `ship_yaw_left/right` and `ship_boost`
 | --- | --- | --- | --- |
 | `ship_forward` / `ship_reverse` | Joystick forward / back | W / S | Left stick or d-pad up / down |
 | `ship_turn_left` / `ship_turn_right` | Joystick left / right | A / D | Left stick or d-pad left / right |
-| `ship_rise` / `ship_sink` | Up / Down buttons | R / F | Right / left shoulder |
-| `ship_launch` | Pilot launch | Space | A (bottom face button) |
+| `ship_rise` / `ship_sink` | Up / Down buttons | Space / Shift | Right / left shoulder |
+| `ship_launch` | Pilot launch | F | A (bottom face button) |
 | `launch_station_fire` | Station big button | K | Y (top face button) |
 | `launch_station_prev` / `launch_station_next` | Station small buttons | J / L | X / B (left / right face buttons) |
 
@@ -169,7 +168,7 @@ The first build changes only the ship's controls and effects.
 | --- | --- |
 | New flight model: thrust, turn, rise and sink, input ramps, hover with gentle position-only wander | Idle vista |
 | Altitude limits: ground clearance, lowest altitude and ceiling | Three-wall camera rig |
-| Level camera with fixed field of view; space dust and hover bob | HUD: selected-object display, Zurd markers, ship-under-attack warning |
+| Level camera with fixed field of view; hover bob | HUD: selected-object display, Zurd markers, ship-under-attack warning |
 | Launches straight ahead from the middle of the ship: pilot launch (random) and one launch station (previous / next selection), each with its own cooldown | Mass slow zone |
 | New launch speed and partial velocity carry-over | Final button layout and more launch stations |
 | Station activity tracking and its signal | Sidestep (if wanted) |

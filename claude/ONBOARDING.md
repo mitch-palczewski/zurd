@@ -105,10 +105,12 @@ builds the C# project (needs internet once). You need to install these applicati
    stale/missing. First build restores the `System.IO.Ports` NuGet package (needs internet).
 5. **Press F5** (Play). You'll boot → main menu → press *Start* → the world loads. The menu
    also has a **Lidar Setup** entry (only needed for the physical install).
-6. **Controls:** **W/S** pitch, **A/D** yaw, **Shift** boost, **Space** launch an object;
-   **right-click** swats a Zurd (makes it smaller and forces it to pick a new target). Input
-   actions: `ship_pitch_up/down`, `ship_yaw_left/right`, `ship_boost`, `ship_launch`. The
-   main menu shows a controls label.
+6. **Controls:** **W/S** forward/back, **A/D** turn, **Space/Shift** rise/sink, **F**
+   launches a random object; the launch station chooses an object with **J/L** and launches
+   it with **K**. **Left-click** swats a Zurd (makes it smaller and forces it to pick a new target).
+   A gamepad works too (left stick or d-pad, shoulders to rise/sink, face buttons to launch).
+   Input actions: `ship_forward/reverse`, `ship_turn_left/right`, `ship_rise/sink`,
+   `ship_launch`, `launch_station_fire/prev/next`. The main menu shows a controls label.
 
 ---
 
@@ -124,13 +126,22 @@ builds the C# project (needs internet once). You need to install these applicati
   ToroidalWorld`) extends it and, each physics frame, wraps any `RigidBody3D`/`CharacterBody3D`
   that leaves the play bounds — fly straight and the world repeats. The wrap math lives in
   `scripts/utils/toroidal_utils.gd`.
-- **Player ship** (`scenes/characters/player/`): `PlayerShip` (`class_name PlayerShip`, a
-  `CharacterBody3D`) wires up two pieces on ready — `PlayerFlightController` (handles flight
-  physics from the `ship_*` inputs and emits `impact_occured` on collision) and
-  `LaunchObjectComponent`. The launcher picks a random scene from its `projectile_scenes`,
-  spawns it gravity-free with linear-damp "braking" so it coasts to a stop, adds random
-  scale/spin/spread, briefly excludes the player from collision until the object clears, then
-  emits `EventBus.spawn_requested` and registers it with `ObjectTracker`.
+- **Player ship** (`scenes/characters/player/`, designed in
+  `claude/plans/Ship-Controls Design Doc.md`): `PlayerShip` (`class_name PlayerShip`, a
+  `CharacterBody3D`) sets up `PlayerFlightController` on ready. The controller flies the ship
+  "like a fish in water" from the `ship_*` inputs: thrust, turn, rise and sink, each eased in
+  so a digital arcade stick feels smooth. With no input the ship coasts to a hover with a
+  gentle drift and a cockpit bob. It only ever turns around global Y, so the projected view
+  never pitches or rolls, and it stays between a ground clearance and a ceiling. It emits
+  `impact_occured` on collision. `LaunchObjectComponent` (the `LaunchMuzzle` node) is the one
+  shared launcher: `launch_object(scene)` spawns that scene (or a random one from
+  `projectile_scenes`) straight ahead, gravity-free with linear-damp "braking" so it coasts
+  to a stop, adds random scale/spin/spread and half the ship's velocity, briefly excludes the
+  player from collision until the object clears, then emits `EventBus.spawn_requested` and
+  registers it with `ObjectTracker`. Launch buttons live under `Stations`: each
+  `LaunchStation` has its own cooldown and, for the launch station, a selected object
+  (`launch_selection_changed`). Each `StationActivity` reports a station going active or
+  empty (`station_activity_changed`).
 - **Zurd enemy** (`scenes/characters/enemy/`): `Zurd` (`class_name Zurd`, a `CharacterBody3D`)
   is a thin coordinator that delegates to three components each physics frame:
   `ZurdTargetComponent` (asks `ObjectTracker` for a target — `CLOSEST` or `RANDOM`),

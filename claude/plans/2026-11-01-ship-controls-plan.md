@@ -28,6 +28,37 @@ design doc ("First Build") and nothing from its "Later" column.
   (one encoder for the pilot and the launch station) is bound after it's wired.
 - **No floor lean.** The visible ship floor and ceiling stay level with the camera.
 
+## Status (2026-11-01)
+
+All seven build steps are written. A scratch harness (not committed) drove the real
+`toroidal_world.tscn` headless in Godot 4.7.2 at a fixed 60 fps, pressing the input actions
+and sending real key events, and ran the verification list below: **47 of 47 checks passed**. It has **not** been
+play-tested by hand, on a gamepad, on the arcade kit or on a projector yet.
+
+Measured: top speed in 1.8 s; coast to a hover in 1.5 s; 90° in a 2 s turn; hover drift
+stays within about 7 m of its spot over a minute; a hover launch leaves at 44.8 m/s; a
+full-speed launch leaves at 54 m/s and pulls 26.5 m ahead before the ship closes in; sinking
+stops 4 m above the ground.
+
+Changes from the plan made during the build:
+
+- **The hover drift is a slow loop, not a random walk.** Two sine waves at different rates
+  (`drift_period`, 40 s) keep the ship near its hover spot. A random-walk heading, like the
+  cloud drift, changes so slowly that the ship would drift in a near-straight line for
+  minutes.
+- **The ground ray reaches 1000 m**, not "clearance plus a margin". With a short ray,
+  `lowest_altitude` would act as a hard floor whenever the ship flew high above the ground.
+- **The collision push uses the ship's full velocity**, not only its forward speed, so rising
+  or sinking into an object pushes it too.
+- **Starting values:** `ground_clearance` 4 m, `lowest_altitude` −50 m (the toroidal world's
+  ground is at about −30 m), hover bob 0.2 m at 0.15 bobs/s.
+- **The main menu's controls label** lists the new controls. Its "right click - swat zurd"
+  was wrong before this work (`ship_swat` is mouse button 1, the left button) and now says
+  left click; `ONBOARDING.md` had the same mistake.
+- **`idea_large_world.tscn` has no ground collision** (its ground is meshes only), so the
+  ground-clearance check moved to `toroidal_world.tscn`, whose `MainWrappedGround` is on the
+  Environment layer.
+
 ## Architecture
 
 ```
@@ -43,7 +74,6 @@ PlayerShip (CharacterBody3D, motion_mode floating)
  │   ├─ StationLaunch (LaunchStation)      fire/prev/next: launch_station_*, selected object
  │   ├─ PilotActivity (StationActivity)    station "pilot"
  │   └─ LaunchStationActivity (StationActivity)  station "launch_station"
- ├─ SpaceDust (GPUParticles3D, world space)
  └─ SwatEmitter
 ```
 
@@ -90,11 +120,6 @@ PlayerShip (CharacterBody3D, motion_mode floating)
 - `scenes/characters/player/station_activity.gd`: `StationActivity` (Node). Exports:
   `station_id: StringName`, `actions: Array[StringName]`, `idle_timeout = 30.0`. Public
   `is_active`, so it can be watched in the remote inspector.
-- `scenes/characters/player/space_dust.tscn`: `GPUParticles3D` with `local_coords = false`, a
-  box emitter around the ship (about 60 × 30 × 60 m), zero initial velocity, a long lifetime,
-  `preprocess` equal to the lifetime so it starts full, and a tiny unshaded billboard quad that
-  fades in and out. The ship flies through still dust, so it streams faster at higher speed with
-  no script. Large `visibility_aabb`.
 
 **Modified:**
 - `project.godot` `[input]`: remove `ship_pitch_up/down`, `ship_yaw_left/right` and
@@ -128,7 +153,7 @@ PlayerShip (CharacterBody3D, motion_mode floating)
   wrap their selection.
 - `scenes/characters/player/player_ship.tscn`: drop the stale overrides (`base_speed`,
   `boost_speed` on `FlightController`; `cooldown_time` on `LaunchMuzzle`). Add the `Stations`
-  node with its four children (wired as in Architecture) and an instance of `space_dust.tscn`.
+  node with its four children (wired as in Architecture).
   Make these edits in the editor so Godot assigns uids and `unique_id`s.
 - `scripts/autoload/event_bus.gd`: add, with doc comments and `@warning_ignore("unused_signal")`
   like the others, under a `# Ship controls` heading:
@@ -155,9 +180,7 @@ PlayerShip (CharacterBody3D, motion_mode floating)
    `StationLaunch`, and add the `launch_selection_changed` signal.
 6. **Station activity.** `StationActivity`, its two nodes and the `station_activity_changed`
    signal.
-7. **Space dust.** `space_dust.tscn` under the ship. Tune its size and density on the
-   projector if possible, since tiny particles read differently on a wall than on a monitor.
-8. **Docs.** `CLAUDE.md` and `ONBOARDING.md`.
+7. **Docs.** `CLAUDE.md` and `ONBOARDING.md`.
 
 ## Edge cases to handle
 
@@ -168,7 +191,7 @@ PlayerShip (CharacterBody3D, motion_mode floating)
   mass under the ship doesn't push it up.
 - **The wander can't damage masses.** `idle_drift_speed` (0.5) is below `min_impact_speed`
   (2.0), so a drifting ship never breaks off a piece.
-- **Toroidal wrap** teleports the ship. Space dust is briefly thin after a wrap. The launcher's
+- **Toroidal wrap** teleports the ship. The launcher's
   collision-exception loop measures distance, so a wrap mid-launch ends the exception early.
   This already happens today.
 - **Empty `projectile_scenes`:** `LaunchStation` doesn't launch or step its selection, and the
@@ -183,6 +206,9 @@ PlayerShip (CharacterBody3D, motion_mode floating)
   connected at a time, since the encoder's and the 8BitDo's button numbers overlap.
 - Idle vista, HUD, mass slow zone and three-wall camera rig (design doc §8, "Later").
 - Tune speeds and launch values in the room.
+- `PlayerShip._on_flight_impact` (unchanged by this work) `print`s every collision at
+  2 m/s or more, so sliding along a wall prints about 60 lines a second. Consider removing it
+  or switching to `push_warning`, per `CLAUDE.md`.
 
 ## Verification
 
@@ -194,17 +220,18 @@ PlayerShip (CharacterBody3D, motion_mode floating)
      bobs and drifts slowly. The view never tilts or rolls, and the FOV never changes.
   2. A / D → turning eases in and out. S + A reverses while the view turns left. Turning works
      while hovering.
-  3. R / F → the ship rises and sinks. It stops at the 120 m ceiling and at `lowest_altitude`.
-  4. Space → a random object flies straight ahead. Launching at full speed, the object pulls
+  3. Space / Shift → the ship rises and sinks. It stops at the 120 m ceiling and at
+     `lowest_altitude`.
+  4. F → a random object flies straight ahead. Launching at full speed, the object pulls
      clearly ahead (about 25 m) before stopping. Launching while hovering, it stops about 70 m
      out.
-  5. J / L, then K → the station launches the selected object. Pressing Space and K together
+  5. J / L, then K → the station launches the selected object. Pressing F and K together
      launches two objects; each button keeps its own cooldown.
   6. Remote inspector on `PilotActivity` → `is_active` turns true on input and false 30 s after
      the last input. The same for `LaunchStationActivity` with J / K / L.
-  7. Space dust streams past faster at higher speed and is still while hovering.
-- **F6 on `scenes/world/idea_large_world.tscn`** (has ground): sink onto the ground → the ship
-  stops at `ground_clearance`. Fly over a rise → it climbs over smoothly.
+- **Ground, in `toroidal_world.tscn`:** sink onto the ground → the ship stops at
+  `ground_clearance`. Fly low over a rise → it climbs over smoothly. Flying into a tall static
+  object (an arch or crocodile) slides along it.
 - **F6 on `sandbox/test_sculpture_mass.tscn`:** build a small mass. Ramming it still breaks
   pieces off, and leaving the ship hovering next to it for a minute breaks nothing.
 - **Gamepad (8BitDo):** repeat steps 1–5 with the left stick, d-pad, shoulders and face buttons.

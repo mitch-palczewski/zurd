@@ -69,3 +69,16 @@ signal cloud_progress_changed(mass: SculptureMass, progress: float)
 ## Fired when a mass reaches the cloud threshold and becomes a cloud.
 @warning_ignore("unused_signal")
 signal cloud_formed(mass: SculptureMass)
+
+
+# Ship controls (see claude/plans/Ship-Controls Design Doc.md, §7).
+
+## Fired when a launch station selects a different object, and once at startup.[br]
+## [param station]: the station's id. [param scene]: the selected object's scene.
+@warning_ignore("unused_signal")
+signal launch_selection_changed(station: StringName, scene: PackedScene)
+
+
+## Fired when a station becomes active (a guest used it) or empty (no input for its idle timeout).
+@warning_ignore("unused_signal")
+signal station_activity_changed(station: StringName, active: bool)

@@ -49,13 +49,13 @@ offset_top = 12.0
 offset_right = 385.0
 offset_bottom = 496.0
 text = "--- Controls ---
-W - pitch up 
-S - pitch down 
-A - yaw left
-D - yaw right
-shift - boost
-space - launch object
-right click - swat zurd
+W / S - forward / back
+A / D - turn left / right
+space / shift - rise / sink
+F - launch random object
+J / L - choose object (launch station)
+K - launch chosen object (launch station)
+left click - swat zurd
 
 Zurd Behavior - Current
 - For every 10 objects deployed a new Zurd is spawned

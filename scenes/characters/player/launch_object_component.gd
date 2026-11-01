@@ -1,13 +1,18 @@
 class_name LaunchObjectComponent
 extends Node3D
 
+## The ship's one launcher, at the middle of the ship. Every launch flies straight ahead. Launch
+## buttons ([LaunchStation]) call [method launch_object]; this node owns the object list and the
+## launch physics.
+
 @export_group("Launch Settings")
 @export var projectile_scenes: Array[PackedScene] = []
-@export var launch_speed: float = 20.0
+@export var launch_speed: float = 45.0
 @export var target_stop_distance: float = 70.0
-@export var cooldown_time: float = 1.5
-@export var input_action: StringName = &"ship_launch"
 @export var clearance_distance: float = 21.0
+## Share of the ship's velocity added to a launched object. Below 1, an object lands at a similar
+## distance whether the ship is moving or hovering.
+@export_range(0.0, 1.0, 0.05) var ship_velocity_carry_over: float = 0.5
 
 @export_group("Object Settings")
 @export var angular_damp: float = 0.1
@@ -23,18 +28,10 @@ extends Node3D
 @export_group("References")
 @export var player_ship: CharacterBody3D
 
-var cooldown_timer: float = 0.0
 
-func _process(delta: float) -> void:
-	if cooldown_timer > 0.0:
-		cooldown_timer -= delta
-
-	if Input.is_action_just_pressed(input_action) and cooldown_timer <= 0.0:
-		launch_object()
-	
-
-func launch_object() -> void:
-	var projectile := _instantiate_projectile()
+## Launches [param scene], or a random object from [member projectile_scenes] when it is null.
+func launch_object(scene: PackedScene = null) -> void:
+	var projectile := _instantiate_projectile(scene)
 	if projectile == null:
 		return
 
@@ -50,7 +47,9 @@ func launch_object() -> void:
 	if player_ship:
 		_re_enable_player_collision_when_clear(projectile)
 
-	cooldown_timer = cooldown_time
+
+func get_projectile_count() -> int:
+	return projectile_scenes.size()
 
 
 func _re_enable_player_collision_when_clear(projectile: RigidBody3D) -> void:
@@ -59,21 +58,23 @@ func _re_enable_player_collision_when_clear(projectile: RigidBody3D) -> void:
 		if distance >= clearance_distance:
 			break
 		await get_tree().process_frame
-	
+
 	if is_instance_valid(projectile) and is_instance_valid(player_ship):
 		projectile.remove_collision_exception_with(player_ship)
 
 
-func _instantiate_projectile() -> RigidBody3D:
-	if projectile_scenes.is_empty():
-		push_warning("LaunchObjectComponent: No scenes assigned to projectile_scenes array!")
-		return null
+func _instantiate_projectile(scene: PackedScene) -> RigidBody3D:
+	var selected_scene := scene
+	if selected_scene == null:
+		if projectile_scenes.is_empty():
+			push_warning("LaunchObjectComponent: No scenes assigned to projectile_scenes array!")
+			return null
+		selected_scene = projectile_scenes.pick_random()
 
-	var selected_scene: PackedScene = projectile_scenes.pick_random()
 	if not selected_scene:
 		push_warning("LaunchObjectComponent: Selected projectile scene slot is empty/null!")
 		return null
-	
+
 	var instance := selected_scene.instantiate()
 	if not (instance is RigidBody3D):
 		push_error("LaunchObjectComponent: Projectile scene root must be a RigidBody3D!")
@@ -118,7 +119,7 @@ func _calculate_launch_velocity() -> Vector3:
 	var launch_velocity = forward_dir * launch_speed
 
 	if player_ship:
-		launch_velocity += player_ship.velocity
+		launch_velocity += player_ship.velocity * ship_velocity_carry_over
 
 	return launch_velocity
 
