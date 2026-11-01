@@ -43,7 +43,7 @@ script = ExtResource("6_a0k6d")
 [node name="MassManager" type="Node" parent="." unique_id=1093488417]
 script = ExtResource("7_mmgr")
 cloud_threshold_count = 20
-fuse_push = 4.65
+fuse_push = 7.15
 fuse_spin = 3.25
 mass_scene = ExtResource("8_smass")
 
