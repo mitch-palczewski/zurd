@@ -1,0 +1,21 @@
+[gd_scene format=4 uid="uid://btrdmqd72ust3"]
+
+[ext_resource type="Material" uid="uid://bxh1xybfmrcoy" path="res://assets/materials/terrain.tres" id="1_fsuaa"]
+[ext_resource type="Material" uid="uid://cseo1t45cp4tb" path="res://assets/materials/water.tres" id="1_ly8t5"]
+[ext_resource type="Script" uid="uid://c62apuatw1w66" path="res://scenes/world/terrain.gd" id="1_v210k"]
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_egal5"]
+size = Vector2(800, 1600)
+
+[node name="Terrain" type="Node3D" unique_id=255451220]
+
+[node name="Water" type="MeshInstance3D" parent="." unique_id=753960279]
+mesh = SubResource("PlaneMesh_egal5")
+skeleton = NodePath("../Terrain")
+surface_material_override/0 = ExtResource("1_ly8t5")
+
+[node name="Terrain" type="MeshInstance3D" parent="." unique_id=775963767]
+material_override = ExtResource("1_fsuaa")
+script = ExtResource("1_v210k")
+terrain_size = Vector2(800, 1600)
+resolution = Vector2i(128, 256)

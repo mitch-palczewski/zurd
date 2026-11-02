@@ -7,8 +7,8 @@
 [ext_resource type="PackedScene" uid="uid://dpqwpgb74ljan" path="res://scenes/objects/rigid/Archway_rigid.tscn" id="4_nfnil"]
 [ext_resource type="PackedScene" uid="uid://de5u3qjy3l6ap" path="res://scenes/objects/rigid/Crocodile_01_rigid.tscn" id="6_wg6em"]
 [ext_resource type="PackedScene" uid="uid://bfbugn5xk53wl" path="res://scenes/characters/player/swat/swat_emitter.tscn" id="7_wg6em"]
-[ext_resource type="Script" path="res://scenes/characters/player/launch_station.gd" id="8_lstat"]
-[ext_resource type="Script" path="res://scenes/characters/player/station_activity.gd" id="9_sacti"]
+[ext_resource type="Script" uid="uid://ktc32cjsndur" path="res://scenes/characters/player/launch_station.gd" id="8_lstat"]
+[ext_resource type="Script" uid="uid://db16rbtoipojd" path="res://scenes/characters/player/station_activity.gd" id="9_sacti"]
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_rmgw8"]
 radius = 0.71374303
@@ -49,6 +49,8 @@ size = 0.2
 
 [node name="FlightController" type="Node" parent="." unique_id=87340966]
 script = ExtResource("2_h8aw4")
+max_forward_speed = 25.0
+max_reverse_speed = 10.0
 
 [node name="LaunchMuzzle" type="Node3D" parent="." unique_id=112342162 node_paths=PackedStringArray("player_ship")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1.813218)
@@ -62,9 +64,7 @@ player_ship = NodePath("..")
 
 [node name="PilotLaunch" type="Node" parent="Stations" unique_id=905723418 node_paths=PackedStringArray("launcher")]
 script = ExtResource("8_lstat")
-station_id = &"pilot"
 launcher = NodePath("../../LaunchMuzzle")
-fire_action = &"ship_launch"
 
 [node name="StationLaunch" type="Node" parent="Stations" unique_id=1688204937 node_paths=PackedStringArray("launcher")]
 script = ExtResource("8_lstat")
@@ -76,7 +76,6 @@ next_action = &"launch_station_next"
 
 [node name="PilotActivity" type="Node" parent="Stations" unique_id=437118052]
 script = ExtResource("9_sacti")
-station_id = &"pilot"
 actions = Array[StringName]([&"ship_forward", &"ship_reverse", &"ship_turn_left", &"ship_turn_right", &"ship_rise", &"ship_sink", &"ship_launch"])
 
 [node name="LaunchStationActivity" type="Node" parent="Stations" unique_id=1290536614]

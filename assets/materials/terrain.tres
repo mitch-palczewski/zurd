@@ -2,24 +2,51 @@
 
 [ext_resource type="Shader" uid="uid://cy281wa1e3xl4" path="res://assets/shaders/terrain.gdshader" id="1_t3g22"]
 
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_t3g22"]
+frequency = 0.02
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_t3g22"]
+noise = SubResource("FastNoiseLite_t3g22")
+seamless = true
+
 [resource]
 render_priority = 0
 shader = ExtResource("1_t3g22")
-shader_parameter/light_grass = Color(0.35, 0.68, 0.22, 1)
-shader_parameter/dark_grass = Color(0.24, 0.52, 0.14, 1)
+shader_parameter/noise_texture = SubResource("NoiseTexture2D_t3g22")
+shader_parameter/grass_color = Color(0.18, 0.42, 0.1, 1)
+shader_parameter/grass_accent = Color(0.35, 0.65, 0.2, 1)
+shader_parameter/highland_grass = Color(0.4, 0.44, 0.2, 1)
 shader_parameter/rock_color = Color(0.4, 0.38, 0.35, 1)
 shader_parameter/dirt_color = Color(0.32, 0.24, 0.16, 1)
-shader_parameter/show_wireframe = true
-shader_parameter/wireframe_color = Color(0, 0, 0, 1)
-shader_parameter/grid_scale = 1.0
-shader_parameter/wireframe_thickness = 1.0
-shader_parameter/stripe_width = 5.0
-shader_parameter/stripe_angle_degrees = 45.0
-shader_parameter/stripe_warp = 0.3
-shader_parameter/slope_threshold = 0.5
+shader_parameter/sand_color = Color(0.78, 0.7, 0.5, 1)
+shader_parameter/snow_color = Color(0.93, 0.95, 0.98, 1)
+shader_parameter/enable_triangle_colors = true
+shader_parameter/triangle_scale = 1.0
+shader_parameter/triangle_color_variation = 0.4
+shader_parameter/enable_felt = true
+shader_parameter/felt_coverage = 0.35
+shader_parameter/felt_fuzziness = 0.5
+shader_parameter/slope_threshold = 0.7
 shader_parameter/slope_blend = 0.1
 shader_parameter/edge_noise_strength = 0.15
 shader_parameter/dirt_width = 0.2
+shader_parameter/water_level = 0.0
+shader_parameter/beach_height = 2.5
+shader_parameter/highland_height = 22.0
+shader_parameter/snow_height = 36.0
+shader_parameter/snow_blend = 4.0
+shader_parameter/snow_slope = 0.6
+shader_parameter/band_noise = 2.5
+shader_parameter/strata_scale = 0.08
+shader_parameter/strata_strength = 0.35
+shader_parameter/shallow_color = Color(0.62, 0.58, 0.42, 1)
+shader_parameter/deep_color = Color(0.08, 0.2, 0.22, 1)
+shader_parameter/deep_depth = 12.0
+shader_parameter/ripple_scale = 1.5
+shader_parameter/ripple_strength = 0.25
+shader_parameter/caustic_scale = 0.05
+shader_parameter/caustic_strength = 0.7
+shader_parameter/caustic_speed = 0.02
 shader_parameter/detail_scale = 0.2
 shader_parameter/macro_scale = 0.03
 shader_parameter/macro_blend = 0.5
