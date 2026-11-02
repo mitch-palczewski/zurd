@@ -42,22 +42,32 @@ grow_vertical = 2
 [node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer" unique_id=255606425]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="." unique_id=124524051]
+[node name="SchemeTitle" type="Label" parent="CenterContainer/VBoxContainer" unique_id=1462093817]
+layout_mode = 2
+text = "Ship controls"
+horizontal_alignment = 1
+
+[node name="SchemeOption" type="OptionButton" parent="CenterContainer/VBoxContainer" unique_id=830551946]
+layout_mode = 2
+
+[node name="HSeparator" type="HSeparator" parent="CenterContainer/VBoxContainer" unique_id=1937208455]
+layout_mode = 2
+
+[node name="InfoPanel" type="VBoxContainer" parent="." unique_id=597306124]
 layout_mode = 0
 offset_left = 27.0
 offset_top = 12.0
 offset_right = 385.0
 offset_bottom = 496.0
-text = "--- Controls ---
-W / S - forward / back
-A / D - turn left / right
-space / shift - rise / sink
-F - launch random object
-J / L - choose object (launch station)
-K - launch chosen object (launch station)
-left click - swat zurd
+theme_override_constants/separation = 16
 
-Zurd Behavior - Current
+[node name="ControlsLabel" type="Label" parent="InfoPanel" unique_id=1105627790]
+layout_mode = 2
+autowrap_mode = 2
+
+[node name="Label" type="Label" parent="InfoPanel" unique_id=124524051]
+layout_mode = 2
+text = "Zurd Behavior - Current
 - For every 10 objects deployed a new Zurd is spawned
 - Zurds pick any object at random to eat
 - zurds grow in size when they eat objects

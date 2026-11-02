@@ -108,9 +108,12 @@ builds the C# project (needs internet once). You need to install these applicati
 6. **Controls:** **W/S** forward/back, **A/D** turn, **Space/Shift** rise/sink, **F**
    launches a random object; the launch station chooses an object with **J/L** and launches
    it with **K**. **Left-click** swats a Zurd (makes it smaller and forces it to pick a new target).
-   A gamepad works too (left stick or d-pad, shoulders to rise/sink, face buttons to launch).
+   A gamepad works too (left stick or d-pad; Y/A or the triggers to rise/sink; B to launch).
    Input actions: `ship_forward/reverse`, `ship_turn_left/right`, `ship_rise/sink`,
-   `ship_launch`, `launch_station_fire/prev/next`. The main menu shows a controls label.
+   `ship_launch`, `launch_station_fire/prev/next`. The main menu's **Ship controls** selector
+   switches to the alternative **Stick lifts** scheme, where W/S (or the stick) rise and sink
+   and Space/Shift (or Y/A and the triggers) move forward and back. The controls label beside
+   it lists the keys for the chosen scheme.
 
 ---
 

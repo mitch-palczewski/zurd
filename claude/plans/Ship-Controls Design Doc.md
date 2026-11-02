@@ -36,6 +36,8 @@ All launches leave from the middle of the ship and fly straight ahead, whichever
 | Down button | Sink | Move the ship down. |
 | Launch button | Pilot launch | Launch a random object straight ahead. |
 
+This is the default scheme, **Stick drives**. The main menu can switch to the alternative in 3.3.
+
 ### 3.2 Launch station (optional, one for now)
 
 | Control | Action | Effect |
@@ -47,6 +49,20 @@ All launches leave from the middle of the ship and fly straight ahead, whichever
 The core gameplay loop must be fully playable with only the pilot station in use. A solo pilot launches random objects and may not have fine control over which object launches or over the defence of the ship. The launch station is right next to the pilot station, so the pilot can reach over to choose objects if needed.
 
 The final button layout is undecided. The design treats every launch button the same way: it fires straight ahead from the middle of the ship and has its own cooldown. Launch buttons or stations can be added or moved without changing the rest of the design.
+
+### 3.3 Alternative scheme: Stick lifts (playtest)
+
+The main menu's **Ship controls** selector switches the pilot station between two schemes, so both can be tried with guests. The launch station is the same in both.
+
+| Control | Stick drives (default, 3.1) | Stick lifts |
+| --- | --- | --- |
+| Joystick forward / back | Move forward / back | Rise / sink |
+| Joystick left / right | Turn | Turn |
+| Up / Down buttons | Rise / sink | Move forward / back |
+
+- **For Stick lifts:** the joystick moves the picture on the wall: up and down raise and lower the view, left and right turn it. Lining up a launch (turn plus height) takes one hand, and the ship only travels while a button is held.
+- **Against Stick lifts:** most guests push the joystick forward expecting to go forward, and flight-game players expect forward to dive. Flying forward and launching are both buttons on the same hand.
+- Which scheme stays is decided by playtesting (open item 5).
 
 ## 4. Parameters
 
@@ -137,10 +153,12 @@ Replace the current `ship_pitch_up/down`, `ship_yaw_left/right` and `ship_boost`
 | --- | --- | --- | --- |
 | `ship_forward` / `ship_reverse` | Joystick forward / back | W / S | Left stick or d-pad up / down |
 | `ship_turn_left` / `ship_turn_right` | Joystick left / right | A / D | Left stick or d-pad left / right |
-| `ship_rise` / `ship_sink` | Up / Down buttons | Space / Shift | Right / left shoulder |
-| `ship_launch` | Pilot launch | F | A (bottom face button) |
+| `ship_rise` / `ship_sink` | Up / Down buttons | Space / Shift | Y / A (top / bottom face buttons), or right / left trigger |
+| `ship_launch` | Pilot launch | F | B (right face button) |
 | `launch_station_fire` | Station big button | K | Y (top face button) |
 | `launch_station_prev` / `launch_station_next` | Station small buttons | J / L | X / B (left / right face buttons) |
+
+The table is the default scheme, and the project settings always hold it. Choosing **Stick lifts** on the main menu swaps the events of `ship_forward` / `ship_reverse` with those of `ship_rise` / `ship_sink` at runtime (`ControlScheme`, `scripts/utils/control_scheme.gd`), so every binding (keyboard, gamepad and, later, the arcade kit) follows the swap without other code changes. The choice lasts until it is changed again or the game restarts.
 
 The arcade buttons are bound once the kit is wired (see section 11).
 
@@ -190,6 +208,7 @@ The first build changes only the ship's controls and effects.
 2. **Boost:** none for now. If playtests show the ship is too slow, try a hold-forward cruise speed before adding a button.
 3. **Sidestep:** whether to add it, and on which control (5.2).
 4. **Reset between groups:** whether the world resets when every station has been empty for a while.
+5. **Control scheme:** Stick drives or Stick lifts (3.3). Decide after playtesting both with guests.
 
 ## 11. Hardware
 
