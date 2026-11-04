@@ -22,7 +22,7 @@ Items marked **(later)** are part of the design but not the first build (see sec
 | Launch station | Next to the pilot station, facing the front wall. The final number and placement of launch stations is undecided; this doc assumes **one**. |
 | Swatters | Guests with flyswatters at the lidar walls. Swats are aimed through the wall's camera. |
 
-All launches leave from the middle of the ship and fly straight ahead, whichever button fires them.
+All launches fly straight ahead. The pilot launch leaves from the middle of the ship; a launch station's launches leave from its own side (Launch-Station Design Doc §5).
 
 ## 3. Stations and Controls
 
@@ -42,9 +42,11 @@ This is the default scheme, **Stick drives**. The main menu can switch to the al
 
 | Control | Action | Effect |
 | --- | --- | --- |
-| Big button | Launch | Launch the selected object straight ahead. |
-| Small button 1 | Previous | Select the previous object. |
-| Small button 2 | Next | Select the next object. |
+| Big button | Launch | Launch the previewed object straight ahead, or a random one when no preview is showing. |
+| Small button 1 | Previous | Show the selection preview, then select the previous object. |
+| Small button 2 | Next | Show the selection preview, then select the next object. |
+
+The station's buttons, selection preview and launch point are specified in the Launch-Station Design Doc.
 
 The core gameplay loop must be fully playable with only the pilot station in use. A solo pilot launches random objects and may not have fine control over which object launches or over the defence of the ship. The launch station is right next to the pilot station, so the pilot can reach over to choose objects if needed.
 
@@ -116,14 +118,14 @@ All parameters are exported values so they can be tuned. Speeds will be refined 
 
 ### 5.3 Launching
 
-- Every launch leaves the middle of the ship and flies straight ahead.
+- Every launch flies straight ahead. Pilot launches leave the middle of the ship; station launches leave from the station's side (Launch-Station Design Doc §5).
 - **Pilot launch** fires a random object.
-- **Station launch** fires the station's selected object.
+- **Station launch** fires the previewed object, or a random one when no preview is showing (Launch-Station Design Doc §3).
 - Each launch button has its own cooldown, so the pilot and the station together can launch twice as fast as one.
-- **Selecting:** the station steps through the shared object list with the small buttons, wrapping around at the ends. Sizes stay random, as they are now.
+- **Selecting:** the station steps through the shared object list with the small buttons, wrapping around at the ends, and shows the choice on a pedestal in the cockpit until a few seconds pass without a press (Launch-Station Design Doc). Sizes stay random, as they are now.
 - Launched objects keep the current physics: no gravity, braking to a stop, random spin, random size and small spread.
 - **Launch speed vs. ship speed:** launch speed stays well above the ship's top speed, so a launch clearly pulls ahead of a moving ship (about 25 m at the starting values) before it stops. Only part of the ship's velocity is added, so an object lands at a similar distance whether the ship is moving or hovering (70 m hovering, about 85 m at full speed). A ship that keeps flying straight at full speed still reaches its stopped launches a few seconds later, like driving into the spot where you threw a ball; the pilot sees this coming on the front wall.
-- **Selected-object display (later):** the station's selected object is shown in the bottom band of the front wall.
+- **Selected-object display:** replaced by the pedestal preview in the Launch-Station Design Doc §4.
 - **Aiming is out of scope.** Launches fly level for now; vertical aim comes from the ship's altitude. Power and angle meters, a moving crosshair, and other ways to aim are covered in a separate doc.
 
 ### 5.4 Feedback (later)
@@ -175,7 +177,7 @@ See the implementation plan for detail. In short:
 
 | Signal | Fired when | Used by |
 | --- | --- | --- |
-| `launch_selection_changed(station, scene)` | A station selects a different object | Selected-object display **(later)** |
+| `launch_selection_changed(station, scene)` | A station's preview shows, steps or hides (null) — see Launch-Station Design Doc §8 | Sounds **(later)** |
 | `station_activity_changed(station, active)` | A station becomes active or empty | Idle vista, station prompts and Zurd difficulty **(later)** |
 
 ## 8. First Build
@@ -186,7 +188,7 @@ The first build changes only the ship's controls and effects.
 | --- | --- |
 | New flight model: thrust, turn, rise and sink, input ramps, hover with gentle position-only wander | Idle vista |
 | Altitude limits: ground clearance, lowest altitude and ceiling | Three-wall camera rig |
-| Level camera with fixed field of view; hover bob | HUD: selected-object display, Zurd markers, ship-under-attack warning |
+| Level camera with fixed field of view; hover bob | HUD: Zurd markers, ship-under-attack warning (the selection preview has its own doc) |
 | Launches straight ahead from the middle of the ship: pilot launch (random) and one launch station (previous / next selection), each with its own cooldown | Mass slow zone |
 | New launch speed and partial velocity carry-over | Final button layout and more launch stations |
 | Station activity tracking and its signal | Sidestep (if wanted) |
