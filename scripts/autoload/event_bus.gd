@@ -11,15 +11,23 @@ extends Node
 signal spawn_requested(spawnable: Node3D)
 
 
-## Fired when an actor (such as a Zurd enemy) finishes eating an object.[br]
+## Fired when an actor (such as a Zurd enemy) finishes eating an object, or one part of a combined object.[br]
 ## [br]
 ## [br][b]Contract:[/b][br]
 ## - [param actor]: The node (e.g., Zurd) that performed the eating action.[br]
-## - [param obj]: The eaten object: a loose [RigidBody3D] or a [MassPiece] of a mass. It is freed right after.[br]
+## - [param obj]: The eaten object: a loose [RigidBody3D] or a [MassPiece] of a mass. It is freed right after,
+##   unless it was a combined object that lost one part and is now smaller.[br]
 ## - [param mass]: The [SculptureMass] the object was eaten off, or [code]null[/code] for a loose object.[br]
 ## - Useful for global score tracking, spawning reward particles, audio triggers, and HUD updates.[br]
 @warning_ignore("unused_signal")
 signal object_eaten(actor: Node3D, obj: Node3D, mass: SculptureMass)
+
+
+## Fired when a Zurd finishes eating its target, so the world's [MassManager] takes the bite: one part of a
+## combined object, or the whole object. It then fires [signal object_eaten].[br]
+## [param obj]: a loose [RigidBody3D] or a [MassPiece] of a mass.
+@warning_ignore("unused_signal")
+signal eat_requested(actor: Node3D, obj: Node3D)
 
 
 ## Firedwhen a swat input (mouse click, LIDAR detection) happens.
@@ -50,15 +58,29 @@ signal object_fused(mass: SculptureMass, piece: MassPiece)
 
 
 ## Fired when two masses combine.[br]
-## [param mass]: the mass that remains. [param absorbed_count]: how many objects it took over.
+## [param mass]: the mass that remains. [param absorbed_count]: how many objects (parts) it took over.
 @warning_ignore("unused_signal")
 signal masses_merged(mass: SculptureMass, absorbed_count: int)
 
 
-## Fired when the ship breaks objects off a mass.[br]
-## [param objects]: the new loose bodies: the objects the ship hit, plus any that fell off because of it.
+## Fired when the ship, or a fused object that grew, breaks objects off a mass.[br]
+## [param objects]: the new loose bodies: the objects that were hit or grown into, plus any that fell off
+## because of it.
 @warning_ignore("unused_signal")
 signal objects_broken_off(mass: SculptureMass, objects: Array[RigidBody3D])
+
+
+## Fired when two matching objects combine into one bigger object (Design Doc §4.10).[br]
+## [param obj]: the combined object, a loose [RigidBody3D] or a [MassPiece]. [param absorbed_parts]: how
+## many parts it took in.
+@warning_ignore("unused_signal")
+signal objects_combined(obj: Node3D, absorbed_parts: int)
+
+
+## Fired when an object changes size: it grew from combining or shrank from a Zurd's bite. Its collision
+## shapes and visuals are already at [param new_size]; effects can animate the visuals from [param old_size].
+@warning_ignore("unused_signal")
+signal object_resized(obj: Node3D, old_size: float, new_size: float)
 
 
 ## Fired when a mass's cloud progress (object count / cloud threshold, 0 to 1) changes.

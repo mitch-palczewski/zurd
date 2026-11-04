@@ -55,13 +55,6 @@ func _physics_process(delta: float) -> void:
 	global_position = pos
 
 
-## Asks the manager to eat [param piece]. A Zurd calls this when it finishes eating. Nothing
-## happens if this mass is a cloud.
-func request_eat(piece: MassPiece, actor: Node3D) -> void:
-	if manager and piece.mass == self:
-		manager.request_eat(piece, actor)
-
-
 ## Asks the manager to break off the piece that owns [param shape]. The ship calls this when it
 ## hits the mass.
 func request_break_off(shape: Object) -> void:
@@ -147,8 +140,20 @@ func get_closest_piece(point: Vector3) -> MassPiece:
 	return closest
 
 
-## Groups the pieces into connected chunks using their neighbor links, largest chunk first
-## (Design Doc §4.8).
+## Objects in this mass, counting every part of a combined object (Design Doc §4.10).
+func get_part_count() -> int:
+	return count_parts(pieces)
+
+
+static func count_parts(group: Array) -> int:
+	var count := 0
+	for piece: MassPiece in group:
+		count += piece.parts.count()
+	return count
+
+
+## Groups the pieces into connected chunks using their neighbor links, largest chunk (by parts)
+## first (Design Doc §4.8).
 func get_chunks() -> Array[Array]:
 	var chunks: Array[Array] = []
 	var seen: Dictionary[MassPiece, bool] = {}
@@ -166,7 +171,7 @@ func get_chunks() -> Array[Array]:
 					seen[neighbor] = true
 					stack.append(neighbor)
 		chunks.append(chunk)
-	chunks.sort_custom(func(a: Array, b: Array) -> bool: return a.size() > b.size())
+	chunks.sort_custom(func(a: Array, b: Array) -> bool: return count_parts(a) > count_parts(b))
 	return chunks
 
 
@@ -180,31 +185,34 @@ func get_point_velocity(point: Vector3) -> Vector3:
 
 
 ## Rough moment of inertia about the centre of mass, the same around every axis, with each object
-## as a box of its collision size. Only used to turn hits into spin; Jolt still simulates the real
-## shape.
+## as a box of its collision size weighing its parts. Only used to turn hits into spin; Jolt still
+## simulates the real shape.
 func get_inertia_estimate() -> float:
 	var center := get_global_center_of_mass()
 	var estimate := 0.0
 	for piece in pieces:
 		# Averaged over the three axes, a point at distance r gives 2/3·r² and a box of size s adds |s|²/18.
-		estimate += piece.get_center().distance_squared_to(center) * 2.0 / 3.0
+		var per_part := piece.get_center().distance_squared_to(center) * 2.0 / 3.0
 		for shape in piece.shapes:
 			var box := shape.shape as BoxShape3D
 			if box:
-				estimate += (box.size * shape.global_basis.get_scale()).length_squared() / 18.0
+				per_part += (box.size * shape.global_basis.get_scale()).length_squared() / 18.0
+		var weight: int = piece.parts.count()
+		estimate += per_part * weight
 	return estimate * manager.object_mass
 
 
-## Updates the physics mass, centre of mass, cloud progress and look after pieces were added or
-## removed. Turns the mass into a cloud when it reaches the threshold.
+## Updates the physics mass, centre of mass, cloud progress and look after pieces were added,
+## removed or resized. Turns the mass into a cloud when it reaches the threshold.
 func refresh() -> void:
 	if pieces.is_empty():
 		return
+	var count := get_part_count()
 	var threshold := manager.cloud_threshold_count
-	mass = pieces.size() * manager.object_mass
+	mass = count * manager.object_mass
 	center_of_mass = _get_local_center()
-	_set_cloud_progress(1.0 if is_cloud else minf(float(pieces.size()) / threshold, 1.0))
-	if not is_cloud and pieces.size() >= threshold:
+	_set_cloud_progress(1.0 if is_cloud else minf(float(count) / threshold, 1.0))
+	if not is_cloud and count >= threshold:
 		_become_cloud()
 	_update_debug_label()
 
@@ -274,13 +282,16 @@ func _apply_look(piece: MassPiece, copy_base_look: bool) -> void:
 			mesh_instance.set_instance_shader_parameter(&"base_metallic", original.metallic)
 
 
-## Average of the piece centres in local space. Every object weighs the same (Design Doc §5), so
-## this is the centre of mass whatever the objects' sizes.
+## Average of the piece centres in local space, weighted by their parts. Every part weighs the same
+## (Design Doc §5), so this is the centre of mass whatever the objects' sizes.
 func _get_local_center() -> Vector3:
 	var sum := Vector3.ZERO
+	var count := 0
 	for piece in pieces:
-		sum += to_local(piece.get_center())
-	return sum / pieces.size()
+		var weight: int = piece.parts.count()
+		sum += to_local(piece.get_center()) * weight
+		count += weight
+	return sum / count
 
 
 func _update_debug_label() -> void:
@@ -288,6 +299,6 @@ func _update_debug_label() -> void:
 		return
 	_debug_label.position = center_of_mass
 	if is_cloud:
-		_debug_label.text = "cloud (%d)" % pieces.size()
+		_debug_label.text = "cloud (%d)" % get_part_count()
 	else:
-		_debug_label.text = "%d/%d" % [pieces.size(), manager.cloud_threshold_count]
+		_debug_label.text = "%d/%d" % [get_part_count(), manager.cloud_threshold_count]

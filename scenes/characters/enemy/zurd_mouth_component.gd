@@ -3,7 +3,8 @@ extends Area3D
 
 ## Eats the Zurd's target: a loose object, or one object of a sculpture mass. The target has to stay
 ## in the mouth for [member eat_duration]. If it leaves the mouth or stops being a valid target, or
-## [method cancel_eating] is called, the object is unharmed and the timer starts over.
+## [method cancel_eating] is called, the object is unharmed and the timer starts over. A combined
+## object loses one part per bite and stays the target, so the Zurd keeps chewing it.
 
 signal object_eaten(obj: Node3D)
 
@@ -62,14 +63,9 @@ func _eat_target() -> void:
     # a solid mass.
     active_target = null
     object_eaten.emit(target)
-
-    if target is MassPiece:
-        # The mass removes the object, emits EventBus.object_eaten and drops any dependents.
-        var piece := target as MassPiece
-        piece.mass.request_eat(piece, owner_body)
-    else:
-        EventBus.object_eaten.emit(owner_body, target, null)
-        target.queue_free()
+    # The MassManager takes the bite (one part of a combined object, or the whole object) and emits
+    # EventBus.object_eaten.
+    EventBus.eat_requested.emit(owner_body, target)
 
 
 func _is_target_in_mouth() -> bool:

@@ -89,6 +89,8 @@ func _setup_transform_and_scale(projectile: RigidBody3D) -> void:
 	var scale_factor := randf_range(min_scale, max_scale)
 	for child in projectile.get_children():
 		if child is Node3D:
+			# Scale the position too, so an off-centre collision box stays lined up with the mesh.
+			child.position *= scale_factor
 			child.scale = Vector3.ONE * scale_factor
 
 

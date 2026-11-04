@@ -49,6 +49,32 @@ weight is "number of objects".
 - **Out of scope:** the Cloud-Formation doc notes (extra cloud spheres, camera on the rising
   cloud).
 
+## Status (2026-11-04)
+
+All five build steps are written. A headless harness drove the real `MassManager` in
+`toroidal_world.tscn` and passed all 66 checks: sizes in both modes, keeper choice, weights and
+momentum, growth break-off, merge combines, bites (loose, fused and through the Zurd's mouth),
+break-off keeping parts, cloud counting by parts, same-batch follow, the launcher offsets, and the
+FX tween and flash. Soak runs of the real game loop (about 40 s each, launching mostly arches)
+logged no errors or warnings in either size mode:
+- in *Add volumes* the biggest object reached 17 parts at size ≈ 12;
+- in *Add scales* it reached 11 parts at size ≈ 35.
+
+**Not checked:** how it looks and feels (no renderer headless).
+
+Changes from the plan:
+
+- **`growth_break_depth` (0.1)** on `MassManager` (Breaking Off group): how far a growing piece
+  must push into a neighbour before the neighbour breaks off. The plan compared plain overlap
+  before and after, but neighbours that were only touching already "overlap" by a hair, so they
+  would never have broken off. Depth is measured with a box-vs-box separating axis test
+  (`MassPiece.get_box_overlap`), not a physics query, so it doesn't depend on shapes changed
+  earlier in the same batch.
+- **A loose object that reaches its hit count against a mass also combines with any matching
+  piece it's touching,** not only the one it last hit.
+- **`MassManager.request_eat` and `SculptureMass.request_eat` are gone;** the Zurd's mouth emits
+  `EventBus.eat_requested` for every target.
+
 ## Design
 
 ### Parts record: `ObjectParts`
@@ -106,9 +132,11 @@ runs. The bigger piece absorbs the other one's parts. The smaller piece is remov
 spawning anything, and its links move to the survivor. Then the growth break-off runs.
 
 **Growth break-off** (`_break_overlapped(piece, old_size)`):
-1. Query the piece's shapes at the old size and at the new size against its own mass.
-2. Pieces hit by the new query but not the old one are the ones it **now** overlaps. Pieces
-   that already overlapped stay.
+1. Measure how deep the piece's boxes push into each other piece of its mass, at the old size
+   and at the new size (box-vs-box separating axis test, `MassPiece.get_box_overlap`).
+2. Pieces pushed into by more than `growth_break_depth` now, but not before, are the ones it
+   **now** overlaps. Pieces that already overlapped that much stay. (Plain overlap wouldn't
+   work: neighbours that were only touching already overlap by a hair.)
 3. Those pieces detach with `detach_speed`, pushed away from the grown piece's centre.
 4. `_settle` then drops disconnected chunks or a 1-piece remnant.
 5. Emits `objects_broken_off`.

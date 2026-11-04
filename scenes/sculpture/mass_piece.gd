@@ -14,9 +14,11 @@ var shapes: Array[CollisionShape3D] = []
 ## Pieces this one was touching when it fused (Design Doc §4.8). Links always go both ways.
 var neighbors: Dictionary[MassPiece, bool] = {}
 
+## How many objects' worth this piece is, and its size (Design Doc §4.10).
+var parts: ObjectParts
+
 # What it takes to rebuild the loose body when the piece leaves the mass.
 var source_scene_path: String = ""
-var spawn_scale: Vector3 = Vector3.ONE
 var body_gravity_scale: float = 0.0
 var body_linear_damp_mode: RigidBody3D.DampMode = RigidBody3D.DAMP_MODE_COMBINE
 var body_linear_damp: float = 0.0
@@ -26,6 +28,7 @@ var body_angular_damp: float = 0.0
 
 ## Remembers how [param body] was set up, so [method restore_body] can rebuild it later.
 func capture_body(body: RigidBody3D) -> void:
+	parts = ObjectParts.of(body)
 	source_scene_path = body.scene_file_path
 	body_gravity_scale = body.gravity_scale
 	body_linear_damp_mode = body.linear_damp_mode
@@ -33,24 +36,29 @@ func capture_body(body: RigidBody3D) -> void:
 	body_angular_damp_mode = body.angular_damp_mode
 	body_angular_damp = body.angular_damp
 
-	# The launcher scales every child by the same amount. Read it off a collision shape, because
-	# effects may be tweening the visuals' scale.
-	for child in body.get_children():
-		if child is CollisionShape3D:
-			spawn_scale = (child as CollisionShape3D).scale
-			break
 
-
-## Applies the settings saved by [method capture_body] to a fresh instance of the object.
+## Applies the settings saved by [method capture_body] to a fresh instance of the object, including
+## its parts, size and weight, so a combined object stays combined.
 func restore_body(body: RigidBody3D) -> void:
 	body.gravity_scale = body_gravity_scale
 	body.linear_damp_mode = body_linear_damp_mode
 	body.linear_damp = body_linear_damp
 	body.angular_damp_mode = body_angular_damp_mode
 	body.angular_damp = body_angular_damp
-	for child in body.get_children():
-		if child is Node3D:
-			(child as Node3D).scale = spawn_scale
+	body.set_meta(ObjectParts.META, parts)
+	body.mass = parts.get_mass()
+	ObjectParts.resize_children(body, 1.0, parts.get_size())
+
+
+## Changes the piece from [param old_size] to [param new_size] around its origin: its visuals, and
+## its collision shapes, which live on the mass. The piece and its shapes are all children of the
+## mass, so this works in the mass's space.
+func resize(old_size: float, new_size: float) -> void:
+	var ratio := new_size / old_size
+	ObjectParts.resize_children(self, old_size, new_size)
+	for shape in shapes:
+		shape.position = position + (shape.position - position) * ratio
+		ObjectParts.set_size(shape, new_size)
 
 
 func add_shape(shape: CollisionShape3D) -> void:
@@ -99,3 +107,55 @@ func get_meshes() -> Array[MeshInstance3D]:
 	for node in find_children("*", "MeshInstance3D", true, false):
 		meshes.append(node as MeshInstance3D)
 	return meshes
+
+
+## The piece's collision boxes as they would be at [param size], in global space (shapes scale
+## around the piece's origin, as in [method resize]). Each box maps the cube from -1 to 1 onto the
+## box: its origin is the centre and its basis columns reach to the faces. Objects use box colliders
+## (the GLB importer makes them); other shapes are left out.
+func get_boxes(size: float) -> Array[Transform3D]:
+	var ratio := size / parts.get_size()
+	var boxes: Array[Transform3D] = []
+	for shape in shapes:
+		var box := shape.shape as BoxShape3D
+		if box == null:
+			continue
+		var xform := shape.global_transform * Transform3D(Basis.from_scale(box.size * 0.5), Vector3.ZERO)
+		xform.origin = global_position + (xform.origin - global_position) * ratio
+		xform.basis = xform.basis * ratio
+		boxes.append(xform)
+	return boxes
+
+
+## The deepest overlap between any box of [param a] and any box of [param b] (see
+## [method get_box_overlap]). Negative when every pair is apart.
+static func get_overlap(a: Array[Transform3D], b: Array[Transform3D]) -> float:
+	var deepest := -INF
+	for box_a in a:
+		for box_b in b:
+			deepest = maxf(deepest, get_box_overlap(box_a, box_b))
+	return deepest
+
+
+## How far two boxes (see [method get_boxes]) push into each other along the axis where they overlap
+## least, by the separating axis test: the depth when they overlap, negative when they're apart.
+static func get_box_overlap(a: Transform3D, b: Transform3D) -> float:
+	var columns: Array[Vector3] = [a.basis.x, a.basis.y, a.basis.z, b.basis.x, b.basis.y, b.basis.z]
+	var axes: Array[Vector3] = []
+	for column in columns:
+		axes.append(column.normalized())
+	# Edge-against-edge axes; parallel edges give no new axis.
+	for i in 3:
+		for j in range(3, 6):
+			var cross := columns[i].cross(columns[j])
+			if cross.length_squared() > 0.000001 * columns[i].length_squared() * columns[j].length_squared():
+				axes.append(cross.normalized())
+
+	var offset := b.origin - a.origin
+	var least := INF
+	for axis in axes:
+		var reach := 0.0
+		for column in columns:
+			reach += absf(column.dot(axis))
+		least = minf(least, reach - absf(offset.dot(axis)))
+	return least

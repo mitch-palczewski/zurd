@@ -2,11 +2,11 @@ class_name MassManager
 extends Node
 
 ## Runs the sculpture masses (Sculpture-Mass Design Doc). It counts hits on loose objects and does
-## all fusing, merging, eating and breaking off. Collision shapes can't change inside a physics
-## callback, so contact callbacks only queue requests. The queue runs in [method _physics_process],
-## which comes after the engine has reported this frame's contacts and before the next step.
-## Every object registered with [code]ObjectTracker[/code] is watched, so the generated object scenes
-## need no script.
+## all fusing, combining, merging, eating and breaking off. Collision shapes can't change inside a
+## physics callback, so contact callbacks only queue requests. The queue runs in
+## [method _physics_process], which comes after the engine has reported this frame's contacts and
+## before the next step. Every object registered with [code]ObjectTracker[/code] is watched, so the
+## generated object scenes need no script.
 
 const HITS_META := &"mass_hits"
 const TOUCHED_META := &"mass_touched_piece"
@@ -14,12 +14,12 @@ const FUSE_BLOCKED_UNTIL_META := &"mass_fuse_blocked_until"
 const LOOSE_CONTACTS_REPORTED := 4
 
 @export_group("Mass")
-## Objects a mass needs to turn into a cloud.
+## Objects a mass needs to turn into a cloud. A combined object counts as all its parts.
 @export_range(2, 500) var cloud_threshold_count: int = 60
-## Counted collisions before a loose object fuses to what it hit. Only hits from other objects or
-## masses count, at any speed.
+## Counted collisions before a loose object fuses to what it hit, or combines with it if it's the
+## same kind of object. Only hits from other objects or masses count, at any speed.
 @export_range(1, 20) var hits_to_fuse: int = 2
-## Physics mass of one object. Every object weighs the same, whatever its size.
+## Physics mass of one object (one part). Every part weighs the same, whatever its size.
 @export var object_mass: float = 1.0
 @export var mass_linear_damp: float = 0.3
 @export var mass_angular_damp: float = 0.5
@@ -32,6 +32,11 @@ const LOOSE_CONTACTS_REPORTED := 4
 @export_range(0.0, 10.0, 0.05, "or_greater") var fuse_spin: float = 0.0
 @export var mass_scene: PackedScene
 
+@export_group("Combining")
+## How a combined object's size is worked out from its parts (Design Doc §4.10). Changing it only
+## affects later combines; bites always step back to the earlier sizes.
+@export var combine_size_mode: ObjectParts.SizeMode = ObjectParts.SizeMode.ADD_VOLUMES
+
 @export_group("Breaking Off")
 ## Seconds after leaving a mass before an object's hits count again, so it drifts clear instead of
 ## fusing straight back. 0 = no delay.
@@ -41,6 +46,9 @@ const LOOSE_CONTACTS_REPORTED := 4
 @export var detach_speed: float = 1.0
 ## How close a fusing object must be to a fused object to count as touching it (structure links).
 @export var neighbor_margin: float = 0.25
+## How far a fused object that grows must push into a neighbour before the neighbour breaks off.
+## Neighbours it already pushed into this far before growing stay.
+@export var growth_break_depth: float = 0.1
 
 @export_group("Cloud")
 ## Band of heights where finished clouds hover.
@@ -55,12 +63,14 @@ const LOOSE_CONTACTS_REPORTED := 4
 @export var debug_labels: bool = false
 
 var _requests: Array[Callable] = []
-## Loose body -> the piece it became, for the batch being processed.
-var _fused_this_batch: Dictionary = {}
+## What objects became earlier in the batch being processed: a loose body -> the piece it fused or
+## combined into, or the loose body that absorbed it; a fused piece -> the piece that absorbed it.
+var _became_this_batch: Dictionary = {}
 
 
 func _ready() -> void:
 	ObjectTracker.object_registered.connect(_on_object_registered)
+	EventBus.eat_requested.connect(_on_eat_requested)
 
 
 func _physics_process(_delta: float) -> void:
@@ -70,11 +80,7 @@ func _physics_process(_delta: float) -> void:
 	_requests = []
 	for request in batch:
 		request.call()
-	_fused_this_batch.clear()
-
-
-func request_eat(piece: MassPiece, actor: Node3D) -> void:
-	_requests.append(_process_eat.bind(piece, actor))
+	_became_this_batch.clear()
 
 
 func request_break_off(piece: MassPiece) -> void:
@@ -128,6 +134,10 @@ func _on_mass_body_shape_entered(_body_rid: RID, other: Node, other_shape_index:
 		_requests.append(_process_merge.bind(mine, theirs))
 
 
+func _on_eat_requested(actor: Node3D, obj: Node3D) -> void:
+	_requests.append(_process_eat.bind(obj, actor))
+
+
 ## Only other objects and masses count as hits (not the ship, Zurds or the environment).
 func _is_fuse_partner(other: Node) -> bool:
 	if other is SculptureMass:
@@ -141,54 +151,61 @@ func _is_fuse_partner(other: Node) -> bool:
 # ==============================================================================
 
 func _process_fuse(body: Variant, other: Variant) -> void:
-	if not _is_loose(body) or not is_instance_valid(other):
+	if not _is_loose(body):
 		return
 	var loose: RigidBody3D = body
+	# Follow what it hit if that fused or combined earlier in this batch.
+	var target: Variant = _follow(other)
+	if target == null or target == loose:
+		return
 
-	if _fused_this_batch.has(other):
-		# What it hit was fused earlier in this batch: follow it to its mass.
-		var other_piece: MassPiece = _fused_this_batch[other]
-		if _is_live_mass(other_piece.mass):
-			_fuse(loose, other_piece.mass, other_piece)
-	elif other is SculptureMass:
+	if target is MassPiece:
+		if _is_live_piece(target):
+			_join_mass(loose, target.mass, target)
+	elif target is SculptureMass:
 		var touched := _get_touched_piece(loose)
-		if _is_live_mass(other):
-			_fuse(loose, other, touched if touched and touched.mass == other else null)
-		elif touched and _is_live_mass(touched.mass):
+		if _is_live_mass(target):
+			_join_mass(loose, target, touched if touched and touched.mass == target else null)
+		elif touched:
 			# The mass it hit merged into another one earlier in this batch.
-			_fuse(loose, touched.mass, touched)
-	elif _is_loose(other):
-		# Two loose objects: whichever reached the hit count pulls the other into a new mass.
-		_start_mass(loose, other)
+			_join_mass(loose, touched.mass, touched)
+	elif _is_loose(target):
+		if _matches(loose, target):
+			_combine_loose(loose, target)
+		else:
+			# Two loose objects: whichever reached the hit count pulls the other into a new mass.
+			_start_mass(loose, target)
 
 
 func _process_merge(piece_a: Variant, piece_b: Variant) -> void:
-	if not _is_live_piece(piece_a) or not _is_live_piece(piece_b):
+	var followed_a: Variant = _follow(piece_a)
+	var followed_b: Variant = _follow(piece_b)
+	if not _is_live_piece(followed_a) or not _is_live_piece(followed_b):
 		return
-	var a: MassPiece = piece_a
-	var b: MassPiece = piece_b
+	var a: MassPiece = followed_a
+	var b: MassPiece = followed_b
 	if a.mass == b.mass:
 		return
-	if a.mass.pieces.size() >= b.mass.pieces.size():
+	if a.mass.get_part_count() >= b.mass.get_part_count():
 		_merge(a.mass, b.mass, a, b)
 	else:
 		_merge(b.mass, a.mass, b, a)
 
 
-func _process_eat(piece: Variant, actor: Variant) -> void:
-	if not _is_live_piece(piece):
-		return
-	var eaten: MassPiece = piece
-	var mass := eaten.mass
-	EventBus.object_eaten.emit(actor if is_instance_valid(actor) else null, eaten, mass)
-	mass.remove_piece(eaten)
-	_settle(mass)
+func _process_eat(obj: Variant, actor: Variant) -> void:
+	var target: Variant = _follow(obj)
+	var eater: Node3D = actor if is_instance_valid(actor) else null
+	if _is_live_piece(target):
+		_bite_piece(target, eater)
+	elif _is_loose(target):
+		_bite_loose(target, eater)
 
 
 func _process_break_off(piece: Variant) -> void:
-	if not _is_live_piece(piece):
+	var target: Variant = _follow(piece)
+	if not _is_live_piece(target):
 		return
-	var hit: MassPiece = piece
+	var hit: MassPiece = target
 	var mass := hit.mass
 	var broken: Array[RigidBody3D] = []
 	var body := _detach(hit)
@@ -235,6 +252,28 @@ func _create_mass(at: Vector3) -> SculptureMass:
 	return mass
 
 
+## [param body] reached its hit count against [param mass] (Design Doc §4.1, §4.10). It combines
+## with a matching fused object it's touching, preferring [param touched] (the one it hit), or else
+## fuses.
+func _join_mass(body: RigidBody3D, mass: SculptureMass, touched: MassPiece) -> void:
+	var matching := _find_matching_piece(body, mass, touched)
+	if matching:
+		_combine_into_piece(body, matching)
+	else:
+		_fuse(body, mass, touched)
+
+
+func _find_matching_piece(body: RigidBody3D, mass: SculptureMass, touched: MassPiece) -> MassPiece:
+	if touched and _matches(body, touched):
+		return touched
+	if not mass.pieces.any(_matches.bind(body)):
+		return null
+	for piece in _find_touching_pieces(body, mass):
+		if _matches(body, piece):
+			return piece
+	return null
+
+
 ## Fuses [param body] into [param mass] and frees the body (Design Doc §4.1). [param touched] is the
 ## fused object it hit, if known.
 func _fuse(body: RigidBody3D, mass: SculptureMass, touched: MassPiece) -> MassPiece:
@@ -245,38 +284,44 @@ func _fuse(body: RigidBody3D, mass: SculptureMass, touched: MassPiece) -> MassPi
 		# Always link to something, so the structure stays connected.
 		neighbors.append(mass.get_closest_piece(body.global_position))
 
-	# Momentum: the mass-weighted average of the mass and the incoming object (Design Doc §5), with
-	# the object's weight scaled by fuse_push. A mass with one object is two loose objects meeting,
-	# so neither pushes harder.
-	var mass_weight := mass.pieces.size() * object_mass
-	var incoming := object_mass * (fuse_push if mass.pieces.size() > 1 else 1.0)
-	var hit_velocity := body.linear_velocity - mass.linear_velocity
 	var old_center := mass.get_global_center_of_mass()
-	if mass.pieces.is_empty():
-		mass.linear_velocity = body.linear_velocity
-	else:
-		mass.linear_velocity += hit_velocity * incoming / (mass_weight + incoming)
+	var hit_velocity := body.linear_velocity - mass.linear_velocity
+	var reduced_weight := _take_momentum(mass, body)
 
 	var piece := mass.add_piece(body)
 	for neighbor in neighbors:
 		piece.link(neighbor)
-	_fused_this_batch[body] = piece
+	_became_this_batch[body] = piece
 	body.queue_free()
 
 	ObjectTracker.register_object(piece)
 	EventBus.object_fused.emit(mass, piece)
 	mass.refresh()
-
-	if fuse_spin > 0.0 and mass_weight > 0.0 and not mass.is_cloud:
-		var reduced_weight := mass_weight * incoming / (mass_weight + incoming)
-		_spin_from_hit(mass, piece.get_center() - old_center, hit_velocity, reduced_weight)
+	_spin_from_hit(mass, piece.get_center() - old_center, hit_velocity, reduced_weight)
 	return piece
 
 
-## Spins [param mass] for an object that fused [param offset] from its old centre of mass, moving at
-## [param hit_velocity] relative to it. For two bodies that stick together, the spin about the new
+## Changes [param mass]'s velocity for [param body] joining it: the weighted average of the two
+## (Design Doc §4.1, §5), with the body's weight (its parts) scaled by [member fuse_push]. Returns
+## the pair's reduced weight, for [method _spin_from_hit].
+func _take_momentum(mass: SculptureMass, body: RigidBody3D) -> float:
+	if mass.pieces.is_empty():
+		mass.linear_velocity = body.linear_velocity
+		return 0.0
+	var mass_weight := mass.get_part_count() * object_mass
+	# A mass with one object is two loose objects meeting, so neither pushes harder.
+	var push := fuse_push if mass.pieces.size() > 1 else 1.0
+	var incoming := ObjectParts.of(body).count() * object_mass * push
+	mass.linear_velocity += (body.linear_velocity - mass.linear_velocity) * incoming / (mass_weight + incoming)
+	return mass_weight * incoming / (mass_weight + incoming)
+
+
+## Spins [param mass] for an object that joined it [param offset] from its old centre of mass, moving
+## at [param hit_velocity] relative to it. For two bodies that stick together, the spin about the new
 ## centre is offset × hit_velocity × [param reduced_weight] (the two-body reduced mass).
 func _spin_from_hit(mass: SculptureMass, offset: Vector3, hit_velocity: Vector3, reduced_weight: float) -> void:
+	if fuse_spin <= 0.0 or reduced_weight <= 0.0 or mass.is_cloud:
+		return
 	var inertia := mass.get_inertia_estimate()
 	if inertia <= 0.0:
 		return
@@ -284,13 +329,13 @@ func _spin_from_hit(mass: SculptureMass, offset: Vector3, hit_velocity: Vector3,
 
 
 ## Moves every piece of [param absorb] into [param keep] (Design Doc §4.2). [param a] and [param b]
-## are the pieces that touched; they become linked.
+## are the pieces that touched; they become linked, and combine if they're the same kind of object.
 func _merge(keep: SculptureMass, absorb: SculptureMass, a: MassPiece, b: MassPiece) -> void:
-	var keep_weight := keep.pieces.size() * object_mass
-	var absorb_weight := absorb.pieces.size() * object_mass
+	var keep_weight := keep.get_part_count() * object_mass
+	var absorb_weight := absorb.get_part_count() * object_mass
 	keep.linear_velocity = (keep.linear_velocity * keep_weight + absorb.linear_velocity * absorb_weight) / (keep_weight + absorb_weight)
 
-	var absorbed_count := absorb.pieces.size()
+	var absorbed_count := absorb.get_part_count()
 	for piece in absorb.pieces.duplicate():
 		keep.adopt_piece(piece)
 		# Reparenting takes the piece out of the tree, which drops it from the tracker.
@@ -300,15 +345,190 @@ func _merge(keep: SculptureMass, absorb: SculptureMass, a: MassPiece, b: MassPie
 
 	EventBus.masses_merged.emit(keep, absorbed_count)
 	keep.refresh()
+	if _matches(a, b) and _is_live_mass(keep):
+		_combine_pieces(a, b)
 
+
+# ==============================================================================
+# COMBINING (Design Doc §4.10)
+# ==============================================================================
+
+## Combines two matching loose objects: the bigger one stays where it is, takes the other's parts
+## and grows, and the other is freed.
+func _combine_loose(a: RigidBody3D, b: RigidBody3D) -> void:
+	var keep := a
+	var absorb := b
+	if ObjectParts.of(b).is_bigger_than(ObjectParts.of(a)):
+		keep = b
+		absorb = a
+	var keep_parts := ObjectParts.of(keep)
+	var absorb_parts := ObjectParts.of(absorb)
+
+	# Momentum: the weighted average of the two, as in fusing (Design Doc §4.1).
+	var keep_weight := keep_parts.get_mass()
+	var absorb_weight := absorb_parts.get_mass()
+	var total := keep_weight + absorb_weight
+	keep.linear_velocity = (keep.linear_velocity * keep_weight + absorb.linear_velocity * absorb_weight) / total
+	keep.angular_velocity = (keep.angular_velocity * keep_weight + absorb.angular_velocity * absorb_weight) / total
+
+	var old_size := keep_parts.get_size()
+	keep_parts.absorb(absorb_parts, combine_size_mode)
+	keep.set_meta(HITS_META, 0)
+	keep.remove_meta(TOUCHED_META)
+	_became_this_batch[absorb] = keep
+	absorb.queue_free()
+
+	_apply_size(keep, old_size)
+	EventBus.objects_combined.emit(keep, absorb_parts.count())
+
+
+## Combines loose [param body] into the matching fused [param piece]: the piece takes the body's
+## parts and grows in place, and the fused objects it grows into break off.
+func _combine_into_piece(body: RigidBody3D, piece: MassPiece) -> void:
+	var mass := piece.mass
+	var body_parts := ObjectParts.of(body)
+	var old_center := mass.get_global_center_of_mass()
+	var hit_velocity := body.linear_velocity - mass.linear_velocity
+	var reduced_weight := _take_momentum(mass, body)
+
+	var old_size := piece.parts.get_size()
+	piece.parts.absorb(body_parts, combine_size_mode)
+	_became_this_batch[body] = piece
+	body.queue_free()
+
+	_apply_size(piece, old_size)
+	EventBus.objects_combined.emit(piece, body_parts.count())
+	_break_overlapped(piece, old_size)
+	if _is_live_piece(piece):
+		_spin_from_hit(mass, piece.get_center() - old_center, hit_velocity, reduced_weight)
+
+
+## Combines matching fused objects [param a] and [param b] of one mass (after a merge): the bigger
+## one takes the other's parts and links and grows in place, and the other is removed.
+func _combine_pieces(a: MassPiece, b: MassPiece) -> void:
+	var keep := a
+	var absorb := b
+	if b.parts.is_bigger_than(a.parts):
+		keep = b
+		absorb = a
+	var old_size := keep.parts.get_size()
+	var absorbed_parts := absorb.parts.count()
+	keep.parts.absorb(absorb.parts, combine_size_mode)
+	for neighbor in absorb.neighbors:
+		keep.link(neighbor)
+	_became_this_batch[absorb] = keep
+	keep.mass.remove_piece(absorb)
+
+	_apply_size(keep, old_size)
+	EventBus.objects_combined.emit(keep, absorbed_parts)
+	_break_overlapped(keep, old_size)
+
+
+## Puts [param obj] (a loose body or a fused piece) at its parts' size after it was [param old_size].
+## Collision shapes and visuals change at once; SculptureFx animates the visuals.
+func _apply_size(obj: Node3D, old_size: float) -> void:
+	var new_size: float
+	var piece := obj as MassPiece
+	if piece:
+		new_size = piece.parts.get_size()
+		piece.resize(old_size, new_size)
+	else:
+		var body := obj as RigidBody3D
+		var parts := ObjectParts.of(body)
+		new_size = parts.get_size()
+		ObjectParts.resize_children(body, old_size, new_size)
+		body.mass = parts.get_mass()
+	EventBus.object_resized.emit(obj, old_size, new_size)
+
+
+## Breaks off the fused objects that [param piece] pushes into after growing from [param old_size],
+## pushed away from it, then settles the mass (Design Doc §4.8).
+func _break_overlapped(piece: MassPiece, old_size: float) -> void:
+	var mass := piece.mass
+	var center := piece.get_center()
+	var broken: Array[RigidBody3D] = []
+	for other in _find_grown_into(piece, old_size):
+		var body := _detach(other, center)
+		if body:
+			broken.append(body)
+	broken.append_array(_settle(mass))
+	if not broken.is_empty():
+		EventBus.objects_broken_off.emit(mass, broken)
+
+
+## Fused objects of [param piece]'s mass that it now pushes into by more than
+## [member growth_break_depth], but didn't at [param old_size].
+func _find_grown_into(piece: MassPiece, old_size: float) -> Array[MassPiece]:
+	var old_boxes := piece.get_boxes(old_size)
+	var new_boxes := piece.get_boxes(piece.parts.get_size())
+	var found: Array[MassPiece] = []
+	for other in piece.mass.pieces:
+		if other == piece:
+			continue
+		var other_boxes := other.get_boxes(other.parts.get_size())
+		if (MassPiece.get_overlap(new_boxes, other_boxes) > growth_break_depth
+				and MassPiece.get_overlap(old_boxes, other_boxes) <= growth_break_depth):
+			found.append(other)
+	return found
+
+
+## True when [param a] and [param b] are the same kind of object: the same model, at any size. Each
+## is a loose body or a fused piece.
+func _matches(a: Node, b: Node) -> bool:
+	var path := _get_scene_path(a)
+	return not path.is_empty() and path == _get_scene_path(b)
+
+
+func _get_scene_path(obj: Node) -> String:
+	var piece := obj as MassPiece
+	return piece.source_scene_path if piece else obj.scene_file_path
+
+
+# ==============================================================================
+# EATING (Design Doc §4.5)
+# ==============================================================================
+
+## A Zurd's bite out of fused [param piece]: one part of a combined object, which shrinks back a
+## step and keeps its links, or the whole object, which may drop its dependents.
+func _bite_piece(piece: MassPiece, eater: Node3D) -> void:
+	var mass := piece.mass
+	EventBus.object_eaten.emit(eater, piece, mass)
+	if piece.parts.count() > 1:
+		var old_size := piece.parts.get_size()
+		piece.parts.remove_last()
+		_apply_size(piece, old_size)
+		mass.refresh()
+	else:
+		mass.remove_piece(piece)
+		_settle(mass)
+
+
+## A Zurd's bite out of loose [param body]: one part of a combined object, which shrinks back a
+## step, or the whole object.
+func _bite_loose(body: RigidBody3D, eater: Node3D) -> void:
+	EventBus.object_eaten.emit(eater, body, null)
+	var parts := ObjectParts.of(body)
+	if parts.count() > 1:
+		var old_size := parts.get_size()
+		parts.remove_last()
+		_apply_size(body, old_size)
+	else:
+		body.queue_free()
+
+
+# ==============================================================================
+# BREAKING OFF
+# ==============================================================================
 
 ## Takes [param piece] out of its mass and puts a loose copy of the object in its place, moving with
-## the mass's velocity at that point (Design Doc §4.6, §5).
-func _detach(piece: MassPiece) -> RigidBody3D:
+## the mass's velocity at that point plus [member detach_speed] away from [param push_from], or from
+## the mass's centre when that's null (Design Doc §4.6, §5).
+func _detach(piece: MassPiece, push_from: Variant = null) -> RigidBody3D:
 	var mass := piece.mass
 	var center := piece.get_center()
 	var velocity := mass.get_point_velocity(center)
-	var away := center - mass.get_global_center_of_mass()
+	var origin: Vector3 = mass.get_global_center_of_mass() if push_from == null else push_from
+	var away := center - origin
 	if away.length_squared() > 0.0001:
 		velocity += away.normalized() * detach_speed
 	var spin := mass.angular_velocity
@@ -373,6 +593,10 @@ func _settle(mass: SculptureMass) -> Array[RigidBody3D]:
 	return loose
 
 
+# ==============================================================================
+# HELPERS
+# ==============================================================================
+
 ## Fused objects of [param mass] that [param body] is touching (Design Doc §4.8: each fused object
 ## remembers what it was touching when it fused).
 func _find_touching_pieces(body: RigidBody3D, mass: SculptureMass) -> Array[MassPiece]:
@@ -406,10 +630,20 @@ func _get_touched_piece(body: RigidBody3D) -> MassPiece:
 	return null
 
 
+## What [param obj] became if it fused or combined earlier in this batch, or [param obj] itself;
+## null if it was freed.
+func _follow(obj: Variant) -> Variant:
+	if not is_instance_valid(obj):
+		return null
+	while _became_this_batch.has(obj):
+		obj = _became_this_batch[obj]
+	return obj
+
+
 func _is_loose(body: Variant) -> bool:
 	return (is_instance_valid(body) and body is RigidBody3D and body.has_meta(HITS_META)
 			and body.is_inside_tree() and not body.is_queued_for_deletion()
-			and not _fused_this_batch.has(body))
+			and not _became_this_batch.has(body))
 
 
 func _is_live_mass(mass: Variant) -> bool:
