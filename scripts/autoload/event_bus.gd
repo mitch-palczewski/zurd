@@ -30,16 +30,16 @@ signal object_eaten(actor: Node3D, obj: Node3D, mass: SculptureMass)
 signal eat_requested(actor: Node3D, obj: Node3D)
 
 
-## Firedwhen a swat input (mouse click, LIDAR detection) happens.
+## Fired when a swat input (mouse click, LIDAR detection) happens.
 ## [br]
-## [param screen_uv]: normalized viewport position, (0,0) top-left to (1,1) botom-right.
+## [param screen_uv]: normalized viewport position, (0,0) top-left to (1,1) bottom-right.
 @warning_ignore("unused_signal")
 signal swat_requested(screen_uv: Vector2)
 
 
 ## Fired as the pointer moves, so the cursor visual can follow it
 ## [br]
-## [param screen_uv]: normalized viewport position, (0,0) top-left to (1,1) botom-right.
+## [param screen_uv]: normalized viewport position, (0,0) top-left to (1,1) bottom-right.
 @warning_ignore("unused_signal")
 signal pointer_moved(screen_uv: Vector2)
 

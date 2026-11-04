@@ -1,6 +1,6 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://drrw5xnj8oie1"]
 
-[ext_resource type="Script" path="res://scenes/tools/lidar_setup/LidarSetup.cs" id="1_lidar"]
+[ext_resource type="Script" uid="uid://dub25sjnhdevp" path="res://scenes/tools/lidar_setup/LidarSetup.cs" id="1_lidar"]
 
 [node name="LidarSetup" type="Control"]
 layout_mode = 3

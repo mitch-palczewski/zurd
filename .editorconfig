@@ -2,3 +2,12 @@ root = true
 
 [*]
 charset = utf-8
+
+# GDScript style guide: tabs.
+[*.{gd,gdshader}]
+indent_style = tab
+
+# C# (lidar code): standard .NET.
+[*.cs]
+indent_style = space
+indent_size = 4

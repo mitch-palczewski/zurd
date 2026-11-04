@@ -32,6 +32,11 @@ All parameters are exposed as exported values so they can be tuned.
 | Eat duration | Time a Zurd needs to eat one object, or one part of a combined object | Tune by feel |
 | Combine size mode | How a combined object's size is worked out (4.10): *Add volumes* (scales 3 and 4 make about 4.5) or *Add scales* (3 + 4 = 7). A toggle for testing | Add volumes |
 | Resize animation time | Length of the grow and shrink animation. Short and snappy | About 0.25 s, tune by feel |
+| Refuse delay | Time after an object leaves a mass (knocked or fallen off) before its hits count again, so it drifts clear instead of fusing straight back (4.1). 0 = no delay | 1 s |
+| Detach speed | Extra speed pushing an object that leaves a mass away from it, on top of the mass's own velocity at that point (4.6) | 1 m/s |
+| Fuse push | How hard a fusing object pushes the mass. 1 = plain momentum conservation (4.1); higher counts the object as that many objects, so masses get knocked around more | 1 (the world currently uses 7.15) |
+| Fuse spin | How much an off-centre fuse spins the mass. 0 = no spin; 1 = roughly physical (5) | 0 (the world currently uses 3.25) |
+| Growth break depth | How far a growing object must push into a fused neighbour before the neighbour breaks off (4.10) | 0.1 m |
 
 ## 4. Behaviors
 
@@ -44,8 +49,8 @@ All parameters are exposed as exported values so they can be tuned.
 - Two loose objects that collide also need to reach the hit counter before they form a new mass. (To be revisited as a special case if it does not feel right.)
 - When two loose objects form a mass, the mass is created at their combined position.
 - Fusion plays a **fusion animation** and a **fusion sound** (placeholders).
-- **Momentum is conserved.** The velocity of the mass after fusion is the mass-weighted average of the mass and the incoming object. Each fused object therefore changes the mass's velocity less as the mass grows.
-- **No impact threshold:** a collision at any speed counts toward the hit counter. There is no minimum impact speed and no cooldown.
+- **Momentum is conserved.** The velocity of the mass after fusion is the mass-weighted average of the mass and the incoming object. Each fused object therefore changes the mass's velocity less as the mass grows. *Fuse push* above 1 deliberately exaggerates the incoming object's weight in this average.
+- **No impact threshold:** a collision at any speed counts toward the hit counter. There is no minimum impact speed and no cooldown, with one exception: an object that has just left a mass ignores hits for *Refuse delay*. Without it, a broken-off object, which starts out touching its old neighbours, would fuse straight back, and a falling-off chunk would re-form as a new mass at once.
 
 ### 4.2 Multiple masses and merging
 
@@ -83,7 +88,7 @@ All parameters are exposed as exported values so they can be tuned.
 - If the ship collides with a mass, a **collision sound** plays (placeholder).
 - Only the objects the ship actually hits break off. They become loose rigid bodies again and can be re-fused later.
 - The ship's impact also changes the mass's velocity.
-- Broken-off objects carry the mass's velocity at their position, so they leave naturally.
+- Broken-off objects carry the mass's velocity at their position, plus *Detach speed* away from the mass, so they leave naturally.
 - A combined object breaks off whole and stays combined.
 
 ### 4.7 Cloud transformation
@@ -127,7 +132,7 @@ When an object is shot into the same kind of object, the two become one bigger o
 - **Counting:** a combined object counts as all its parts, for cloud progress and for weight, whether it is loose or in a mass.
 - **Momentum:** conserved like fusion (4.1), weighted by parts.
 - **Look and sound:** the collision shape grows at once; the object visibly scales up in a short, snappy animation with a **yellow flash** on the combined object only, and a **combine sound** plays (placeholders; the animation is not designed yet).
-- **Breaking off:** when an object in a mass grows, the fused objects it now overlaps break off as loose objects, pushed outward, and anything left disconnected falls off (4.8). A loose object that grows simply shoves its neighbours away.
+- **Breaking off:** when an object in a mass grows, the fused objects it now pushes into by more than *Growth break depth* (and didn't before it grew) break off as loose objects, pushed outward, and anything left disconnected falls off (4.8). Neighbours that were only touching stay. A loose object that grows simply shoves its neighbours away.
 - **Combined objects stay combined,** including when they break off a mass. Only Zurds take them apart, one part per bite (4.5).
 
 ## 5. Implementation Decision: One Rigid Body Per Mass
@@ -139,7 +144,7 @@ Each mass is a single rigid body. Fused objects become children (their mesh and 
 - Momentum conservation is one formula: `new_velocity = (M * V_mass + m * v_object) / (M + m)`.
 - Removing an object spawns a new loose rigid body at its position, carrying the mass's velocity at that point.
 - Shapes cannot be changed inside a physics callback, so fusion and removal are deferred by a frame.
-- Angular momentum from off-center hits is approximate; treat exact conservation as optional polish.
+- Angular momentum from off-center hits is approximate; treat exact conservation as optional polish. *Fuse spin* adds the spin from an off-centre fuse using an estimated inertia (0 turns it off).
 - Expected size is 60-100 shapes per mass, which this approach handles comfortably. Joint-based approaches were rejected as jittery and costly at that count.
 
 ## 6. Events and Placeholders (Event Bus signals)

@@ -1,5 +1,5 @@
 extends Control
-@export_file("*.tscn") var initial_scene_path: String = "res://scenes/ui/menus/main_menu/main_menu.tscn"
+@export_file("*.tscn") var initial_scene_path: String = "uid://68dobhnbf23d" # main_menu.tscn
 
 func _ready() -> void:
 	# TODO game boot initialization logic here. 

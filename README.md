@@ -75,7 +75,8 @@ Collision Layer ("Who am i?"): The category or identity assigned to the object i
 
 Collision Mask ("Who do I collide with?"): The list of categories this object actively scans and checks for collisions against. It tells Godot which other objects this specific body should collide with or detect.
 
-> The glb_physics_importer.gd auto asigns imported .glb collision mask. The generated Static object gets assigned Layer 1 and the generated Rigid Object gets assigned Layer 3. 
+> The layer names are also set in Project Settings → Layer Names, so the Inspector shows them.
+> The glb_post_importer.gd auto assigns imported .glb collision layers and masks. The generated Static object (models in `assets/models/scenery/`) gets assigned Layer 1 and the generated Rigid Object (models in `assets/models/objects/`) gets assigned Layer 3. 
 
 
 
@@ -113,6 +114,7 @@ Autoload scripts in Godot are global scripts allowing functions to be called thr
 | :--- | :--- | :--- |
 | **EventBus** | `res://scripts/autoload/event_bus.gd` | Central message bus for global signals (interaction, spawning, UI). |
 | **SceneChanger** | `res://scripts/autoload/scene_changer.gd` | Handles asynchronous scene loading and transition overlays. |
+| **ObjectTracker** | `res://scripts/autoload/object_tracker.gd` | Tracks every object a Zurd can target: loose launched objects and objects fused into a sculpture mass. |
 
 
 

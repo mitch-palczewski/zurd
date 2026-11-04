@@ -63,7 +63,7 @@ instancing a scene. This project registers three (in `project.godot`):
 | Name | Script | Responsibility |
 |---|---|---|
 | `EventBus` | `scripts/autoload/event_bus.gd` | Central signal bus. Signals: `spawn_requested(Node3D)`, `object_eaten(actor, obj, mass)`, lidar/input `swat_requested(uv)` and `pointer_moved(uv)`, and the sculpture-mass events `object_hit`, `object_fused`, `masses_merged`, `objects_broken_off`, `cloud_progress_changed`, `cloud_formed`. |
-| `SceneChanger` | `scripts/autoload/scene_changer.gd` | Synchronous and threaded/async scene loading + transitions. |
+| `SceneChanger` | `scripts/autoload/scene_changer.gd` | Synchronous and threaded/async scene loading + transitions. A failed async load fires `load_failed`, so the loading screen closes and the menu works again. |
 | `ObjectTracker` | `scripts/autoload/object_tracker.gd` | Tracks every Zurd target — loose launched `RigidBody3D`s **and** fused `MassPiece`s — and auto-cleans freed ones. API: `register_object`/`unregister_object`, `is_trackable`, `get_random_object`, `get_closest_object`, and an `object_registered` signal. |
 
 ### Forward+ renderer & Jolt physics
@@ -105,15 +105,16 @@ builds the C# project (needs internet once). You need to install these applicati
    stale/missing. First build restores the `System.IO.Ports` NuGet package (needs internet).
 5. **Press F5** (Play). You'll boot → main menu → press *Start* → the world loads. The menu
    also has a **Lidar Setup** entry (only needed for the physical install).
-6. **Controls:** **W/S** forward/back, **A/D** turn, **Space/Shift** rise/sink, **F**
-   launches a random object; the launch station chooses an object with **J/L** and launches
-   it with **K**. **Left-click** swats a Zurd (makes it smaller and forces it to pick a new target).
-   A gamepad works too (left stick or d-pad; Y/A or the triggers to rise/sink; B to launch).
-   Input actions: `ship_forward/reverse`, `ship_turn_left/right`, `ship_rise/sink`,
-   `ship_launch`, `launch_station_fire/prev/next`. The main menu's **Ship controls** selector
-   switches to the alternative **Stick lifts** scheme, where W/S (or the stick) rise and sink
-   and Space/Shift (or Y/A and the triggers) move forward and back. The controls label beside
-   it lists the keys for the chosen scheme.
+6. **Controls:** **W/S** forward/back, **A/D** turn, **Shift/Ctrl** rise/sink, **Space**
+   launches a random object. **Left-click** swats a Zurd (makes it smaller and forces it to
+   pick a new target). A gamepad works too (left stick or d-pad; Y/A or the triggers to
+   rise/sink; B to launch). The launch station (`launch_station_fire/prev/next`) has no
+   bindings yet; it gets them with the physical controller. Input actions: `ship_forward/reverse`,
+   `ship_turn_left/right`, `ship_rise/sink`, `ship_launch`, `launch_station_fire/prev/next`.
+   The main menu's **Ship controls** selector switches to the alternative **Stick lifts**
+   scheme, where W/S (or the stick) rise and sink and Shift/Ctrl (or Y/A and the triggers)
+   move forward and back. The controls label beside it is read from the live input map, so it
+   always shows the current keys.
 
 ---
 
@@ -125,10 +126,9 @@ builds the C# project (needs internet once). You need to install these applicati
   `SceneChanger.change_scene_async(...)` to load the **world**.
 - **World:** `scenes/world/base_world.gd` (`class_name BaseWorld`) holds an
   `ObjectContainer` and, on ready, listens for `EventBus.spawn_requested` — when fired it
-  parents the spawnable under `ObjectContainer`. `toroidal_world.gd` (`class_name
-  ToroidalWorld`) extends it and, each physics frame, wraps any `RigidBody3D`/`CharacterBody3D`
-  that leaves the play bounds — fly straight and the world repeats. The wrap math lives in
-  `scripts/utils/toroidal_utils.gd`.
+  parents the spawnable under `ObjectContainer`. The playable world, `zurd_world.tscn`, is
+  `base_world.tscn` plus the procedural terrain. The world doesn't wrap: the toroidal world
+  was removed in November 2026, and teleportation may come later for a small part of the map.
 - **Player ship** (`scenes/characters/player/`, designed in
   `claude/plans/Ship-Controls Design Doc.md`): `PlayerShip` (`class_name PlayerShip`, a
   `CharacterBody3D`) sets up `PlayerFlightController` on ready. The controller flies the ship
@@ -136,7 +136,7 @@ builds the C# project (needs internet once). You need to install these applicati
   so a digital arcade stick feels smooth. With no input the ship coasts to a hover with a
   gentle drift and a cockpit bob. It only ever turns around global Y, so the projected view
   never pitches or rolls, and it stays between a ground clearance and a ceiling. It emits
-  `impact_occured` on collision. `LaunchObjectComponent` (the `LaunchMuzzle` node) is the one
+  `impact_occurred` on collision. `LaunchObjectComponent` (the `LaunchMuzzle` node) is the one
   shared launcher: `launch_object(scene)` spawns that scene (or a random one from
   `projectile_scenes`) straight ahead, gravity-free with linear-damp "braking" so it coasts
   to a stop, adds random scale/spin/spread and half the ship's velocity, briefly excludes the
@@ -153,19 +153,27 @@ builds the C# project (needs internet once). You need to install these applicati
   and pushes masses it bumps), and `ZurdMouthComponent` (an area that eats the target — a
   loose object **or** a fused `MassPiece` — once it has stayed in the mouth for
   `eat_duration`; interrupted if the target leaves or the Zurd is swatted; emits
-  `object_eaten`). This component pattern is the intended style for new actors.
+  `object_eaten`). This component pattern is the intended style for new actors. The Zurd
+  scripts themselves are **temporary**: a Zurd design doc and a full overhaul are coming. For
+  now there is one hand-placed Zurd; `ZurdSpawner` is kept out of the world while the
+  sculpture system is tested.
 - **GLB post-importer** (`scripts/import/glb_post_importer.gd`): a `@tool`
-  `EditorScenePostImport` script. Drop a `.glb` into `assets/models/` and, on import, it
-  auto-generates **two** scenes under `scenes/objects/`:
-  - `static/<name>_static.tscn` — `StaticBody3D`, collision layer 1 (Environment). Uses
-    **convex-hull colliders** (one `CollisionConvex` per mesh surface) so terrain/structures
-    collide at mesh detail, and applies the shared `golf_terrain` material.
-  - `rigid/<name>_rigid.tscn` — `RigidBody3D`, collision layer 3 (Objects), mask 1–4. Uses a
-    single **box collider** sized to the combined AABB (cheap dynamic physics).
+  `EditorScenePostImport` script, set as the project's default for scene imports, so a new
+  model needs no setup. It only handles models under `assets/models/`, and the folder you drop
+  a `.glb` into decides which scene it gets under `scenes/objects/` (see
+  `assets/models/README.md`):
+  - `objects/` → `rigid/<name>_rigid.tscn` — `RigidBody3D`, collision layer 3 (Objects), mask
+    1–4. Uses a single **box collider** sized to the combined AABB (cheap dynamic physics).
+    The sculpture masses depend on this: growth break-off only measures box shapes.
+  - `scenery/` → `static/<name>_static.tscn` — `StaticBody3D`, collision layer 1
+    (Environment). Uses **convex-hull colliders** (one `CollisionConvex` per mesh) so
+    structures collide at mesh detail.
+  - any other folder, such as `characters/` → no scene, only the mesh and material files.
 
-  Meshes are extracted to shared `.res` files under `assets/meshes/`, and vertex-color
-  materials to `assets/materials/objects/`, so both scenes reference the same resources.
-  Don't hand-edit the generated scenes; re-import the source `.glb` instead.
+  Every model's meshes are extracted to shared `.res` files under `assets/meshes/`, and its
+  vertex-color materials to `assets/materials/objects/`, so all its scenes reference the same
+  resources and look the same. Don't hand-edit the generated files; re-import the source
+  `.glb` instead.
 - **Sculpture masses** (`scenes/sculpture/`; full spec + plan in `claude/plans/`): the core
   build-up mechanic. `MassManager` (a node in `base_world.tscn` that holds all the tunables)
   watches every body in `ObjectTracker`, counts hits, and handles **fusing, merging, eating,
@@ -181,18 +189,17 @@ builds the C# project (needs internet once). You need to install these applicati
   space to the projected image (homography) and saves per-unit settings to
   `user://lidar_config.json`. The **Lidar Setup** scene (run via F6 or the main menu) connects
   a unit, shows its sweep, tunes touch detection, and runs the calibration wizard. Touches
-  surface to gameplay as `EventBus.pointer_moved` / `swat_requested`.
-- **Terrain:** `sandbox/tileable_terrain.gd` (`class_name TileableTerrain`, a `@tool`
-  `MeshInstance3D`) procedurally builds a seamless, tileable terrain mesh from
-  `FastNoiseLite` — exported `terrain_size`, `resolution`, `height_scale`, and `noise`
-  regenerate the mesh live in the editor. Several terrain shaders/materials exist in
-  `assets/` — `golf_terrain` (what the importer currently applies to static bodies) and a
-  newer `terrain.gdshader`/`terrain.tres` intended as the primary static/ground shader.
-- **Spawning:** `scripts/world/scene_spawner.gd` (`class_name SceneSpawner`) instances a
-  `PackedScene` at a location under a container node.
-- **`sandbox/`:** a scratch area for playtesting (`test_player`, `test_ground`, `test_wrap`,
-  `tileable_terrain`, `test_sculpture_mass`, `TestLidarTouch`, controller experiments). Not
-  part of the shipped game.
+  don't reach gameplay yet: the bridge that will turn them into `EventBus.pointer_moved` /
+  `swat_requested` (`LidarManager`, step 4 of the lidar plan) comes once a lidar is set up
+  against a screen or projection. Until then the mouse is the only swat input.
+- **Terrain:** `scenes/world/terrain.gd` (`class_name Terrain`, a `@tool` `MeshInstance3D`)
+  builds the landscape (continents, ridged mountains, hills, river valleys) from
+  `FastNoiseLite` in `_ready`, with a trimesh collider on layer 1. The mesh isn't saved in
+  the scene. Its material is `assets/materials/terrain.tres`. The older `TileableTerrain`
+  prototype is in `sandbox/world/`.
+- **`sandbox/`:** a scratch area for playtesting (`test_sculpture_mass`, `TestLidarTouch`,
+  and old terrain and map prototypes in `world/`). Not part of the shipped game: the export
+  presets exclude it, and the main menu hides entries whose scene isn't in the build.
 
 ---
 
@@ -200,17 +207,16 @@ builds the C# project (needs internet once). You need to install these applicati
 
 New contributors hit these — they are known and not yet fixed:
 
-1. **Boot's default menu path is wrong.** `scenes/ui/loading_screen/boot.gd` defaults
-   `initial_scene_path` to `res://scenes/ui/menus/main_menu/main_menu.tscn`, but the file is
-   at `res://scenes/ui/menus/main_menu.tscn` (no extra folder). It works only because the
-   value is overridden in the Inspector — verify the Inspector value if boot fails.
-2. **`LoadingScreen` isn't registered.** `scripts/autoload/scene_changer.gd` calls a global
-   `LoadingScreen` (e.g. `LoadingScreen.show_screen()`), but only `EventBus`, `SceneChanger`,
-   and `ObjectTracker` are registered under `[autoload]` in `project.godot`. Async loads may
-   error until `LoadingScreen` is added as an autoload.
-3. **Mixed indentation.** `scripts/import/glb_post_importer.gd` uses spaces; most other `.gd`
-   files use tabs. GDScript convention (and this project's majority) is **tabs** — match the
-   file you're editing, and prefer tabs for new files.
+1. **Lidar touches don't reach gameplay yet** (see Lidar input above). Use the mouse to swat.
+2. **The launch station has no key bindings** until the physical controller is wired.
+3. **Zurds are temporary.** Expect odd behaviour, such as a Zurd swatted many times shrinking
+   to nothing; the overhaul will replace these scripts.
+4. **Nothing despawns.** Long sessions pile up loose objects and clouds; there's no object
+   budget or session reset yet.
+5. **No automated tests are committed yet.**
+
+Style: every `.gd` and `.gdshader` file is indented with **tabs** (the GDScript style guide;
+`.editorconfig` sets it), and file and folder names are snake_case except C# files.
 
 ---
 

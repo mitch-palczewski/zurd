@@ -1,7 +1,9 @@
 class_name LoadingScreen
-extends Control
+extends CanvasLayer
 
-@onready var progress_bar = $MarginContainer/ProgressBar
+## A canvas layer (layer 100 in the scene), so the incoming scene's own UI can't draw over it.
+
+@onready var progress_bar: ProgressBar = $Screen/MarginContainer/ProgressBar
 
 const MIN_SHOW_TIME: float = 0.5
 const SCENE_PATH: String = "uid://e2w44cj8g4pv"
@@ -11,6 +13,11 @@ func _ready() -> void:
 	_start_time = Time.get_ticks_msec() / 1000.0
 	SceneChanger.load_progress_updated.connect(_on_load_progress_updated)
 	SceneChanger.load_completed.connect(_on_load_completed)
+	SceneChanger.load_failed.connect(_on_load_failed)
+
+
+func _on_load_failed(_target_path: String) -> void:
+	queue_free()
 
 
 func _on_load_progress_updated(progress: float) -> void:

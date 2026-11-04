@@ -5,6 +5,8 @@ Zurd game · Godot (GDScript) · **Placeholder.** This doc collects what exists 
 
 When the cloud forms create additional cloud spheres to re-enforce the cloud look. 
 
+> A starting point for the spheres: `CloudPuffs` (`cloud_from_mesh.gd`, with `cloud.gdshader` and `cloud.tres`) scattered sphere puffs over a mesh, but only in the editor. It was removed as unused on 2026-11-04; recover it from git commit `a22d649` if the spheres get built.
+
 Consider zooming in and pointing the camera at the assending cloud. But this may break continuity in a bad way depending on the pace of the game wanted. 
 
 ## 1. Purpose

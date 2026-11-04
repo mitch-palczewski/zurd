@@ -4,9 +4,9 @@
 [ext_resource type="Script" uid="uid://dacd63gayji04" path="res://scenes/world/base_world.gd" id="1_simjs"]
 [ext_resource type="PackedScene" uid="uid://catisab22bqfg" path="res://scenes/characters/player/player_ship.tscn" id="2_oh0aj"]
 [ext_resource type="PackedScene" uid="uid://bxjnraf4ofxwq" path="res://scenes/characters/enemy/zurd.tscn" id="3_sxtq4"]
-[ext_resource type="Script" uid="uid://b3fwxl5c0urfu" path="res://scenes/characters/player/swat/mouse_swat_input.gd" id="6_a0k6d"]
+[ext_resource type="Script" uid="uid://b3fwxl5c0urfu" path="res://scenes/input/swat/mouse_swat_input.gd" id="6_a0k6d"]
 [ext_resource type="Script" uid="uid://ddsa51mwf45mx" path="res://scenes/sculpture/mass_manager.gd" id="7_mmgr"]
-[ext_resource type="PackedScene" path="res://scenes/sculpture/sculpture_mass.tscn" id="8_smass"]
+[ext_resource type="PackedScene" uid="uid://4rc7r62mw8he" path="res://scenes/sculpture/sculpture_mass.tscn" id="8_smass"]
 [ext_resource type="Script" uid="uid://dbnhn3if4i3xu" path="res://scenes/sculpture/sculpture_fx.gd" id="9_sfx"]
 
 [sub_resource type="PanoramaSkyMaterial" id="PanoramaSkyMaterial_sxtq4"]

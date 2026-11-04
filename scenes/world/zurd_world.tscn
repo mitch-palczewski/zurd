@@ -1,0 +1,9 @@
+[gd_scene format=3 uid="uid://x0l623new2xy"]
+
+[ext_resource type="PackedScene" uid="uid://8u5j2653xk4d" path="res://scenes/world/base_world.tscn" id="1_1yh83"]
+[ext_resource type="PackedScene" uid="uid://btrdmqd72ust3" path="res://scenes/world/terrain.tscn" id="2_gwyab"]
+
+[node name="ToroidalWorld" unique_id=1406931788 instance=ExtResource("1_1yh83")]
+
+[node name="Terrain" parent="." index="6" unique_id=255451220 instance=ExtResource("2_gwyab")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -77.23289, 0)

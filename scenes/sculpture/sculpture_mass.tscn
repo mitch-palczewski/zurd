@@ -1,6 +1,6 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://4rc7r62mw8he"]
 
-[ext_resource type="Script" path="res://scenes/sculpture/sculpture_mass.gd" id="1_smass"]
+[ext_resource type="Script" uid="uid://dkjdg5f5b0ct7" path="res://scenes/sculpture/sculpture_mass.gd" id="1_smass"]
 
 [node name="SculptureMass" type="RigidBody3D" unique_id=864392011]
 collision_layer = 4

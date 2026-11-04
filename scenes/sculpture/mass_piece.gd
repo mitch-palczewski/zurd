@@ -112,7 +112,8 @@ func get_meshes() -> Array[MeshInstance3D]:
 ## The piece's collision boxes as they would be at [param size], in global space (shapes scale
 ## around the piece's origin, as in [method resize]). Each box maps the cube from -1 to 1 onto the
 ## box: its origin is the centre and its basis columns reach to the faces. Objects use box colliders
-## (the GLB importer makes them); other shapes are left out.
+## (the GLB importer makes them); other shapes are left out, so an object with none never breaks
+## off a neighbour when it grows. Several boxes per object work.
 func get_boxes(size: float) -> Array[Transform3D]:
 	var ratio := size / parts.get_size()
 	var boxes: Array[Transform3D] = []

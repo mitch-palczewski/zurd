@@ -50,185 +50,185 @@ var _visual_base_rotation: Vector3
 
 
 func _ready() -> void:
-    if visual_root:
-        _visual_base_position = visual_root.position
-        _visual_base_rotation = visual_root.rotation
+	if visual_root:
+		_visual_base_position = visual_root.position
+		_visual_base_rotation = visual_root.rotation
 
 func process_movement(actor: CharacterBody3D, target: Node3D, delta: float) -> void:
-    if not is_instance_valid(target): 
-        _process_wandering(actor, delta)
-    else:
-        _process_hunting(actor, target, delta)
-    _process_bobbing(actor, delta)
+	if not is_instance_valid(target): 
+		_process_wandering(actor, delta)
+	else:
+		_process_hunting(actor, target, delta)
+	_process_bobbing(actor, delta)
 
 
 ## Holds the mouth on [param target] while the Zurd eats it: match the target's velocity and pull
 ## the mouth onto it, so the target stays in the mouth for the whole eat duration.
 func process_eating(actor: CharacterBody3D, target: Node3D, mouth_position: Vector3, delta: float) -> void:
-    _turn_towards(actor, actor.global_position.direction_to(target.global_position), hunting_turn_speed, delta)
-    _level_roll(actor, delta)
+	_turn_towards(actor, actor.global_position.direction_to(target.global_position), hunting_turn_speed, delta)
+	_level_roll(actor, delta)
 
-    var hold_velocity := _get_target_velocity(target) + (target.global_position - mouth_position) * hold_strength
-    actor.velocity = actor.velocity.lerp(hold_velocity, _get_exp_decay_weight(10.0, delta))
-    var speed := actor.velocity.length()
-    actor.move_and_slide()
-    _push_masses(actor, speed, delta)
-    _process_bobbing(actor, delta)
+	var hold_velocity := _get_target_velocity(target) + (target.global_position - mouth_position) * hold_strength
+	actor.velocity = actor.velocity.lerp(hold_velocity, _get_exp_decay_weight(10.0, delta))
+	var speed := actor.velocity.length()
+	actor.move_and_slide()
+	_push_masses(actor, speed, delta)
+	_process_bobbing(actor, delta)
 
 
 
 func _process_hunting(actor: CharacterBody3D, target: Node3D, delta: float) -> void:
-    _has_wander_target = false
-    _wander_timer = 0.0
+	_has_wander_target = false
+	_wander_timer = 0.0
 
-    var direction := (target.global_position - actor.global_position).normalized()
+	var direction := (target.global_position - actor.global_position).normalized()
 
-    _steer_and_move(actor, direction, hunting_speed, hunting_turn_speed, delta)
+	_steer_and_move(actor, direction, hunting_speed, hunting_turn_speed, delta)
 
 
 func _process_wandering(actor: CharacterBody3D, delta: float) -> void:
-    _wander_timer += delta
+	_wander_timer += delta
 
-    if (
-        not _has_wander_target 
-        or _wander_timer >= wander_timeout 
-        or actor.global_position.distance_to(_wander_target) <= arrival_distance 
-        ): 
-            _pick_wander_target(actor)
+	if (
+		not _has_wander_target 
+		or _wander_timer >= wander_timeout 
+		or actor.global_position.distance_to(_wander_target) <= arrival_distance 
+		): 
+			_pick_wander_target(actor)
 
 
-    var dir := actor.global_position.direction_to(_wander_target)
-    _steer_and_move(actor, dir, wander_speed, wander_turn_speed, delta)
+	var dir := actor.global_position.direction_to(_wander_target)
+	_steer_and_move(actor, dir, wander_speed, wander_turn_speed, delta)
 
 
 func _process_bobbing(actor: CharacterBody3D, delta: float) -> void:
-    if not visual_root:
-        return 
-    
-    var move_ratio := clampf(actor.velocity.length() / maxf(wander_speed, 0.01), 0.0, 1.0)
-    var strength := lerpf(idle_bob_strength, 1.0, move_ratio)
+	if not visual_root:
+		return 
 
-    _bob_time += delta * bob_frequency 
-    var bob := sin(_bob_time * TAU) * bob_height * strength
-    var sway := sin(_bob_time * PI) * deg_to_rad(sway_degrees) * strength
+	var move_ratio := clampf(actor.velocity.length() / maxf(wander_speed, 0.01), 0.0, 1.0)
+	var strength := lerpf(idle_bob_strength, 1.0, move_ratio)
 
-    visual_root.position = _visual_base_position + Vector3(0.0, bob, 0.0)
-    visual_root.rotation = _visual_base_rotation + Vector3(0.0, 0.0, sway)
+	_bob_time += delta * bob_frequency 
+	var bob := sin(_bob_time * TAU) * bob_height * strength
+	var sway := sin(_bob_time * PI) * deg_to_rad(sway_degrees) * strength
+
+	visual_root.position = _visual_base_position + Vector3(0.0, bob, 0.0)
+	visual_root.rotation = _visual_base_rotation + Vector3(0.0, 0.0, sway)
 
 
 func _pick_wander_target(actor: CharacterBody3D) -> void:
-    var y := randf_range(-1.0, 1.0)
-    var angle := randf_range(0.0, TAU)
-    var ring := sqrt(1.0 - y * y)
+	var y := randf_range(-1.0, 1.0)
+	var angle := randf_range(0.0, TAU)
+	var ring := sqrt(1.0 - y * y)
 
-    var direction := Vector3( cos(angle) * ring, y, sin(angle) * ring)
+	var direction := Vector3( cos(angle) * ring, y, sin(angle) * ring)
 
-    var dist := randf_range(min_wander_distance, max_wander_distance)
+	var dist := randf_range(min_wander_distance, max_wander_distance)
 
-    _wander_target = actor.global_position + direction * dist
-    _has_wander_target = true
-    _wander_timer = 0.0
+	_wander_target = actor.global_position + direction * dist
+	_has_wander_target = true
+	_wander_timer = 0.0
 
 
 func _steer_and_move(actor: CharacterBody3D, desired_dir: Vector3, move_speed: float, turn_rate: float, delta: float) -> void:
-    var final_dir := _get_avoidance_direction(actor, desired_dir)
+	var final_dir := _get_avoidance_direction(actor, desired_dir)
 
-    _turn_towards(actor, final_dir.normalized(), turn_rate, delta)
-    _level_roll(actor, delta)
+	_turn_towards(actor, final_dir.normalized(), turn_rate, delta)
+	_level_roll(actor, delta)
 
-    var target_velocity = _get_forward_direction(actor) * move_speed 
-    var velocity_weight := _get_exp_decay_weight(10.0, delta)
-    actor.velocity = actor.velocity.lerp(target_velocity, velocity_weight)
-    var speed := actor.velocity.length()
-    actor.move_and_slide()
-    _push_masses(actor, speed, delta)
+	var target_velocity = _get_forward_direction(actor) * move_speed 
+	var velocity_weight := _get_exp_decay_weight(10.0, delta)
+	actor.velocity = actor.velocity.lerp(target_velocity, velocity_weight)
+	var speed := actor.velocity.length()
+	actor.move_and_slide()
+	_push_masses(actor, speed, delta)
 
 
 ## Zurds running into a sculpture mass push it (Sculpture-Mass Design Doc §4.3).
 func _push_masses(actor: CharacterBody3D, speed: float, delta: float) -> void:
-    var impulse_force := speed * push_force * delta
-    for i in actor.get_slide_collision_count():
-        var collision := actor.get_slide_collision(i)
-        var mass := collision.get_collider() as SculptureMass
-        if not mass:
-            continue
-        var impact_offset := collision.get_position() - mass.global_position
-        mass.apply_impulse(-collision.get_normal() * impulse_force, impact_offset)
+	var impulse_force := speed * push_force * delta
+	for i in actor.get_slide_collision_count():
+		var collision := actor.get_slide_collision(i)
+		var mass := collision.get_collider() as SculptureMass
+		if not mass:
+			continue
+		var impact_offset := collision.get_position() - mass.global_position
+		mass.apply_impulse(-collision.get_normal() * impulse_force, impact_offset)
 
 
 func _get_target_velocity(target: Node3D) -> Vector3:
-    if target is MassPiece:
-        return (target as MassPiece).get_velocity()
-    if target is RigidBody3D:
-        return (target as RigidBody3D).linear_velocity
-    return Vector3.ZERO
+	if target is MassPiece:
+		return (target as MassPiece).get_velocity()
+	if target is RigidBody3D:
+		return (target as RigidBody3D).linear_velocity
+	return Vector3.ZERO
 
 
 func _turn_towards(actor: Node3D, desired_dir: Vector3, turn_rate: float, delta: float) -> void:
-    if desired_dir.is_zero_approx():
-        return
+	if desired_dir.is_zero_approx():
+		return
 
-    var forward := _get_forward_direction(actor)
-    var angle := acos(clampf(forward.dot(desired_dir), -1.0, 1.0))
-    if angle < 0.001:
-        return
-    
-    var axis := forward.cross(desired_dir)
-    if axis.length_squared() < 0.0001:
-        axis = actor.global_basis.y
-    axis = axis.normalized()
+	var forward := _get_forward_direction(actor)
+	var angle := acos(clampf(forward.dot(desired_dir), -1.0, 1.0))
+	if angle < 0.001:
+		return
 
-    var step := angle * clampf(turn_rate * delta, 0.0, 1.0)
-    var rotated := Basis(axis, step) * _get_rotation_basis(actor)
-    _set_rotation_keep_scale(actor, rotated)
+	var axis := forward.cross(desired_dir)
+	if axis.length_squared() < 0.0001:
+		axis = actor.global_basis.y
+	axis = axis.normalized()
+
+	var step := angle * clampf(turn_rate * delta, 0.0, 1.0)
+	var rotated := Basis(axis, step) * _get_rotation_basis(actor)
+	_set_rotation_keep_scale(actor, rotated)
 
 
 func _level_roll(actor: Node3D, delta:float) -> void:
-    var forward := _get_forward_direction(actor)
-    var right := forward.cross(Vector3.UP)
-    if right.length_squared() < 0.0001:
-        return 
-    right = right.normalized() 
+	var forward := _get_forward_direction(actor)
+	var right := forward.cross(Vector3.UP)
+	if right.length_squared() < 0.0001:
+		return 
+	right = right.normalized() 
 
-    var up := right.cross(forward).normalized()
-    var level_basis := Basis(right, up, -forward)
-    
-    var weight := _get_exp_decay_weight(level_speed, delta)
-    var leveled := _get_rotation_basis(actor).slerp(level_basis, weight)
-    _set_rotation_keep_scale(actor, leveled)
+	var up := right.cross(forward).normalized()
+	var level_basis := Basis(right, up, -forward)
+
+	var weight := _get_exp_decay_weight(level_speed, delta)
+	var leveled := _get_rotation_basis(actor).slerp(level_basis, weight)
+	_set_rotation_keep_scale(actor, leveled)
 
 
 func _get_avoidance_direction(actor: CharacterBody3D, desired_dir: Vector3) -> Vector3:
-    var space_state := actor.get_world_3d().direct_space_state
-    var forward := _get_forward_direction(actor)
-    var ray_origin := actor.global_position
-    var scale_factor := actor.global_basis.get_scale().x
-    var ray_end := ray_origin + (forward * avoidance_distance * scale_factor)
+	var space_state := actor.get_world_3d().direct_space_state
+	var forward := _get_forward_direction(actor)
+	var ray_origin := actor.global_position
+	var scale_factor := actor.global_basis.get_scale().x
+	var ray_end := ray_origin + (forward * avoidance_distance * scale_factor)
 
-    var query := PhysicsRayQueryParameters3D.create(ray_origin, ray_end, avoid_obstacle_mask)
-    query.exclude = [actor.get_rid()]
+	var query := PhysicsRayQueryParameters3D.create(ray_origin, ray_end, avoid_obstacle_mask)
+	query.exclude = [actor.get_rid()]
 
-    var result := space_state.intersect_ray(query)
-    if result.is_empty():
-        return desired_dir
-    
-    var collision_normal: Vector3 = result.normal
-    var avoided_dir := (desired_dir + collision_normal * avoidance_strength).normalized()
+	var result := space_state.intersect_ray(query)
+	if result.is_empty():
+		return desired_dir
 
-    return avoided_dir
+	var collision_normal: Vector3 = result.normal
+	var avoided_dir := (desired_dir + collision_normal * avoidance_strength).normalized()
+
+	return avoided_dir
 
 
 func _get_forward_direction(actor: Node3D) -> Vector3:
-    return -actor.global_basis.z.normalized()
+	return -actor.global_basis.z.normalized()
 
 
 func _get_exp_decay_weight(speed: float, delta: float) -> float:
-    return 1.0 - exp(-speed * delta)
+	return 1.0 - exp(-speed * delta)
 
 
 func _get_rotation_basis(actor: Node3D) -> Basis:
-    return actor.global_basis.orthonormalized()
+	return actor.global_basis.orthonormalized()
 
 func _set_rotation_keep_scale(actor: Node3D, rotation_basis: Basis) -> void:
-    var current_scale := actor.global_basis.get_scale()
-    actor.global_basis = rotation_basis.orthonormalized() * Basis.from_scale(current_scale)
+	var current_scale := actor.global_basis.get_scale()
+	actor.global_basis = rotation_basis.orthonormalized() * Basis.from_scale(current_scale)

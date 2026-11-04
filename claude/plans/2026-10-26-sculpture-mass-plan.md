@@ -38,6 +38,10 @@ objects' meshes and shapes as its children**.
 
 ## Status (2026-10-30)
 
+*2026-11-04:* the spec changes below (refuse delay, detach speed, fuse push and spin) and the
+combining build's growth break depth are now in the Sculpture-Mass Design Doc. Move this plan to
+`archive/` once the sculpture system has been play-tested.
+
 All seven build steps are written. They have **not been play-tested yet** and haven't been through
 an editor parse check. Things added during the build that the plan didn't have:
 

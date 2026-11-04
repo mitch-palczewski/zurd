@@ -84,25 +84,25 @@ void vertex() {
 void fragment() {
 	float billow = clamp(v_billow * 0.5 + 0.5, 0.0, 1.0);
 
-    ALBEDO = mix(
-        lit_color.rgb,
-        shadow_color.rgb,
-        (1.0 - billow) * noise_shading
-    );
+	ALBEDO = mix(
+		lit_color.rgb,
+		shadow_color.rgb,
+		(1.0 - billow) * noise_shading
+	);
 
-    ROUGHNESS = 1.0;
-    SPECULAR = 0.0;
+	ROUGHNESS = 1.0;
+	SPECULAR = 0.0;
 
-    // Smoothly pulse between two transparency levels.
-    float pulse = (sin(TIME * transparency_speed * 6.28318) + 1.0) * 0.5;
-    ALPHA = mix(transparency_min, transparency_max, pulse);
+	// Smoothly pulse between two transparency levels.
+	float pulse = (sin(TIME * transparency_speed * 6.28318) + 1.0) * 0.5;
+	ALPHA = mix(transparency_min, transparency_max, pulse);
 
-    float rim = pow(
-        1.0 - clamp(dot(normalize(NORMAL), normalize(VIEW)), 0.0, 1.0),
-        rim_power
-    );
+	float rim = pow(
+		1.0 - clamp(dot(normalize(NORMAL), normalize(VIEW)), 0.0, 1.0),
+		rim_power
+	);
 
-    EMISSION = rim_color.rgb * rim * rim_strength;
+	EMISSION = rim_color.rgb * rim * rim_strength;
 }
 
 void light() {
