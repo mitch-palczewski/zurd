@@ -2,6 +2,11 @@
 
 Zurd game · Godot (GDScript) · **Placeholder.** This doc collects what exists and the questions to answer before the cloud moment is designed.
 
+
+When the cloud forms create additional cloud spheres to re-enforce the cloud look. 
+
+Consider zooming in and pointing the camera at the assending cloud. But this may break continuity in a bad way depending on the pace of the game wanted. 
+
 ## 1. Purpose
 
 A cloud forming is the main payoff of the game: the guests' sculpture is finished and leaves the play area. This doc will define what that moment looks, sounds and feels like in the projected room, and whether it changes the game afterwards.
