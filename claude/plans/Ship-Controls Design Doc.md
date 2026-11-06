@@ -36,7 +36,7 @@ All launches fly straight ahead. The pilot launch leaves from the middle of the 
 | Down button | Sink | Move the ship down. |
 | Launch button | Pilot launch | Launch a random object straight ahead. |
 
-This is the default scheme, **Stick drives**. The main menu can switch to the alternative in 3.3.
+This scheme is called **Stick drives**. It is the only one; the alternative in 3.3 was dropped.
 
 ### 3.2 Launch station (optional, one for now)
 
@@ -52,9 +52,9 @@ The core gameplay loop must be fully playable with only the pilot station in use
 
 The final button layout is undecided. The design treats every launch button the same way: it fires straight ahead from the middle of the ship and has its own cooldown. Launch buttons or stations can be added or moved without changing the rest of the design.
 
-### 3.3 Alternative scheme: Stick lifts (playtest)
+### 3.3 Dropped alternative: Stick lifts
 
-The main menu's **Ship controls** selector switches the pilot station between two schemes, so both can be tried with guests. The launch station is the same in both.
+Decided 2026-11-06: **Stick drives** stays, and the main menu's scheme selector and `ControlScheme` were removed. Joystick forward moving the ship forward felt right. Kept here as the record of what was tried.
 
 | Control | Stick drives (default, 3.1) | Stick lifts |
 | --- | --- | --- |
@@ -64,7 +64,6 @@ The main menu's **Ship controls** selector switches the pilot station between tw
 
 - **For Stick lifts:** the joystick moves the picture on the wall: up and down raise and lower the view, left and right turn it. Lining up a launch (turn plus height) takes one hand, and the ship only travels while a button is held.
 - **Against Stick lifts:** most guests push the joystick forward expecting to go forward, and flight-game players expect forward to dive. Flying forward and launching are both buttons on the same hand.
-- Which scheme stays is decided by playtesting (open item 5).
 
 ## 4. Parameters
 
@@ -147,7 +146,7 @@ HUD items sit in the top and bottom bands of the walls.
 
 ### 6.1 Input actions
 
-All code reads **input actions only**, never keys or devices directly, so the arcade kit, a gamepad and the keyboard all work by changing the input map. Joystick movement is bound to both the left stick and the d-pad, since an arcade encoder may report the stick as either.
+All code reads **input actions only**, never keys or devices directly, so the arcade kit, a gamepad and the keyboard all work by changing the input map. On a gamepad, joystick movement is bound to both the left stick and the d-pad. The arcade kit's stick is learned as whatever its encoder reports, axes or buttons (6.3).
 
 Replace the current `ship_pitch_up/down`, `ship_yaw_left/right` and `ship_boost` actions. `ship_launch` stays as the pilot launch; `ship_swat` is unchanged.
 
@@ -160,9 +159,25 @@ Replace the current `ship_pitch_up/down`, `ship_yaw_left/right` and `ship_boost`
 | `launch_station_fire` | Station big button | K | X (left face button) |
 | `launch_station_prev` / `launch_station_next` | Station small buttons | J / L | LB / RB (left / right shoulder) |
 
-The table is the default scheme, and the project settings always hold it. Choosing **Stick lifts** on the main menu swaps the events of `ship_forward` / `ship_reverse` with those of `ship_rise` / `ship_sink` at runtime (`ControlScheme`, `scripts/utils/control_scheme.gd`), so every binding (keyboard, gamepad and, later, the arcade kit) follows the swap without other code changes. The choice lasts until it is changed again or the game restarts.
+The keyboard column lives in the project settings; the gamepad column is the **Standard gamepad** controller profile (6.3).
 
-The arcade buttons are bound once the kit is wired (see section 11).
+The arcade buttons are bound on the Controller Setup screen once the kit is wired (6.3, section 11).
+
+### 6.3 Controller profiles
+
+The 8BitDo, the arcade encoder and any other gamepad all show up as joypads, and their button numbers overlap: the encoder's button 2 is whichever arcade button is wired to input 2, not the 8BitDo's X. So controller bindings don't live in the project settings, where they would match every controller. Each connected controller gets a **profile**, a layout bound to that controller only, so several controllers with different layouts work at once. Keyboard and mouse stay in the project settings.
+
+| Profile | Layout |
+| --- | --- |
+| Standard gamepad | The gamepad column in 6.1 (the 8BitDo). The default for any controller nothing else claims. |
+| Arcade kit | The encoder's own wiring, both stations on one device. Empty until it's learned. |
+
+- **Which profile:** a controller that connects gets the profile last chosen for it (remembered by its GUID, so per controller model), else a profile that lists its name, else Standard gamepad.
+- **Main menu → Controllers:** a row per connected controller with a profile dropdown: Standard gamepad, Arcade kit or Off (ignored). Changes apply at once and are remembered.
+- **Controller Setup** (main menu → *Controller setup…*): pick a profile, press *Learn*, press any button on the controller to set up, then each control when asked: joystick forward / back / left / right, Up, Down, pilot Launch, station Previous / Launch / Next. *Skip* keeps a control's current binding, and a control already used is refused. *Save* stores the layout, adds the controller's name to the profile and gives the controller the profile. Outside learning, the list lights up each control while it's pressed, to test the layout. *Reset to default* restores the built-in layout.
+- Learned layouts and choices are saved per computer in `user://controller_config.json`, so the exhibit PC is set up once.
+- Controller bindings left in the project settings are dropped at startup with a warning, since they would bypass the profiles.
+- Code: the `Controllers` autoload (`scripts/autoload/controllers.gd`), `ControllerProfile` (`scripts/input/controller_profile.gd`), and the Controller Setup screen (`scenes/tools/controller_setup/`).
 
 ### 6.2 Code changes
 
@@ -210,7 +225,6 @@ The first build changes only the ship's controls and effects.
 2. **Boost:** none for now. If playtests show the ship is too slow, try a hold-forward cruise speed before adding a button.
 3. **Sidestep:** whether to add it, and on which control (5.2).
 4. **Reset between groups:** whether the world resets when every station has been empty for a while.
-5. **Control scheme:** Stick drives or Stick lifts (3.3). Decide after playtesting both with guests.
 
 ## 11. Hardware
 
@@ -218,9 +232,9 @@ The priority is to design a control schema for the art installation arcade contr
 
 - **EG STARTS 2 Player Arcade Games DIY Kit** (2 ellipse oval joystick handles, 20 LED-lit arcade buttons, red and blue). It is unknown whether this will be used in the final installation, but it is the target device to build for.
   - Its USB encoder has 12 button inputs plus a 5-pin joystick input. One pilot station (joystick, Up, Down, Launch) and one launch station (Launch, Previous, Next) need 6 buttons, so both are wired to **one encoder** and the game sees them as one device.
-  - The encoder shows up as a gamepad. Its button numbers are bound in the input map after wiring, by pressing each button in Godot's Input Map editor.
+  - The encoder shows up as a gamepad. Its buttons are bound after wiring on the Controller Setup screen (6.3), by pressing each control when asked; the layout is saved as the Arcade kit profile on that computer.
   - The kit's button lights are most likely always on, powered by the encoder, so the game can't use them to show cooldowns without extra hardware.
-- **8BitDo Ultimate 3C+ wireless controller.** Uses the gamepad column in 6.1.
+- **8BitDo Ultimate 3C+ wireless controller.** Uses the gamepad column in 6.1 (the Standard gamepad profile).
 - **Mouse and keyboard.** Uses the keyboard column in 6.1; the mouse swats in place of the lidar wall.
 
-The arcade encoder and the 8BitDo are both gamepads, so their button numbers overlap. Connect one at a time when testing.
+The arcade encoder and the 8BitDo are both gamepads, so their button numbers overlap. Controller profiles (6.3) bind each one's layout to that controller only, so both can be connected at once.

@@ -65,6 +65,7 @@ instancing a scene. This project registers three (in `project.godot`):
 | `EventBus` | `scripts/autoload/event_bus.gd` | Central signal bus. Signals: `spawn_requested(Node3D)`, `object_eaten(actor, obj, mass)`, lidar/input `swat_requested(uv)` and `pointer_moved(uv)`, and the sculpture-mass events `object_hit`, `object_fused`, `masses_merged`, `objects_broken_off`, `cloud_progress_changed`, `cloud_formed`. |
 | `SceneChanger` | `scripts/autoload/scene_changer.gd` | Synchronous and threaded/async scene loading + transitions. A failed async load fires `load_failed`, so the loading screen closes and the menu works again. |
 | `ObjectTracker` | `scripts/autoload/object_tracker.gd` | Tracks every Zurd target — loose launched `RigidBody3D`s **and** fused `MassPiece`s — and auto-cleans freed ones. API: `register_object`/`unregister_object`, `is_trackable`, `get_random_object`, `get_closest_object`, and an `object_registered` signal. |
+| `Controllers` | `scripts/autoload/controllers.gd` | Gives each connected controller a `ControllerProfile` (Standard gamepad, Arcade kit, or Off) and binds its buttons and axes to that controller only. Remembers choices and learned layouts in `user://controller_config.json`. API: `get_devices`, `set_profile`, `save_learned_profile`, `reset_profile`, and a `devices_changed` signal. |
 
 ### Forward+ renderer & Jolt physics
 **Forward+** is the high-end desktop rendering backend (vs. Mobile / Compatibility), chosen
@@ -110,13 +111,18 @@ builds the C# project (needs internet once). You need to install these applicati
    pick a new target). A gamepad works too (left stick or d-pad; Y/A or the triggers to
    rise/sink; B to launch). The launch station is **J/L** (or LB/RB) to show and choose an
    object, which appears on a pedestal in the cockpit, and **K** (or X) to launch it; with no
-   object shown, K launches a random one from the right side. The arcade kit gets its
-   bindings once it's wired. Input actions: `ship_forward/reverse`,
-   `ship_turn_left/right`, `ship_rise/sink`, `ship_launch`, `launch_station_fire/prev/next`.
-   The main menu's **Ship controls** selector switches to the alternative **Stick lifts**
-   scheme, where W/S (or the stick) rise and sink and Shift/Ctrl (or Y/A and the triggers)
-   move forward and back. The controls label beside it is read from the live input map, so it
-   always shows the current keys.
+   object shown, K launches a random one from the right side. Input actions:
+   `ship_forward/reverse`, `ship_turn_left/right`, `ship_rise/sink`, `ship_launch`,
+   `launch_station_fire/prev/next`. The main menu's controls label is read from the live
+   input map, so it always shows the current keys.
+7. **Controllers:** each connected controller gets a *profile*, its own layout, so a gamepad
+   and the arcade kit can be plugged in together (Ship-Controls Design Doc §6.3). The main
+   menu's **Controllers** section lists them with a profile each: *Standard gamepad* (the
+   8BitDo layout above), *Arcade kit*, or *Off*. The arcade kit's layout is learned once per
+   computer: **Controller setup…** → *Learn* → press any button on the encoder, then each
+   control when asked → *Save*. The same screen lights up pressed controls, to test a layout.
+   Choices are saved in `user://controller_config.json`. Don't add controller bindings in
+   Project Settings: they would match every controller, so the game drops them at startup.
 
 ---
 

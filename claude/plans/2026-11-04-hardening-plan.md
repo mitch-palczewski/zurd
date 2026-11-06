@@ -83,7 +83,6 @@ tests/
 | --- | --- |
 | `unit/test_object_parts.gd` | Sizes in both modes (3 and 4 make ≈ 4.5 or 7), absorb order, `remove_last` restores the exact size, `is_bigger_than`, `of()` builds a record from the shape's scale |
 | `unit/test_box_overlap.gd` | `MassPiece.get_box_overlap`: apart is negative, overlapping gives the depth, rotated boxes, touching ≈ 0 |
-| `unit/test_control_scheme.gd` | Both schemes apply, `get_current` reports them, the project's events come back |
 | `unit/test_scene_changer.gd` | A missing path and a non-scene file both fire `load_failed`, close the loading screen and re-enable the menu; a real async load switches scene |
 | `unit/test_main_menu.gd` | The controls label comes from the input map; entries whose scene is missing are skipped |
 | `scene/test_sculpture.gd` | Port the combining build's checks (`archive/2026-11-04-combining-objects-plan.md`, Verification): fusing, combining (loose, fused, after a merge), growth break-off, bites (loose, fused, through `eat_requested`), break-off keeps parts, cloud counting by parts, same-batch follow |
@@ -186,7 +185,6 @@ HUD and attract mode can hook in later through its signals.
 - A reset reloads the current world: `SceneChanger.change_scene_async(get_tree().current_scene.scene_file_path)`.
   A reload is guaranteed clean, with no per-system reset code to keep in step with the Zurd
   overhaul or new systems. It costs one loading screen: about 0.4 s today, less after step 5.
-  The chosen control scheme survives, because it lives in the global input map.
 - New EventBus signals for the HUD and attract mode: `session_started` (GameSession is ready) and
   `session_resetting` (just before the reload), documented like the others.
 

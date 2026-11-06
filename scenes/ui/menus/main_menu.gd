@@ -1,13 +1,7 @@
 extends Control
 
-## One entry per control scheme in the selector (Ship-Controls Design Doc §3.3).
-const SCHEME_NAMES := {
-	ControlScheme.Scheme.STICK_DRIVES: "Stick drives: joystick forward / back, buttons up / down",
-	ControlScheme.Scheme.STICK_LIFTS: "Stick lifts: joystick up / down, buttons forward / back",
-}
-
 ## Each line of the controls label: what it does, then its input actions. The keys are read from the
-## live input map, so the label follows the chosen scheme and any change to the bindings.
+## live input map, so the label follows any change to the bindings.
 const CONTROL_LINES := [
 	["forward / back", &"ship_forward", &"ship_reverse"],
 	["turn left / right", &"ship_turn_left", &"ship_turn_right"],
@@ -18,15 +12,19 @@ const CONTROL_LINES := [
 	["swat zurd", &"ship_swat"],
 ]
 
+const CONTROLLER_SETUP_PATH := "uid://cof4wo1dnpuiy" # controller_setup.tscn
+
 @export var scenes: Array[SceneEntry] = []
 @onready var button_container: VBoxContainer = $CenterContainer/VBoxContainer
-@onready var scheme_option: OptionButton = $CenterContainer/VBoxContainer/SchemeOption
+@onready var controller_list: VBoxContainer = $CenterContainer/VBoxContainer/ControllerList
+@onready var controller_setup_button: Button = $CenterContainer/VBoxContainer/ControllerSetupButton
 @onready var controls_label: Label = $InfoPanel/ControlsLabel
 
 var _buttons: Array[Button] = []
 
 func _ready() -> void:
-	_setup_scheme_option()
+	_update_controls_label()
+	_setup_controllers()
 	for entry in scenes:
 		# Sandbox scenes are left out of exported builds, so their entries are skipped there.
 		if not ResourceLoader.exists(entry.path):
@@ -52,16 +50,45 @@ func _set_buttons_disabled(disabled: bool) -> void:
 	for b in _buttons:
 		b.disabled = disabled
 
-func _setup_scheme_option() -> void:
-	for scheme: int in SCHEME_NAMES:
-		scheme_option.add_item(SCHEME_NAMES[scheme], scheme)
-	scheme_option.select(scheme_option.get_item_index(ControlScheme.get_current()))
-	scheme_option.item_selected.connect(_on_scheme_selected)
-	_update_controls_label()
+## The Controllers section (Ship-Controls Design Doc §6.3): a profile dropdown for each connected
+## controller, and the way to the Controller Setup screen.
+func _setup_controllers() -> void:
+	controller_setup_button.pressed.connect(_on_scene_button_pressed.bind(CONTROLLER_SETUP_PATH))
+	_buttons.append(controller_setup_button)
+	Controllers.devices_changed.connect(_update_controller_list)
+	_update_controller_list()
 
-func _on_scheme_selected(index: int) -> void:
-	ControlScheme.apply(scheme_option.get_item_id(index) as ControlScheme.Scheme)
-	_update_controls_label()
+func _update_controller_list() -> void:
+	for row in controller_list.get_children():
+		row.queue_free()
+	var devices := Controllers.get_devices()
+	if devices.is_empty():
+		var none := Label.new()
+		none.text = "None connected (keyboard and mouse always work)"
+		none.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		controller_list.add_child(none)
+		return
+	for device in devices:
+		var row := HBoxContainer.new()
+		var name_label := Label.new()
+		var joy_name := Controllers.get_device_name(device)
+		name_label.text = joy_name if not joy_name.is_empty() else "Controller %d" % device
+		name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		row.add_child(name_label)
+		row.add_child(_make_profile_option(device))
+		controller_list.add_child(row)
+
+func _make_profile_option(device: int) -> OptionButton:
+	var option := OptionButton.new()
+	var ids: Array[StringName] = []
+	for profile: ControllerProfile in Controllers.profiles.values():
+		option.add_item(profile.display_name)
+		ids.append(profile.id)
+	option.add_item("Off")
+	ids.append(Controllers.OFF)
+	option.select(ids.find(Controllers.get_profile_id(device)))
+	option.item_selected.connect(func(index: int) -> void: Controllers.set_profile(device, ids[index]))
+	return option
 
 func _update_controls_label() -> void:
 	var lines: PackedStringArray = ["--- Controls ---"]
