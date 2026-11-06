@@ -1,13 +1,20 @@
 class_name LaunchStation
 extends Node
 
-## One launch button or launch station (Ship-Controls Design Doc §5.3). It fires through the ship's
-## shared [LaunchObjectComponent] and keeps its own cooldown. With previous / next actions it also
-## keeps a selected object; without them it launches random objects.
+## One launch button or launch station (Ship-Controls Design Doc §5.3, Launch-Station Design Doc §3).
+## It fires through the ship's shared [LaunchObjectComponent] from its own side and keeps its own
+## cooldown. With previous / next actions it also keeps a selected object: the first press shows it
+## on the station's [LaunchPreview], later presses step, and Launch fires it until the preview times
+## out. Otherwise, and without those actions, it launches random objects.
 
 ## Names this station in [signal EventBus.launch_selection_changed].
 @export var station_id: StringName = &"pilot"
 @export var launcher: LaunchObjectComponent
+## Sideways offset of this station's launch point and pedestal from the middle of the ship, matching
+## the side the station stands on in the room. Positive is right.
+@export var side_offset: float = 0.0
+## Shows the selected object. Optional: a station without one still selects, it just shows nothing.
+@export var preview: LaunchPreview
 
 @export_group("Input")
 @export var fire_action: StringName = &"ship_launch"
@@ -17,11 +24,17 @@ extends Node
 
 @export_group("Timing")
 @export var cooldown_time: float = 0.5
+## Time after the last select or launch press before the preview hides and the station goes back to
+## random objects.
+@export var preview_hide_delay: float = 5.0
 
 ## Index of the selected object in the launcher's [member LaunchObjectComponent.projectile_scenes].
 var selected_index: int = 0
+## True while the selected object is shown, so a launch fires it.
+var is_showing: bool = false
 
 var _cooldown_timer: float = 0.0
+var _hide_timer: float = 0.0
 
 
 func _ready() -> void:
@@ -30,8 +43,8 @@ func _ready() -> void:
 	for action: StringName in [fire_action, prev_action, next_action]:
 		if action != &"" and not InputMap.has_action(action):
 			push_error("LaunchStation '%s': input action '%s' does not exist." % [station_id, action])
-	if has_selection():
-		_emit_selection.call_deferred()
+	if preview:
+		preview.position.x = side_offset
 
 
 func _process(delta: float) -> void:
@@ -41,15 +54,24 @@ func _process(delta: float) -> void:
 	if not launcher:
 		return
 
+	# Presses come before the hide timer, so a press in its last frame keeps the preview.
 	if has_selection():
-		if _is_just_pressed(prev_action):
-			_step_selection(-1)
-		if _is_just_pressed(next_action):
-			_step_selection(1)
+		var prev_pressed := _is_just_pressed(prev_action)
+		var next_pressed := _is_just_pressed(next_action)
+		if prev_pressed or next_pressed:
+			_select(int(next_pressed) - int(prev_pressed))
 
-	if _is_just_pressed(fire_action) and _cooldown_timer <= 0.0:
-		launcher.launch_object(get_selected_scene())
-		_cooldown_timer = cooldown_time
+	if _is_just_pressed(fire_action):
+		if is_showing:
+			_hide_timer = preview_hide_delay
+		if _cooldown_timer <= 0.0:
+			launcher.launch_object(get_launch_scene(), side_offset)
+			_cooldown_timer = cooldown_time
+
+	if is_showing:
+		_hide_timer -= delta
+		if _hide_timer <= 0.0:
+			_hide()
 
 
 ## True when this station chooses its object, false when it launches random objects.
@@ -68,16 +90,32 @@ func get_selected_scene() -> PackedScene:
 	return launcher.projectile_scenes[selected_index]
 
 
-func _step_selection(step: int) -> void:
+## The object a launch fires: the shown object, or null (random) while nothing is shown.
+func get_launch_scene() -> PackedScene:
+	return get_selected_scene() if is_showing else null
+
+
+## Shows the selected object without stepping when it's hidden, so a guest never skips an object they
+## didn't see. When it's already showing, steps by [param step].
+func _select(step: int) -> void:
 	var count := launcher.get_projectile_count()
 	if count == 0:
 		return
-	selected_index = wrapi(selected_index + step, 0, count)
-	_emit_selection()
+	if is_showing:
+		selected_index = wrapi(selected_index + step, 0, count)
+	is_showing = true
+	_hide_timer = preview_hide_delay
+	var scene := get_selected_scene()
+	if preview:
+		preview.show_object(scene)
+	EventBus.launch_selection_changed.emit(station_id, scene)
 
 
-func _emit_selection() -> void:
-	EventBus.launch_selection_changed.emit(station_id, get_selected_scene())
+func _hide() -> void:
+	is_showing = false
+	if preview:
+		preview.hide_preview()
+	EventBus.launch_selection_changed.emit(station_id, null)
 
 
 func _is_just_pressed(action: StringName) -> bool:

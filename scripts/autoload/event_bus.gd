@@ -93,10 +93,12 @@ signal cloud_progress_changed(mass: SculptureMass, progress: float)
 signal cloud_formed(mass: SculptureMass)
 
 
-# Ship controls (see claude/plans/Ship-Controls Design Doc.md, §7).
+# Ship controls (see claude/plans/Ship-Controls Design Doc.md, §7, and Launch-Station Design Doc.md, §8).
 
-## Fired when a launch station selects a different object, and once at startup.[br]
-## [param station]: the station's id. [param scene]: the selected object's scene.
+## Fired when a launch station's preview shows or steps to an object, and when it hides. Not fired at
+## startup: stations start hidden.[br]
+## [param station]: the station's id. [param scene]: the shown object's scene, or [code]null[/code] when
+## the preview hides and the station is back to random objects.
 @warning_ignore("unused_signal")
 signal launch_selection_changed(station: StringName, scene: PackedScene)
 

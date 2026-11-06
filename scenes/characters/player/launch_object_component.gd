@@ -2,8 +2,8 @@ class_name LaunchObjectComponent
 extends Node3D
 
 ## The ship's one launcher, at the middle of the ship. Every launch flies straight ahead. Launch
-## buttons ([LaunchStation]) call [method launch_object]; this node owns the object list and the
-## launch physics.
+## buttons ([LaunchStation]) call [method launch_object], from the middle or from their own side;
+## this node owns the object list and the launch physics.
 
 @export_group("Launch Settings")
 @export var projectile_scenes: Array[PackedScene] = []
@@ -30,12 +30,14 @@ extends Node3D
 
 
 ## Launches [param scene], or a random object from [member projectile_scenes] when it is null.
-func launch_object(scene: PackedScene = null) -> void:
+## [param side_offset] moves the start point sideways from this node (positive is right), for a
+## station's own launch point (Launch-Station Design Doc §5).
+func launch_object(scene: PackedScene = null, side_offset: float = 0.0) -> void:
 	var projectile := _instantiate_projectile(scene)
 	if projectile == null:
 		return
 
-	_setup_transform_and_scale(projectile)
+	_setup_transform_and_scale(projectile, side_offset)
 	_setup_physics(projectile)
 
 	if player_ship:
@@ -84,8 +86,8 @@ func _instantiate_projectile(scene: PackedScene) -> RigidBody3D:
 	return instance as RigidBody3D
 
 
-func _setup_transform_and_scale(projectile: RigidBody3D) -> void:
-	projectile.global_transform = global_transform.orthonormalized()
+func _setup_transform_and_scale(projectile: RigidBody3D, side_offset: float) -> void:
+	projectile.global_transform = global_transform.orthonormalized().translated_local(Vector3(side_offset, 0.0, 0.0))
 	var scale_factor := randf_range(min_scale, max_scale)
 	for child in projectile.get_children():
 		if child is Node3D:

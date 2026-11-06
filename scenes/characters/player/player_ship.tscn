@@ -9,6 +9,7 @@
 [ext_resource type="PackedScene" uid="uid://bfbugn5xk53wl" path="res://scenes/input/swat/swat_emitter.tscn" id="7_wg6em"]
 [ext_resource type="Script" uid="uid://ktc32cjsndur" path="res://scenes/characters/player/launch_station.gd" id="8_lstat"]
 [ext_resource type="Script" uid="uid://db16rbtoipojd" path="res://scenes/characters/player/station_activity.gd" id="9_sacti"]
+[ext_resource type="PackedScene" uid="uid://cryej0gy88nbt" path="res://scenes/characters/player/launch_preview.tscn" id="10_lprev"]
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_rmgw8"]
 radius = 0.71374303
@@ -42,6 +43,9 @@ shape = SubResource("SphereShape3D_rmgw8")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.476, 0.942)
 mesh = SubResource("CylinderMesh_rmgw8")
 
+[node name="StationPreview" parent="Cockpit/Interior" instance=ExtResource("10_lprev")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.6, -0.562, -0.7)
+
 [node name="Camera3D" type="Camera3D" parent="Cockpit" unique_id=660655444]
 current = true
 fov = 90.0
@@ -66,10 +70,12 @@ player_ship = NodePath("..")
 script = ExtResource("8_lstat")
 launcher = NodePath("../../LaunchMuzzle")
 
-[node name="StationLaunch" type="Node" parent="Stations" unique_id=1688204937 node_paths=PackedStringArray("launcher")]
+[node name="StationLaunch" type="Node" parent="Stations" unique_id=1688204937 node_paths=PackedStringArray("launcher", "preview")]
 script = ExtResource("8_lstat")
 station_id = &"launch_station"
 launcher = NodePath("../../LaunchMuzzle")
+side_offset = 0.6
+preview = NodePath("../../Cockpit/Interior/StationPreview")
 fire_action = &"launch_station_fire"
 prev_action = &"launch_station_prev"
 next_action = &"launch_station_next"

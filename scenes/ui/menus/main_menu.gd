@@ -14,7 +14,7 @@ const CONTROL_LINES := [
 	["rise / sink", &"ship_rise", &"ship_sink"],
 	["launch random object", &"ship_launch"],
 	["choose object (launch station)", &"launch_station_prev", &"launch_station_next"],
-	["launch chosen object (launch station)", &"launch_station_fire"],
+	["launch chosen or random object (launch station)", &"launch_station_fire"],
 	["swat zurd", &"ship_swat"],
 ]
 

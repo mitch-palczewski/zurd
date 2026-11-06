@@ -108,8 +108,10 @@ builds the C# project (needs internet once). You need to install these applicati
 6. **Controls:** **W/S** forward/back, **A/D** turn, **Shift/Ctrl** rise/sink, **Space**
    launches a random object. **Left-click** swats a Zurd (makes it smaller and forces it to
    pick a new target). A gamepad works too (left stick or d-pad; Y/A or the triggers to
-   rise/sink; B to launch). The launch station (`launch_station_fire/prev/next`) has no
-   bindings yet; it gets them with the physical controller. Input actions: `ship_forward/reverse`,
+   rise/sink; B to launch). The launch station is **J/L** (or LB/RB) to show and choose an
+   object, which appears on a pedestal in the cockpit, and **K** (or X) to launch it; with no
+   object shown, K launches a random one from the right side. The arcade kit gets its
+   bindings once it's wired. Input actions: `ship_forward/reverse`,
    `ship_turn_left/right`, `ship_rise/sink`, `ship_launch`, `launch_station_fire/prev/next`.
    The main menu's **Ship controls** selector switches to the alternative **Stick lifts**
    scheme, where W/S (or the stick) rise and sink and Shift/Ctrl (or Y/A and the triggers)
@@ -137,14 +139,19 @@ builds the C# project (needs internet once). You need to install these applicati
   gentle drift and a cockpit bob. It only ever turns around global Y, so the projected view
   never pitches or rolls, and it stays between a ground clearance and a ceiling. It emits
   `impact_occurred` on collision. `LaunchObjectComponent` (the `LaunchMuzzle` node) is the one
-  shared launcher: `launch_object(scene)` spawns that scene (or a random one from
-  `projectile_scenes`) straight ahead, gravity-free with linear-damp "braking" so it coasts
-  to a stop, adds random scale/spin/spread and half the ship's velocity, briefly excludes the
-  player from collision until the object clears, then emits `EventBus.spawn_requested` and
-  registers it with `ObjectTracker`. Launch buttons live under `Stations`: each
-  `LaunchStation` has its own cooldown and, for the launch station, a selected object
-  (`launch_selection_changed`). Each `StationActivity` reports a station going active or
-  empty (`station_activity_changed`).
+  shared launcher: `launch_object(scene, side_offset)` spawns that scene (or a random one from
+  `projectile_scenes`) straight ahead, from the middle or moved sideways to a station's own
+  side, gravity-free with linear-damp "braking" so it coasts to a stop, adds random
+  scale/spin/spread and half the ship's velocity, briefly excludes the player from collision
+  until the object clears, then emits `EventBus.spawn_requested` and registers it with
+  `ObjectTracker`. Launch buttons live under `Stations`: each
+  `LaunchStation` has its own cooldown and side offset. The launch station also keeps a
+  selected object (designed in `claude/plans/Launch-Station Design Doc.md`): the first
+  select press shows it on its `LaunchPreview` (a pedestal in the cockpit with a turning,
+  mesh-only copy of the object), later presses step, and its launch button fires it until
+  the preview hides 5 s after the last press. Then it's back to random objects
+  (`launch_selection_changed`, null on hide). Each `StationActivity` reports a station going
+  active or empty (`station_activity_changed`).
 - **Zurd enemy** (`scenes/characters/enemy/`): `Zurd` (`class_name Zurd`, a `CharacterBody3D`)
   is a thin coordinator that delegates to three components each physics frame:
   `ZurdTargetComponent` (asks `ObjectTracker` for a target — `CLOSEST` or `RANDOM`),
@@ -208,12 +215,11 @@ builds the C# project (needs internet once). You need to install these applicati
 New contributors hit these — they are known and not yet fixed:
 
 1. **Lidar touches don't reach gameplay yet** (see Lidar input above). Use the mouse to swat.
-2. **The launch station has no key bindings** until the physical controller is wired.
-3. **Zurds are temporary.** Expect odd behaviour, such as a Zurd swatted many times shrinking
+2. **Zurds are temporary.** Expect odd behaviour, such as a Zurd swatted many times shrinking
    to nothing; the overhaul will replace these scripts.
-4. **Nothing despawns.** Long sessions pile up loose objects and clouds; there's no object
+3. **Nothing despawns.** Long sessions pile up loose objects and clouds; there's no object
    budget or session reset yet.
-5. **No automated tests are committed yet.**
+4. **No automated tests are committed yet.**
 
 Style: every `.gd` and `.gdshader` file is indented with **tabs** (the GDScript style guide;
 `.editorconfig` sets it), and file and folder names are snake_case except C# files.

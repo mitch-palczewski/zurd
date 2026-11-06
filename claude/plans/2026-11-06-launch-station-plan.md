@@ -45,6 +45,39 @@ This plan builds section 9 of the design doc ("First Build") and nothing from it
 The hover bob moves the camera and the pedestal together, so the preview stays put on the wall.
 These are starting values for tuning on the projector. A new cockpit model would change them.
 
+## Status (2026-11-06)
+
+All six build steps are written. A scratch harness (not committed) drove the real
+`zurd_world.tscn` headless in Godot 4.7.2 at a fixed 60 fps, pressing the input actions. It
+passed **55 of 55 checks**: the full Verification list below, plus the menu label, both control
+schemes, an empty object list and a model without meshes. A windowed render at 1280 × 720
+showed the pedestal rising at the bottom right of the view with the object turning on top, in
+the lower third as planned.
+
+It has **not** been play-tested by hand, on the 8BitDo, or on the projector yet.
+
+Measured:
+
+| Check | Result |
+| --- | --- |
+| Launch points, in ship space | Station (0.6, 0, −1.813); pilot (0, 0, −1.813) |
+| Fitted copy | Longest side 0.1200 m, 0.0200 m above the disc, centered on the turning axis |
+| Turn speed | 30.00° in 0.5 s |
+| Hide timer | Hides 5 s after the last press; a launch at 4 s kept it showing at 8 s |
+| Random launches while hidden | 12 launches gave all 3 objects, all from the right |
+| Five quick steps | Only the first and last objects ever showed; never more than one copy visible |
+| Re-show during the sink | Caught at y −0.087; the pedestal rose again with no jump |
+
+Changes from the plan:
+
+- **`show_object(null)` hides the preview,** the same as `hide_preview()`. A station passes null
+  only if its launcher's list has an empty slot.
+- **`launch_preview.tscn` shows the pedestal raised,** so it can be tuned in the editor.
+  `_ready` sinks and hides it.
+- **The hand-written scene parts have no node ids or script uid yet.** The new scene and the
+  `StationPreview` node get their node ids the next time the editor saves them. The editor
+  also creates `launch_preview.gd.uid` on its next file scan.
+
 ## Design
 
 ### Scenes

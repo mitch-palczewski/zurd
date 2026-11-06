@@ -1,0 +1,38 @@
+[gd_scene format=3 uid="uid://cryej0gy88nbt"]
+
+[ext_resource type="Script" path="res://scenes/characters/player/launch_preview.gd" id="1_lprev"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_pedestal"]
+albedo_color = Color(0.75, 0.75, 0.78, 1)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_column"]
+material = SubResource("StandardMaterial3D_pedestal")
+top_radius = 0.035
+bottom_radius = 0.05
+height = 0.105
+radial_segments = 8
+rings = 0
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_disc"]
+material = SubResource("StandardMaterial3D_pedestal")
+top_radius = 0.06
+bottom_radius = 0.06
+height = 0.015
+radial_segments = 32
+rings = 0
+
+[node name="LaunchPreview" type="Node3D"]
+script = ExtResource("1_lprev")
+
+[node name="Pedestal" type="Node3D" parent="."]
+
+[node name="Column" type="MeshInstance3D" parent="Pedestal"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0525, 0)
+mesh = SubResource("CylinderMesh_column")
+
+[node name="Disc" type="MeshInstance3D" parent="Pedestal"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1125, 0)
+mesh = SubResource("CylinderMesh_disc")
+
+[node name="Turntable" type="Node3D" parent="Pedestal"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.12, 0)
