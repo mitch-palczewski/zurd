@@ -17,7 +17,7 @@ Items marked **(later)** are part of the design but not the first build (see sec
 | Element | Description |
 | --- | --- |
 | Pilot station | Center of the room, facing the front wall. Its launch button fires a **random** object from the **center** of the ship. It has no pedestal and no preview. |
-| Launch station | Stands beside the pilot station, facing the front wall. Three buttons. Has its own pedestal and its own launch point, both offset to the side it stands on. |
+| Launch station | Stands beside the pilot station, facing the front wall; the first one stands to the pilot's **right**. Three buttons. Has its own pedestal and its own launch point, both offset to the side it stands on. |
 | More launch stations | The design supports any number. Each one gets its own offset, pedestal, launch point, selection and cooldown. The first build has **one**. |
 
 **Offsets match the room.** A station that stands to the right of the pilot has its pedestal right of center in the cockpit and launches from the right side of the ship. A guest sees their pedestal on their own side of the front wall and their objects leave on that side. Each station sets one sideways offset; height and depth are shared by all stations.
@@ -42,7 +42,7 @@ Items marked **(later)** are part of the design but not the first build (see sec
 ### 4.1 Pedestal
 
 - **Placeholder shape:** a tapered eight-sided column, narrower at the top, with a thin round disc on top that is a little wider than the column's top. Plain material for now.
-- **Position:** on the cockpit floor in front of the camera, at the station's sideways offset, so it shows in the bottom band of the front wall (Ship-Controls §2). It must stay inside the front camera's view at every station offset in use.
+- **Position:** on the cockpit floor in front of the camera, at the station's sideways offset. The pedestal's base sits near the bottom edge of the front wall and the object in the **lower third** of the wall, below the middle of the view. The camera is only about 0.56 m above the cockpit floor, so the pedestal and the object stay small. It must stay inside the front camera's view at every station offset in use.
 - **Comes and goes with the preview.** When there is no preview, the cockpit floor is clear.
 
 ### 4.2 Object
@@ -80,14 +80,14 @@ All parameters are exported so they can be tuned. Sizes and positions are starti
 | --- | --- | --- |
 | Preview hide delay | Time after the last Select or Launch press before the preview hides | 5 s |
 | Preview turn speed | How fast the preview object turns around Y | 60°/s (one turn in 6 s) |
-| Preview box size | Largest dimension of a fitted preview object | 0.25 m |
-| Hover height | Gap between the disc and the bottom of the object's bounds | 0.05 m |
-| Pedestal height | Column plus disc | 0.3 m |
+| Preview box size | Largest dimension of a fitted preview object | 0.12 m |
+| Hover height | Gap between the disc and the bottom of the object's bounds | 0.02 m |
+| Pedestal height | Column plus disc | 0.12 m |
 | Pedestal rise / sink time | Time for the pedestal to rise out of or sink into the floor | 0.25 s |
 | Object pop-in time | Grow from zero, with overshoot | 0.2 s |
 | Object shrink time | On hide and at the start of a step | 0.12 s |
-| Pedestal depth | Distance in front of the camera, shared by all stations | Tune so it sits in the front wall's bottom band |
-| Station offset | Sideways distance of a station's pedestal and launch point from the center. Positive is right. One per station. | ±0.6 m for the pedestal; the launch point uses the same value |
+| Pedestal depth | Distance in front of the camera, shared by all stations | 0.7 m (the object lands about 72–80% of the way down the front wall) |
+| Station offset | Sideways distance of a station's pedestal and launch point from the center. Positive is right. One per station. | +0.6 m for the first station (right of the pilot); the launch point uses the same value |
 
 ## 7. Implementation Notes
 

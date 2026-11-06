@@ -155,10 +155,10 @@ Replace the current `ship_pitch_up/down`, `ship_yaw_left/right` and `ship_boost`
 | --- | --- | --- | --- |
 | `ship_forward` / `ship_reverse` | Joystick forward / back | W / S | Left stick or d-pad up / down |
 | `ship_turn_left` / `ship_turn_right` | Joystick left / right | A / D | Left stick or d-pad left / right |
-| `ship_rise` / `ship_sink` | Up / Down buttons | Space / Shift | Y / A (top / bottom face buttons), or right / left trigger |
-| `ship_launch` | Pilot launch | F | B (right face button) |
-| `launch_station_fire` | Station big button | K | Y (top face button) |
-| `launch_station_prev` / `launch_station_next` | Station small buttons | J / L | X / B (left / right face buttons) |
+| `ship_rise` / `ship_sink` | Up / Down buttons | Shift / Ctrl | Y / A (top / bottom face buttons), or right / left trigger |
+| `ship_launch` | Pilot launch | Space | B (right face button) |
+| `launch_station_fire` | Station big button | K | X (left face button) |
+| `launch_station_prev` / `launch_station_next` | Station small buttons | J / L | LB / RB (left / right shoulder) |
 
 The table is the default scheme, and the project settings always hold it. Choosing **Stick lifts** on the main menu swaps the events of `ship_forward` / `ship_reverse` with those of `ship_rise` / `ship_sink` at runtime (`ControlScheme`, `scripts/utils/control_scheme.gd`), so every binding (keyboard, gamepad and, later, the arcade kit) follows the swap without other code changes. The choice lasts until it is changed again or the game restarts.
 

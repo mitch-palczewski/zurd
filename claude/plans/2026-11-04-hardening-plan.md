@@ -214,7 +214,9 @@ HUD and attract mode can hook in later through its signals.
   `launch_object(scene = null)` picks from the catalog when no scene is given;
   `get_projectile_count()` becomes `catalog.size()`. `player_ship.tscn` points at the catalog.
 - `LaunchStation` selects catalog entries, and `EventBus.launch_selection_changed(station, entry)`
-  passes the entry, so a station display later gets the name and icon. Nothing listens yet.
+  passes the entry, or null when the station's preview hides. Nothing listens yet. The station
+  passes `entry.scene` to its `LaunchPreview` and to `launch_object`. The preview shows the model
+  itself, so it needs no names or icons (`2026-11-06-launch-station-plan.md`).
 - Optional, cheap: the catalog warns in the editor when an entry's scene isn't a `RigidBody3D`
   with a `BoxShape3D`, the box-collider contract from the review, checked where objects are listed.
 - Adding a launchable model becomes: drop the `.glb` into `assets/models/objects/`, then add a
