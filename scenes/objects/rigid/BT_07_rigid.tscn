@@ -1,0 +1,25 @@
+[gd_scene format=3 uid="uid://btyg1rk645ow3"]
+
+[ext_resource type="ArrayMesh" uid="uid://cvq733nrk5qcf" path="res://assets/meshes/BT_07.res" id="1_ot6dm"]
+[ext_resource type="Material" uid="uid://c4e45aj2jd5ee" path="res://assets/materials/objects/BT_07_mat_0.res" id="2_up1n8"]
+[ext_resource type="Material" uid="uid://bwfg5ygu7e74w" path="res://assets/materials/objects/BT_07_mat_1.res" id="3_7gwsh"]
+[ext_resource type="Material" uid="uid://df1i7rsjbypix" path="res://assets/materials/objects/BT_07_mat_2.res" id="4_pcdle"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_soaml"]
+size = Vector3(1.5163227, 3.0068297, 1.5164139)
+
+[node name="Bt07Rigid" type="RigidBody3D" unique_id=790181827]
+collision_layer = 4
+collision_mask = 15
+
+[node name="BT_07" type="Node3D" parent="." unique_id=1423278379]
+
+[node name="BT_07" type="MeshInstance3D" parent="BT_07" unique_id=2029305579]
+mesh = ExtResource("1_ot6dm")
+surface_material_override/0 = ExtResource("2_up1n8")
+surface_material_override/1 = ExtResource("3_7gwsh")
+surface_material_override/2 = ExtResource("4_pcdle")
+
+[node name="CollisionBox" type="CollisionShape3D" parent="." unique_id=1223193985]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.0117919445, 0.12037933, 0.011149168)
+shape = SubResource("BoxShape3D_soaml")

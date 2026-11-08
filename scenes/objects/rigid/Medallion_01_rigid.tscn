@@ -1,0 +1,21 @@
+[gd_scene format=3 uid="uid://bup8cerbqgiy7"]
+
+[ext_resource type="ArrayMesh" uid="uid://l5g5b4f34yfh" path="res://assets/meshes/Medallion_01.res" id="1_w68vc"]
+[ext_resource type="Material" uid="uid://drxvikcbh1j25" path="res://assets/materials/objects/Medallion_01_mat.res" id="2_mjmgb"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_3s72h"]
+size = Vector3(2.9994338, 1.4616721, 0.50541365)
+
+[node name="Medallion01Rigid" type="RigidBody3D" unique_id=786636487]
+collision_layer = 4
+collision_mask = 15
+
+[node name="Medallion_01" type="Node3D" parent="." unique_id=1745477131]
+
+[node name="Medallion_01" type="MeshInstance3D" parent="Medallion_01" unique_id=685489217]
+mesh = ExtResource("1_w68vc")
+surface_material_override/0 = ExtResource("2_mjmgb")
+
+[node name="CollisionBox" type="CollisionShape3D" parent="." unique_id=1425232239]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.018148065, 0.15309167, -0.006437391)
+shape = SubResource("BoxShape3D_3s72h")

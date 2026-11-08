@@ -1,0 +1,23 @@
+[gd_scene format=3 uid="uid://cd07dgw0xxpnt"]
+
+[ext_resource type="ArrayMesh" uid="uid://twifv06wpsgg" path="res://assets/meshes/Tree_Stock_01.res" id="1_ldjly"]
+[ext_resource type="Material" uid="uid://ddrqcsqpki81b" path="res://assets/materials/objects/Tree_Stock_01_mat_0.res" id="2_48fs2"]
+[ext_resource type="Material" uid="uid://bichq4hegyfsl" path="res://assets/materials/objects/Tree_Stock_01_mat_1.res" id="3_hax6y"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_uy7ho"]
+size = Vector3(2.3178248, 3.9582686, 2.369028)
+
+[node name="TreeStock01Rigid" type="RigidBody3D" unique_id=1952586502]
+collision_layer = 4
+collision_mask = 15
+
+[node name="Tree_Stock_01" type="Node3D" parent="." unique_id=1400580459]
+
+[node name="Tree_Stock_01" type="MeshInstance3D" parent="Tree_Stock_01" unique_id=1390602004]
+mesh = ExtResource("1_ldjly")
+surface_material_override/0 = ExtResource("2_48fs2")
+surface_material_override/1 = ExtResource("3_hax6y")
+
+[node name="CollisionBox" type="CollisionShape3D" parent="." unique_id=1588520411]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.070451856, -0.32893968, -0.0052998066)
+shape = SubResource("BoxShape3D_uy7ho")

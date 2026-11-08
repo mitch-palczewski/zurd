@@ -1,0 +1,21 @@
+[gd_scene format=3 uid="uid://hxihc0w2mjx4"]
+
+[ext_resource type="ArrayMesh" uid="uid://c84ri2l4b2h00" path="res://assets/meshes/Pathway_01.res" id="1_k1eay"]
+[ext_resource type="Material" uid="uid://s22m34m66ty3" path="res://assets/materials/objects/Pathway_01_mat.res" id="2_f238o"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_npve2"]
+size = Vector3(2.6938293, 0.23065667, 3.050119)
+
+[node name="Pathway01Rigid" type="RigidBody3D" unique_id=734567610]
+collision_layer = 4
+collision_mask = 15
+
+[node name="Pathway_01" type="Node3D" parent="." unique_id=1592760251]
+
+[node name="Pathway_01" type="MeshInstance3D" parent="Pathway_01" unique_id=1561011929]
+mesh = ExtResource("1_k1eay")
+surface_material_override/0 = ExtResource("2_f238o")
+
+[node name="CollisionBox" type="CollisionShape3D" parent="." unique_id=181577765]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.08065593, -0.008939885, -0.23889506)
+shape = SubResource("BoxShape3D_npve2")

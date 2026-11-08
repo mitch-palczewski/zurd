@@ -1,0 +1,21 @@
+[gd_scene format=3 uid="uid://b0hy262iaxldw"]
+
+[ext_resource type="ArrayMesh" uid="uid://cmn3gspvp3l60" path="res://assets/meshes/Leone_02.res" id="1_j0vwf"]
+[ext_resource type="Material" uid="uid://ca3jpdgb0uiaa" path="res://assets/materials/objects/Leone_02_mat.res" id="2_5s7yt"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_fwtlv"]
+size = Vector3(2.10833, 3.0076632, 2.8771472)
+
+[node name="Leone02Rigid" type="RigidBody3D" unique_id=940235517]
+collision_layer = 4
+collision_mask = 15
+
+[node name="Leone_02" type="Node3D" parent="." unique_id=1572286787]
+
+[node name="Leone_02" type="MeshInstance3D" parent="Leone_02" unique_id=1760885314]
+mesh = ExtResource("1_j0vwf")
+surface_material_override/0 = ExtResource("2_5s7yt")
+
+[node name="CollisionBox" type="CollisionShape3D" parent="." unique_id=408256304]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.017160177, 0.21168292, -0.16705036)
+shape = SubResource("BoxShape3D_fwtlv")

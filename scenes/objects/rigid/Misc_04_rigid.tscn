@@ -1,0 +1,21 @@
+[gd_scene format=3 uid="uid://dcwgivxb717en"]
+
+[ext_resource type="ArrayMesh" uid="uid://r5f6651km051" path="res://assets/meshes/Misc_04.res" id="1_h7frl"]
+[ext_resource type="Material" uid="uid://dxwnttrakijfq" path="res://assets/materials/objects/Misc_04_mat.res" id="2_v0d3d"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_btp2t"]
+size = Vector3(2.0144024, 3.0599327, 1.1016084)
+
+[node name="Misc04Rigid" type="RigidBody3D" unique_id=715770543]
+collision_layer = 4
+collision_mask = 15
+
+[node name="Misc_04" type="Node3D" parent="." unique_id=42430947]
+
+[node name="Misc_04" type="MeshInstance3D" parent="Misc_04" unique_id=888355466]
+mesh = ExtResource("1_h7frl")
+surface_material_override/0 = ExtResource("2_v0d3d")
+
+[node name="CollisionBox" type="CollisionShape3D" parent="." unique_id=273894356]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.0025578737, 0.46840155, 0.048245072)
+shape = SubResource("BoxShape3D_btp2t")

@@ -1,0 +1,22 @@
+[gd_scene format=3 uid="uid://cyiairxv0vati"]
+
+[ext_resource type="ArrayMesh" uid="uid://c853sot6yaki0" path="res://assets/meshes/Shield_Man.res" id="1_jsohy"]
+[ext_resource type="Material" uid="uid://coy5nqpg233at" path="res://assets/materials/objects/Shield_Man_mat.res" id="2_oni4x"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_jsohy"]
+size = Vector3(2.0546327, 3.0584064, 1.294098)
+
+[node name="ShieldManRigid" type="RigidBody3D" unique_id=1249930515]
+collision_layer = 4
+collision_mask = 15
+
+[node name="Shield_Man" type="Node3D" parent="." unique_id=327010086]
+
+[node name="Shield_Man" type="MeshInstance3D" parent="Shield_Man" unique_id=1824859969]
+transform = Transform3D(3.289022, 0, 0, 0, 3.271972, 0.33446887, 0, -0.33446887, 3.271972, 0.06895818, 0.07011493, -0.54080987)
+mesh = ExtResource("1_jsohy")
+surface_material_override/0 = ExtResource("2_oni4x")
+
+[node name="CollisionBox" type="CollisionShape3D" parent="." unique_id=1598576612]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.06901431, 0.10487318, 0.38705054)
+shape = SubResource("BoxShape3D_jsohy")

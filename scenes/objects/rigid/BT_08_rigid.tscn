@@ -1,0 +1,30 @@
+[gd_scene format=3 uid="uid://c0l4sxyhvphf4"]
+
+[ext_resource type="ArrayMesh" uid="uid://dkcp4rf4d68mp" path="res://assets/meshes/BT_08.res" id="1_hcaqt"]
+[ext_resource type="Material" uid="uid://bvdwtqqyt2v2y" path="res://assets/materials/objects/BT_08_mat_0.res" id="2_41kxw"]
+[ext_resource type="Material" uid="uid://vwmmw1myv73h" path="res://assets/materials/objects/BT_08_mat_1.res" id="3_8j2tk"]
+[ext_resource type="Material" uid="uid://cfgow53ld1sys" path="res://assets/materials/objects/BT_08_mat_2.res" id="4_ddy8w"]
+[ext_resource type="Material" uid="uid://mrf3sohg7v7t" path="res://assets/materials/objects/BT_08_mat_3.res" id="5_78hpc"]
+[ext_resource type="Material" uid="uid://c2mgiar1xuyg3" path="res://assets/materials/objects/BT_08_mat_4.res" id="6_5yy2y"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_bdkly"]
+size = Vector3(1.5220418, 3.018044, 1.9889314)
+
+[node name="Bt08Rigid" type="RigidBody3D" unique_id=169500043]
+collision_layer = 4
+collision_mask = 15
+
+[node name="BT_08" type="Node3D" parent="." unique_id=826831097]
+
+[node name="BT_08" type="MeshInstance3D" parent="BT_08" unique_id=2070259288]
+transform = Transform3D(3.71145, 0, 0, 0, 3.71145, 0, 0, 0, 3.71145, 0, 0, 0)
+mesh = ExtResource("1_hcaqt")
+surface_material_override/0 = ExtResource("2_41kxw")
+surface_material_override/1 = ExtResource("3_8j2tk")
+surface_material_override/2 = ExtResource("4_ddy8w")
+surface_material_override/3 = ExtResource("5_78hpc")
+surface_material_override/4 = ExtResource("6_5yy2y")
+
+[node name="CollisionBox" type="CollisionShape3D" parent="." unique_id=1263368719]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7.069111e-05, 0.21539259, 0.23352486)
+shape = SubResource("BoxShape3D_bdkly")

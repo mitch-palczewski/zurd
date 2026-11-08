@@ -1,0 +1,26 @@
+[gd_scene format=3 uid="uid://xa4byhkjhb5e"]
+
+[ext_resource type="ArrayMesh" uid="uid://dyl2oxpf5bwt0" path="res://assets/meshes/BT_10.res" id="1_yykmg"]
+[ext_resource type="Material" uid="uid://dngspsqc6rgyp" path="res://assets/materials/objects/BT_10_mat_0.res" id="2_7ni7g"]
+[ext_resource type="Material" uid="uid://dvg4yjk0km4ju" path="res://assets/materials/objects/BT_10_mat_1.res" id="3_6r0ee"]
+[ext_resource type="Material" uid="uid://5oiuuwhyb6im" path="res://assets/materials/objects/BT_10_mat_2.res" id="4_dkfcu"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_g1gim"]
+size = Vector3(1.5019171, 2.993937, 2.2151453)
+
+[node name="Bt10Rigid" type="RigidBody3D" unique_id=644009962]
+collision_layer = 4
+collision_mask = 15
+
+[node name="BT_10" type="Node3D" parent="." unique_id=726824318]
+
+[node name="Hand" type="MeshInstance3D" parent="BT_10" unique_id=97384]
+transform = Transform3D(2.0462768, 0, 0, 0, 2.0462768, 0, 0, 0, 2.0462768, 0, 0, 0)
+mesh = ExtResource("1_yykmg")
+surface_material_override/0 = ExtResource("2_7ni7g")
+surface_material_override/1 = ExtResource("3_6r0ee")
+surface_material_override/2 = ExtResource("4_dkfcu")
+
+[node name="CollisionBox" type="CollisionShape3D" parent="." unique_id=1505243077]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.827448e-05, 0.57064354, 0.6820088)
+shape = SubResource("BoxShape3D_g1gim")

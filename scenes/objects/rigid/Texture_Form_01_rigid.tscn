@@ -1,0 +1,21 @@
+[gd_scene format=3 uid="uid://b1t1xkfp40ue4"]
+
+[ext_resource type="ArrayMesh" uid="uid://c02d0rncdtfi8" path="res://assets/meshes/Texture_Form_01.res" id="1_ovxm6"]
+[ext_resource type="Material" uid="uid://cwnq16gwq1klo" path="res://assets/materials/objects/Texture_Form_01_mat.res" id="2_nlc3v"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_71usn"]
+size = Vector3(1.8393903, 3.0371685, 1.8419448)
+
+[node name="TextureForm01Rigid" type="RigidBody3D" unique_id=748918941]
+collision_layer = 4
+collision_mask = 15
+
+[node name="Texture_Form_01" type="Node3D" parent="." unique_id=45312621]
+
+[node name="Texture_Form_01" type="MeshInstance3D" parent="Texture_Form_01" unique_id=1891120795]
+mesh = ExtResource("1_ovxm6")
+surface_material_override/0 = ExtResource("2_nlc3v")
+
+[node name="CollisionBox" type="CollisionShape3D" parent="." unique_id=574167558]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0013898015, 0.6623862, -0.0005066395)
+shape = SubResource("BoxShape3D_71usn")

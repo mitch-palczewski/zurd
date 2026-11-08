@@ -1,0 +1,21 @@
+[gd_scene format=3 uid="uid://bmw0tfkvdnhfq"]
+
+[ext_resource type="ArrayMesh" uid="uid://cbcp7tdapptwq" path="res://assets/meshes/GEO_Stock_07.res" id="1_sy00k"]
+[ext_resource type="Material" uid="uid://bf00oyer2c87m" path="res://assets/materials/objects/GEO_Stock_07_mat.res" id="2_ma81c"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_edek0"]
+size = Vector3(4.8211884, 2.999185, 0.68020254)
+
+[node name="GeoStock07Rigid" type="RigidBody3D" unique_id=705342780]
+collision_layer = 4
+collision_mask = 15
+
+[node name="GEO_Stock_07" type="Node3D" parent="." unique_id=1051110307]
+
+[node name="GEO_Stock_07" type="MeshInstance3D" parent="GEO_Stock_07" unique_id=797342111]
+mesh = ExtResource("1_sy00k")
+surface_material_override/0 = ExtResource("2_ma81c")
+
+[node name="CollisionBox" type="CollisionShape3D" parent="." unique_id=1179035169]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.1920929e-07, 7.5101852e-06)
+shape = SubResource("BoxShape3D_edek0")

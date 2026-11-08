@@ -1,0 +1,27 @@
+[gd_scene format=3 uid="uid://d0g4uhdwsm7rc"]
+
+[ext_resource type="ArrayMesh" uid="uid://dopvv7mqkfbyu" path="res://assets/meshes/GEO_Stock_02.res" id="1_pfwxp"]
+[ext_resource type="Material" uid="uid://dh4moliqp20xc" path="res://assets/materials/objects/GEO_Stock_02_mat_0.res" id="2_jsdja"]
+[ext_resource type="Material" uid="uid://d3y8t6u7fyx1m" path="res://assets/materials/objects/GEO_Stock_02_mat_1.res" id="3_c1lc5"]
+[ext_resource type="Material" uid="uid://c82jkpwx17m07" path="res://assets/materials/objects/GEO_Stock_02_mat_2.res" id="4_3kfdl"]
+[ext_resource type="Material" uid="uid://dib3w3x8o5ybb" path="res://assets/materials/objects/GEO_Stock_02_mat_3.res" id="5_d785u"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_tkgwn"]
+size = Vector3(3.8340695, 3.01433, 0.29344755)
+
+[node name="GeoStock02Rigid" type="RigidBody3D" unique_id=1588658106]
+collision_layer = 4
+collision_mask = 15
+
+[node name="GEO_Stock_02" type="Node3D" parent="." unique_id=2003242612]
+
+[node name="Geo_Stock_02" type="MeshInstance3D" parent="GEO_Stock_02" unique_id=845179730]
+mesh = ExtResource("1_pfwxp")
+surface_material_override/0 = ExtResource("2_jsdja")
+surface_material_override/1 = ExtResource("3_c1lc5")
+surface_material_override/2 = ExtResource("4_3kfdl")
+surface_material_override/3 = ExtResource("5_d785u")
+
+[node name="CollisionBox" type="CollisionShape3D" parent="." unique_id=288303372]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.0039697886, 0.002696395, 3.5613775e-06)
+shape = SubResource("BoxShape3D_tkgwn")

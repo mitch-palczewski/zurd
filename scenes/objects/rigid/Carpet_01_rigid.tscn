@@ -1,0 +1,22 @@
+[gd_scene format=3 uid="uid://6imnjes0q1cs"]
+
+[ext_resource type="ArrayMesh" uid="uid://cl566e2kncgtj" path="res://assets/meshes/Carpet_01.res" id="1_ey712"]
+[ext_resource type="Material" uid="uid://bana56d4hfq7k" path="res://assets/materials/objects/Carpet_01_mat.res" id="2_d8jnk"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_t3rm4"]
+size = Vector3(2.2963374, 2.3024821, 0.16099986)
+
+[node name="Carpet01Rigid" type="RigidBody3D" unique_id=1885806891]
+collision_layer = 4
+collision_mask = 15
+
+[node name="Carpet_01" type="Node3D" parent="." unique_id=884771137]
+
+[node name="Carpet" type="MeshInstance3D" parent="Carpet_01" unique_id=1209497111]
+transform = Transform3D(-0.07974547, -0.0011789639, 0.06502644, -0.06500568, -0.000961067, -0.07977093, 0.0027144058, -0.05765234, 2.3960098e-08, -0.0013353676, 0.0009911656, 0.023542369)
+mesh = ExtResource("1_ey712")
+surface_material_override/0 = ExtResource("2_d8jnk")
+
+[node name="CollisionBox" type="CollisionShape3D" parent="." unique_id=741902043]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.001478076, 0.000121593475, 0.014457099)
+shape = SubResource("BoxShape3D_t3rm4")

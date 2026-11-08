@@ -1,0 +1,21 @@
+[gd_scene format=3 uid="uid://bnm1hp7cml50t"]
+
+[ext_resource type="ArrayMesh" uid="uid://cam6qrs1sc37n" path="res://assets/meshes/Gargoyle_01.res" id="1_ney8i"]
+[ext_resource type="Material" uid="uid://b3felhn62knb" path="res://assets/materials/objects/Gargoyle_01_mat.res" id="2_c06kv"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_q6b68"]
+size = Vector3(2.2358942, 3.0451326, 2.5039344)
+
+[node name="Gargoyle01Rigid" type="RigidBody3D" unique_id=428522212]
+collision_layer = 4
+collision_mask = 15
+
+[node name="Gargoyle_01" type="Node3D" parent="." unique_id=1027815330]
+
+[node name="Gargoyle_01" type="MeshInstance3D" parent="Gargoyle_01" unique_id=2040161232]
+mesh = ExtResource("1_ney8i")
+surface_material_override/0 = ExtResource("2_c06kv")
+
+[node name="CollisionBox" type="CollisionShape3D" parent="." unique_id=1427803879]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.053895116, 0.06736088, 0.07890594)
+shape = SubResource("BoxShape3D_q6b68")

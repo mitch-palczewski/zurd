@@ -1,0 +1,33 @@
+[gd_scene format=3 uid="uid://cb1shbj2vr7kn"]
+
+[ext_resource type="ArrayMesh" uid="uid://c64g65muxgd2x" path="res://assets/meshes/Piling_02.res" id="1_fs7v5"]
+[ext_resource type="Material" uid="uid://uj8p1m8np848" path="res://assets/materials/objects/Piling_02_mat_0.res" id="2_75srf"]
+[ext_resource type="Material" uid="uid://mjrtkkc5354v" path="res://assets/materials/objects/Piling_02_mat_1.res" id="3_cwqln"]
+[ext_resource type="Material" uid="uid://n83ihhru30y1" path="res://assets/materials/objects/Piling_02_mat_2.res" id="4_q3rlk"]
+[ext_resource type="Material" uid="uid://d1jemktnxv5no" path="res://assets/materials/objects/Piling_02_mat_3.res" id="5_7csir"]
+[ext_resource type="Material" uid="uid://cr6ea64k6nag2" path="res://assets/materials/objects/Piling_02_mat_4.res" id="6_alxef"]
+[ext_resource type="Material" uid="uid://b02ssakqd2ho" path="res://assets/materials/objects/Piling_02_mat_5.res" id="7_5f480"]
+[ext_resource type="Material" uid="uid://p1ax1sl0bge" path="res://assets/materials/objects/Piling_02_mat_6.res" id="8_pdufr"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_mn631"]
+size = Vector3(0.32385275, 3.2083256, 0.32666773)
+
+[node name="Piling02Rigid" type="RigidBody3D" unique_id=862603515]
+collision_layer = 4
+collision_mask = 15
+
+[node name="Piling_02" type="Node3D" parent="." unique_id=2107875340]
+
+[node name="Piling_02" type="MeshInstance3D" parent="Piling_02" unique_id=2020572958]
+mesh = ExtResource("1_fs7v5")
+surface_material_override/0 = ExtResource("2_75srf")
+surface_material_override/1 = ExtResource("3_cwqln")
+surface_material_override/2 = ExtResource("4_q3rlk")
+surface_material_override/3 = ExtResource("5_7csir")
+surface_material_override/4 = ExtResource("6_alxef")
+surface_material_override/5 = ExtResource("7_5f480")
+surface_material_override/6 = ExtResource("8_pdufr")
+
+[node name="CollisionBox" type="CollisionShape3D" parent="." unique_id=1888617010]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0020174384, -0.3433951, -0.008041188)
+shape = SubResource("BoxShape3D_mn631")

@@ -1,0 +1,22 @@
+[gd_scene format=3 uid="uid://blivjoauwxo6m"]
+
+[ext_resource type="ArrayMesh" uid="uid://bbgmoae2f1cuv" path="res://assets/meshes/Bull_01.res" id="1_wu4ap"]
+[ext_resource type="Material" uid="uid://btoqkuorw5lf" path="res://assets/materials/objects/Bull_01_mat.res" id="2_e4v4o"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_5uaf7"]
+size = Vector3(1.725829, 1.8212337, 3.0470095)
+
+[node name="Bull01Rigid" type="RigidBody3D" unique_id=420470291]
+collision_layer = 4
+collision_mask = 15
+
+[node name="Bull_01" type="Node3D" parent="." unique_id=2109415431]
+
+[node name="Bull_01" type="MeshInstance3D" parent="Bull_01" unique_id=603585357]
+transform = Transform3D(1.8315696, 0, 0, 0, 1.8315696, 0, 0, 0, 1.8315696, 0, 0, 0)
+mesh = ExtResource("1_wu4ap")
+surface_material_override/0 = ExtResource("2_e4v4o")
+
+[node name="CollisionBox" type="CollisionShape3D" parent="." unique_id=1940384485]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.00096964836, 0.024380803, 0.20036423)
+shape = SubResource("BoxShape3D_5uaf7")

@@ -1,0 +1,49 @@
+[gd_scene format=3 uid="uid://d3giuaak48otn"]
+
+[ext_resource type="ArrayMesh" uid="uid://dpnmxsr1iqqgl" path="res://assets/meshes/Spire_Stock_02.res" id="1_wdqop"]
+[ext_resource type="Material" uid="uid://b37iwy25nvuct" path="res://assets/materials/objects/Spire_Stock_02_mat_0.res" id="2_54v5a"]
+[ext_resource type="Material" uid="uid://cepq4w8armo4f" path="res://assets/materials/objects/Spire_Stock_02_mat_1.res" id="3_be5ym"]
+[ext_resource type="Material" uid="uid://jp67g8n7oajr" path="res://assets/materials/objects/Spire_Stock_02_mat_2.res" id="4_mck1f"]
+[ext_resource type="Material" uid="uid://cahsl2be0ctis" path="res://assets/materials/objects/Spire_Stock_02_mat_3.res" id="5_u7aws"]
+[ext_resource type="Material" uid="uid://cy6qqsscj6ks" path="res://assets/materials/objects/Spire_Stock_02_mat_4.res" id="6_sqmod"]
+[ext_resource type="Material" uid="uid://jy3ymockppjt" path="res://assets/materials/objects/Spire_Stock_02_mat_5.res" id="7_qvjf6"]
+[ext_resource type="Material" uid="uid://bl4ekrlkfvfi6" path="res://assets/materials/objects/Spire_Stock_02_mat_6.res" id="8_cwmt1"]
+[ext_resource type="Material" uid="uid://65a2vakolv3g" path="res://assets/materials/objects/Spire_Stock_02_mat_7.res" id="9_tomjb"]
+[ext_resource type="Material" uid="uid://bg6f15t3y15tg" path="res://assets/materials/objects/Spire_Stock_02_mat_8.res" id="10_88v6o"]
+[ext_resource type="Material" uid="uid://cros66gjvveh3" path="res://assets/materials/objects/Spire_Stock_02_mat_9.res" id="11_xi06n"]
+[ext_resource type="Material" uid="uid://siskemfu2y27" path="res://assets/materials/objects/Spire_Stock_02_mat_10.res" id="12_h24y8"]
+[ext_resource type="Material" uid="uid://f6stdnn22cg" path="res://assets/materials/objects/Spire_Stock_02_mat_11.res" id="13_kxnvo"]
+[ext_resource type="Material" uid="uid://dm667qi1g4e4y" path="res://assets/materials/objects/Spire_Stock_02_mat_12.res" id="14_8gvpc"]
+[ext_resource type="Material" uid="uid://comvofu0n6fw5" path="res://assets/materials/objects/Spire_Stock_02_mat_13.res" id="15_5d3j0"]
+[ext_resource type="Material" uid="uid://fg6mhyjqqw2" path="res://assets/materials/objects/Spire_Stock_02_mat_14.res" id="16_3oeam"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_lb7v0"]
+size = Vector3(0.75032103, 4.0944223, 0.7176653)
+
+[node name="SpireStock02Rigid" type="RigidBody3D" unique_id=105106833]
+collision_layer = 4
+collision_mask = 15
+
+[node name="Spire_Stock_02" type="Node3D" parent="." unique_id=32419489]
+
+[node name="Spire_Stock_02" type="MeshInstance3D" parent="Spire_Stock_02" unique_id=2125459802]
+mesh = ExtResource("1_wdqop")
+surface_material_override/0 = ExtResource("2_54v5a")
+surface_material_override/1 = ExtResource("3_be5ym")
+surface_material_override/2 = ExtResource("4_mck1f")
+surface_material_override/3 = ExtResource("5_u7aws")
+surface_material_override/4 = ExtResource("6_sqmod")
+surface_material_override/5 = ExtResource("7_qvjf6")
+surface_material_override/6 = ExtResource("8_cwmt1")
+surface_material_override/7 = ExtResource("9_tomjb")
+surface_material_override/8 = ExtResource("10_88v6o")
+surface_material_override/9 = ExtResource("11_xi06n")
+surface_material_override/10 = ExtResource("12_h24y8")
+surface_material_override/11 = ExtResource("13_kxnvo")
+surface_material_override/12 = ExtResource("14_8gvpc")
+surface_material_override/13 = ExtResource("15_5d3j0")
+surface_material_override/14 = ExtResource("16_3oeam")
+
+[node name="CollisionBox" type="CollisionShape3D" parent="." unique_id=2137801250]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0002079308, -0.14177465, -0.005289346)
+shape = SubResource("BoxShape3D_lb7v0")

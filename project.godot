@@ -28,7 +28,8 @@ Controllers="*res://scripts/autoload/controllers.gd"
 
 [display]
 
-window/stretch/mode="canvas_items"
+window/size/viewport_width=1900
+window/size/viewport_height=1060
 
 [dotnet]
 

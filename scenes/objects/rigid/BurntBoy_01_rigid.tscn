@@ -1,0 +1,21 @@
+[gd_scene format=3 uid="uid://c18g7v0xsopao"]
+
+[ext_resource type="ArrayMesh" uid="uid://1khp1umsh282" path="res://assets/meshes/BurntBoy_01.res" id="1_1e2lr"]
+[ext_resource type="Material" uid="uid://ciqqp0kq7q0b2" path="res://assets/materials/objects/BurntBoy_01_mat.res" id="2_l48y7"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_x12qs"]
+size = Vector3(1.5867497, 2.3433003, 0.4442271)
+
+[node name="BurntBoy01Rigid" type="RigidBody3D" unique_id=1122602029]
+collision_layer = 4
+collision_mask = 15
+
+[node name="BurntBoy_01" type="Node3D" parent="." unique_id=958118632]
+
+[node name="BurntBoy_01" type="MeshInstance3D" parent="BurntBoy_01" unique_id=1824533804]
+mesh = ExtResource("1_1e2lr")
+surface_material_override/0 = ExtResource("2_l48y7")
+
+[node name="CollisionBox" type="CollisionShape3D" parent="." unique_id=2121557126]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.00016194582, 0.27576375, 0.19280854)
+shape = SubResource("BoxShape3D_x12qs")

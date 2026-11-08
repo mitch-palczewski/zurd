@@ -1,0 +1,23 @@
+[gd_scene format=3 uid="uid://bkh7vmtxxdpeh"]
+
+[ext_resource type="ArrayMesh" uid="uid://xky3edmno3so" path="res://assets/meshes/Stammheim_01.res" id="1_ijx2q"]
+[ext_resource type="Material" uid="uid://h25o2v3dl4xd" path="res://assets/materials/objects/Stammheim_01_mat_0.res" id="2_rxroe"]
+[ext_resource type="Material" uid="uid://dk5a3fcqbe57c" path="res://assets/materials/objects/Stammheim_01_mat_1.res" id="3_387yx"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_cclx1"]
+size = Vector3(2.97292, 2.97292, 0.550355)
+
+[node name="Stammheim01Rigid" type="RigidBody3D" unique_id=960565529]
+collision_layer = 4
+collision_mask = 15
+
+[node name="Stammheim_01" type="Node3D" parent="." unique_id=2089617169]
+
+[node name="Stammheim_01" type="MeshInstance3D" parent="Stammheim_01" unique_id=2045452832]
+mesh = ExtResource("1_ijx2q")
+surface_material_override/0 = ExtResource("2_rxroe")
+surface_material_override/1 = ExtResource("3_387yx")
+
+[node name="CollisionBox" type="CollisionShape3D" parent="." unique_id=1738623202]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0074076653, -0.012232423, 0.084798485)
+shape = SubResource("BoxShape3D_cclx1")

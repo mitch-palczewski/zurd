@@ -1,0 +1,21 @@
+[gd_scene format=3 uid="uid://vl37qn7elgme"]
+
+[ext_resource type="ArrayMesh" uid="uid://bi86ur0igi56y" path="res://assets/meshes/BT_02.res" id="1_xwioy"]
+[ext_resource type="Material" uid="uid://b1obbh3x3nkam" path="res://assets/materials/objects/BT_02_mat.res" id="2_vlaqs"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_5bau8"]
+size = Vector3(2.8856597, 2.9865534, 3.016024)
+
+[node name="Bt02Rigid" type="RigidBody3D" unique_id=1817923781]
+collision_layer = 4
+collision_mask = 15
+
+[node name="BT_02" type="Node3D" parent="." unique_id=1981046364]
+
+[node name="BT_02" type="MeshInstance3D" parent="BT_02" unique_id=1529847113]
+mesh = ExtResource("1_xwioy")
+surface_material_override/0 = ExtResource("2_vlaqs")
+
+[node name="CollisionBox" type="CollisionShape3D" parent="." unique_id=1233026339]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.0034959316, 0.22282636, 0.097402334)
+shape = SubResource("BoxShape3D_5bau8")

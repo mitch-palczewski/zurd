@@ -1,0 +1,29 @@
+[gd_scene format=3 uid="uid://0hc41vqgkxtr"]
+
+[ext_resource type="ArrayMesh" uid="uid://b5hgrjejnis7c" path="res://assets/meshes/Spire_Stock_01.res" id="1_k6ipe"]
+[ext_resource type="Material" uid="uid://dgloh3r2bt53s" path="res://assets/materials/objects/Spire_Stock_01_mat_0.res" id="2_g66w7"]
+[ext_resource type="Material" uid="uid://bstj105tjlhsq" path="res://assets/materials/objects/Spire_Stock_01_mat_1.res" id="3_ph785"]
+[ext_resource type="Material" uid="uid://bkvcyvmoq2jre" path="res://assets/materials/objects/Spire_Stock_01_mat_2.res" id="4_wlfkt"]
+[ext_resource type="Material" uid="uid://bpgyacbrihpa2" path="res://assets/materials/objects/Spire_Stock_01_mat_3.res" id="5_kgu0v"]
+[ext_resource type="Material" uid="uid://bqkbyc4athbyr" path="res://assets/materials/objects/Spire_Stock_01_mat_4.res" id="6_l0ivc"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_5d4jc"]
+size = Vector3(0.56852156, 4.000502, 0.5805601)
+
+[node name="SpireStock01Rigid" type="RigidBody3D" unique_id=160184114]
+collision_layer = 4
+collision_mask = 15
+
+[node name="Spire_Stock_01" type="Node3D" parent="." unique_id=82995639]
+
+[node name="Spire_Stock_01" type="MeshInstance3D" parent="Spire_Stock_01" unique_id=1073676560]
+mesh = ExtResource("1_k6ipe")
+surface_material_override/0 = ExtResource("2_g66w7")
+surface_material_override/1 = ExtResource("3_ph785")
+surface_material_override/2 = ExtResource("4_wlfkt")
+surface_material_override/3 = ExtResource("5_kgu0v")
+surface_material_override/4 = ExtResource("6_l0ivc")
+
+[node name="CollisionBox" type="CollisionShape3D" parent="." unique_id=698467274]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0030599833, 1.4228277, -0.0010014176)
+shape = SubResource("BoxShape3D_5d4jc")

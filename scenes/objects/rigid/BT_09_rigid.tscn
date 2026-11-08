@@ -1,0 +1,42 @@
+[gd_scene format=3 uid="uid://c0kits825fg8q"]
+
+[ext_resource type="ArrayMesh" uid="uid://c0qyfjxcbyp4l" path="res://assets/meshes/BT_09.res" id="1_0pwp6"]
+[ext_resource type="Material" uid="uid://ddpwmr44d13vm" path="res://assets/materials/objects/BT_09_mat_0.res" id="2_b7avd"]
+[ext_resource type="Material" uid="uid://cfep5xobbuh56" path="res://assets/materials/objects/BT_09_mat_1.res" id="3_oq4sx"]
+[ext_resource type="Material" uid="uid://b2r6wwwlr7m1v" path="res://assets/materials/objects/BT_09_mat_2.res" id="4_v7w28"]
+[ext_resource type="Material" uid="uid://ivj4w8dtlwl0" path="res://assets/materials/objects/BT_09_mat_3.res" id="5_i8lhn"]
+[ext_resource type="Material" uid="uid://cr5o2ctusikb1" path="res://assets/materials/objects/BT_09_mat_4.res" id="6_qitdf"]
+[ext_resource type="Material" uid="uid://cmdxecbs2qyi3" path="res://assets/materials/objects/BT_09_mat_5.res" id="7_477dd"]
+[ext_resource type="Material" uid="uid://cn0vq7ib1tcnj" path="res://assets/materials/objects/BT_09_mat_6.res" id="8_2wufn"]
+[ext_resource type="Material" uid="uid://dqinknj0r7owy" path="res://assets/materials/objects/BT_09_mat_7.res" id="9_i4p7o"]
+[ext_resource type="Material" uid="uid://dbos537tv5jot" path="res://assets/materials/objects/BT_09_mat_8.res" id="10_8gnu7"]
+[ext_resource type="Material" uid="uid://bxycode2uryyx" path="res://assets/materials/objects/BT_09_mat_9.res" id="11_jclh2"]
+[ext_resource type="Material" uid="uid://clfxybrflip7x" path="res://assets/materials/objects/BT_09_mat_10.res" id="12_7dj4n"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_6ijxj"]
+size = Vector3(1.2426419, 3.0162656, 0.8011345)
+
+[node name="Bt09Rigid" type="RigidBody3D" unique_id=2060943188]
+collision_layer = 4
+collision_mask = 15
+
+[node name="BT_09" type="Node3D" parent="." unique_id=1965087312]
+
+[node name="BT_09" type="MeshInstance3D" parent="BT_09" unique_id=1161422515]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.036140203, 0.36143163, -0.0115131885)
+mesh = ExtResource("1_0pwp6")
+surface_material_override/0 = ExtResource("2_b7avd")
+surface_material_override/1 = ExtResource("3_oq4sx")
+surface_material_override/2 = ExtResource("4_v7w28")
+surface_material_override/3 = ExtResource("5_i8lhn")
+surface_material_override/4 = ExtResource("6_qitdf")
+surface_material_override/5 = ExtResource("7_477dd")
+surface_material_override/6 = ExtResource("8_2wufn")
+surface_material_override/7 = ExtResource("9_i4p7o")
+surface_material_override/8 = ExtResource("10_8gnu7")
+surface_material_override/9 = ExtResource("11_jclh2")
+surface_material_override/10 = ExtResource("12_7dj4n")
+
+[node name="CollisionBox" type="CollisionShape3D" parent="." unique_id=1488581424]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.25494573, 0.8824009, -0.0146405995)
+shape = SubResource("BoxShape3D_6ijxj")

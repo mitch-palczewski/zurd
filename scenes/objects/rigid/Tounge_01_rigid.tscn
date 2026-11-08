@@ -1,0 +1,21 @@
+[gd_scene format=3 uid="uid://d1jogxwb2jwlu"]
+
+[ext_resource type="ArrayMesh" uid="uid://c8ab61pdk2pu0" path="res://assets/meshes/Tounge_01.res" id="1_krwei"]
+[ext_resource type="Material" uid="uid://dcl8vciw0apon" path="res://assets/materials/objects/Tounge_01_mat.res" id="2_tt3jj"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_asqfp"]
+size = Vector3(1.573262, 2.999927, 2.8567781)
+
+[node name="Tounge01Rigid" type="RigidBody3D" unique_id=188758652]
+collision_layer = 4
+collision_mask = 15
+
+[node name="Tounge_01" type="Node3D" parent="." unique_id=879950758]
+
+[node name="Tongue_01" type="MeshInstance3D" parent="Tounge_01" unique_id=243194322]
+mesh = ExtResource("1_krwei")
+surface_material_override/0 = ExtResource("2_tt3jj")
+
+[node name="CollisionBox" type="CollisionShape3D" parent="." unique_id=1840791463]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.05875671, -0.3339517, -0.3644482)
+shape = SubResource("BoxShape3D_asqfp")

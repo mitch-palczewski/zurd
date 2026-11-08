@@ -1,0 +1,21 @@
+[gd_scene format=3 uid="uid://contv2abhvr3w"]
+
+[ext_resource type="ArrayMesh" uid="uid://4gvs0tmidjuu" path="res://assets/meshes/Stairs_01.res" id="1_wj7q1"]
+[ext_resource type="Material" uid="uid://bm1kj84k6kjra" path="res://assets/materials/objects/Stairs_01_mat.res" id="2_6687w"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_arqpp"]
+size = Vector3(3.0052774, 1.892377, 2.9491317)
+
+[node name="Stairs01Rigid" type="RigidBody3D" unique_id=1683979660]
+collision_layer = 4
+collision_mask = 15
+
+[node name="Stairs_01" type="Node3D" parent="." unique_id=892760442]
+
+[node name="Stairs_01" type="MeshInstance3D" parent="Stairs_01" unique_id=113741372]
+mesh = ExtResource("1_wj7q1")
+surface_material_override/0 = ExtResource("2_6687w")
+
+[node name="CollisionBox" type="CollisionShape3D" parent="." unique_id=745221105]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.00088095665, 0.03108716, -0.038500547)
+shape = SubResource("BoxShape3D_arqpp")

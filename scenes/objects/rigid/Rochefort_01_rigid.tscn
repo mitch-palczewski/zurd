@@ -1,0 +1,31 @@
+[gd_scene format=3 uid="uid://ovldfoaaohkr"]
+
+[ext_resource type="ArrayMesh" uid="uid://cji2ixikgjaq" path="res://assets/meshes/Rochefort_01.res" id="1_ownkh"]
+[ext_resource type="Material" uid="uid://cfdxeyfx5trd7" path="res://assets/materials/objects/Rochefort_01_mat_0.res" id="2_r8thj"]
+[ext_resource type="Material" uid="uid://dxuuqqneyytqb" path="res://assets/materials/objects/Rochefort_01_mat_1.res" id="3_3rpx7"]
+[ext_resource type="Material" uid="uid://d4it0bu6lc8ks" path="res://assets/materials/objects/Rochefort_01_mat_2.res" id="4_cdno0"]
+[ext_resource type="Material" uid="uid://csul53502rlcu" path="res://assets/materials/objects/Rochefort_01_mat_3.res" id="5_6bb8s"]
+[ext_resource type="Material" uid="uid://c1vwbwswgbhi0" path="res://assets/materials/objects/Rochefort_01_mat_4.res" id="6_y88r8"]
+[ext_resource type="Material" uid="uid://d3i252owjpy0s" path="res://assets/materials/objects/Rochefort_01_mat_5.res" id="7_xvhxx"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_yp0xs"]
+size = Vector3(3.3513017, 0.47889522, 3.3486466)
+
+[node name="Rochefort01Rigid" type="RigidBody3D" unique_id=583772494]
+collision_layer = 4
+collision_mask = 15
+
+[node name="Rochefort_01" type="Node3D" parent="." unique_id=501254953]
+
+[node name="Rochefort_01" type="MeshInstance3D" parent="Rochefort_01" unique_id=282972402]
+mesh = ExtResource("1_ownkh")
+surface_material_override/0 = ExtResource("2_r8thj")
+surface_material_override/1 = ExtResource("3_3rpx7")
+surface_material_override/2 = ExtResource("4_cdno0")
+surface_material_override/3 = ExtResource("5_6bb8s")
+surface_material_override/4 = ExtResource("6_y88r8")
+surface_material_override/5 = ExtResource("7_xvhxx")
+
+[node name="CollisionBox" type="CollisionShape3D" parent="." unique_id=783717924]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.01397562, -0.074238226, 0.0009901524)
+shape = SubResource("BoxShape3D_yp0xs")
