@@ -32,7 +32,9 @@ Raw scan (angle°, mm)                    LidarDevice (or mouse source)
 - **Walls are identified by the lidar's serial number**, not by COM port, because port numbers
   can change on replug.
 - **Calibration is saved; the baseline is not.** Calibration is geometry and lasts until the
-  sensor moves. The baseline describes the room's contents and is recaptured each session.
+  sensor moves. The baseline describes the room's contents and is recaptured each session. A copy
+  of the baseline in use is saved with the calibration only as a reference: each new baseline is
+  compared with it to warn when the sensor has moved.
 - **Angle offset and mirror are display-only.** The homography handles orientation.
 
 ## Done so far
@@ -43,6 +45,7 @@ Raw scan (angle°, mm)                    LidarDevice (or mouse source)
 | **2. Baseline, detection, tracking** | `TouchDetector` with per-0.5° low-percentile baseline, depth-change foreground, sweep-order blob clustering with seam merge, and tracking (ids, confirm after N rotations, release grace, Began/Ended events). Setup scene: capture/clear baseline, live tuning, touch markers, event log. Checked against synthetic scans. |
 | **2b. Driver fix** | `RpLidar.NET` vendored into `thirdparty/RpLidar.NET/` and patched: the packaged driver dropped a third to a half of all Sensitivity-mode points (the view blinked between halves of the room) and produced phantom points. See its README. Standard mode is not decoded by the driver; use Sensitivity on an A1. |
 | **3. Calibration wizard and UV** (built; wall test pending) | `scripts/lidar/calibration/`: `Homography` (normalised DLT), `CalibrationSolver` (corners-then-centre check, degenerate-touch rejection), `CalibrationWizard`, `WallCalibration`, `LidarConfigStore`. `TouchDetector.DetectionArea` limits touches to the image plus a 5% margin. Setup scene: calibration panel, target window on a chosen screen (or a test window), follow test, UV on touch labels and the event log, image outline in the 2D view, settings restored per lidar serial. Checked offline against synthetic walls and scans. UV is relative to the whole projector screen. A Poor result can still be saved, with a warning, so the person at the wall decides. |
+| **3b. Calibration hardening** (built; wall test pending) | `TouchHold`: only touches that begin after a target comes up count, so a hand left down or something the baseline missed can't block the wizard or be captured. `CalibrationSolver.CheckNewTouch` refuses a bad touch as soon as it's captured, with the reason on the wall. Step back one target (button or Backspace); Esc cancels the wizard or closes the target window; Save and Redo touch buttons on the wall (`WallChoice`); Back to menu. `SensorCheck` estimates how far the sensor has shifted and turned since calibrating and warns. Checked offline with a simulated room and in the setup scene with simulated touches. |
 
 ## Step 3 — Calibration wizard and UV
 
@@ -55,26 +58,44 @@ scene opens a fullscreen target window on the chosen projector's screen.
    centre. The UVs of the targets are known. Corners are inset because a hand near a
    baseline surface (frame, side wall) is not detected, and the nearest corner may sit inside the
    A1's 150 mm minimum range.
-3. Accept a target only when there is **exactly one confirmed touch**, held steady for about a
-   second (at least 5 rotations, centroid spread under ~20 mm). Average it, then wait for release
-   before showing the next target.
-4. **Solve and check.** Fit the homography to the four corners and measure how far it misses the
+3. Accept a target only when there is **exactly one new touch**, one that began after the target
+   came up, held steady for about a second (6 rotations, within ~20 mm or 1% of its range of its
+   average). Touches already down are ignored until they lift, so a hand left on the wall or
+   something the baseline missed can't block the wizard or be captured.
+4. **Check each touch as it's captured,** against the earlier ones: refuse it, with the reason on
+   the wall, if it's within 100 mm of one, makes a corner sharper than 20° or flatter than 160°,
+   breaks the corner order, or (the centre) lands outside the corners. **Step back** (button or
+   Backspace) drops the last capture.
+5. **Solve and check.** Fit the homography to the four corners and measure how far it misses the
    centre target. That miss is the honest error number; four points alone always fit perfectly.
    Then refit using all five points (least squares, normalised DLT) for the saved result.
-5. Reject degenerate results: targets nearly collinear, a non-convex or self-crossing quad, or a
+6. Reject degenerate results: targets nearly collinear, a non-convex or self-crossing quad, or a
    centre error over a threshold. Offer a redo.
+7. **Keep or redo from the wall:** the result shows on the wall with Save and Redo touch buttons,
+   placed through the new calibration (large, so even a Poor one hits the right button). After a
+   failed solve, a touch anywhere redoes it. The setup screen offers Save, Redo and Discard too.
+
+**Keys:** Esc cancels the wizard, or else closes the target window; Backspace steps back one
+target. Both work while the target window covers the setup window, since it never takes focus.
 
 **After calibration**
 - Touch markers show UV; the 2D view draws the projected image's outline (UV 0–1 mapped back
   through the inverse homography).
 - **The calibrated area becomes the detection area.** Touches outside UV 0–1 plus a small margin
-  are ignored and their points drawn dim. This replaces the crude *Max range* setting.
+  are ignored and their points drawn dim. This replaces the crude *Max range* setting. The old
+  area stays off from the start of a calibration until its result is saved or discarded.
 - **Follow test:** the target window draws a dot at every live touch's UV. Touch anywhere and the
   dot should land under your finger.
+- **Sensor check:** each new baseline is compared with the one saved with the calibration
+  (`SensorCheck`). A least-squares fit over every direction, leaving out the ones that disagree
+  (furniture moved around), estimates how far the sensor has shifted and turned. 15 mm, 1°, or
+  more than 40% of directions changed shows a warning in the calibration panel. The thresholds are
+  first guesses for the wall test.
 
 **Persistence:** `user://lidar_config.json`, one entry per lidar serial: homography, the five
-measured points and their UVs, the centre error, date, and display settings (angle offset,
-mirror). Connecting to a lidar loads its calibration automatically.
+measured points and their UVs, the centre error, date, display settings (angle offset, mirror),
+and the baseline in use when the calibration was saved (one line of whole millimetres, for the
+sensor check). Connecting to a lidar loads its calibration automatically.
 
 **Done when** the follow-test dot lands within about 2 cm of the fingertip across the whole image,
 and calibration survives a restart and a USB replug to a different port.

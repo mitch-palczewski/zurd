@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
@@ -11,6 +12,13 @@ namespace Zurd.Lidar;
 public sealed class LidarConfigEntry
 {
     public WallCalibration? Calibration { get; set; }
+
+    /// <summary>
+    /// The baseline in use when <see cref="Calibration"/> was saved. Detection never uses it (the
+    /// room changes between sessions); <see cref="SensorCheck"/> compares new baselines with it to
+    /// notice a sensor that has moved since.
+    /// </summary>
+    public LidarBaseline? CalibrationBaseline { get; set; }
 
     /// <summary>Display only: how the setup scene's 2D view is turned. See <see cref="LidarGeometry.ToLocal"/>.</summary>
     public float AngleOffsetDeg { get; set; }
@@ -143,6 +151,13 @@ public sealed class LidarConfigStore
                 CentreErrorMm = cal.CentreErrorMm,
                 CalibratedAtUtc = cal.CalibratedAtUtc,
             },
+            CalibrationBaseline = entry.CalibrationBaseline is not { } baseline ? null : new BaselineDto
+            {
+                BinDeg = baseline.BinDeg,
+                Rotations = baseline.Rotations,
+                DistancesMm = string.Join(" ", Enumerable.Range(0, baseline.BinCount).Select(bin =>
+                    float.IsPositiveInfinity(baseline.DistanceMm(bin)) ? 0 : (int)MathF.Round(baseline.DistanceMm(bin)))),
+            },
         };
     }
 
@@ -161,10 +176,32 @@ public sealed class LidarConfigStore
         return new LidarConfigEntry
         {
             Calibration = calibration,
+            CalibrationBaseline = ToBaseline(dto.CalibrationBaseline),
             AngleOffsetDeg = dto.AngleOffsetDeg,
             Mirror = dto.Mirror,
             TargetScreen = dto.TargetScreen,
         };
+    }
+
+    /// <summary>Null if the saved baseline is missing or doesn't parse; it's only used for a warning, so it isn't worth failing the file over.</summary>
+    private static LidarBaseline? ToBaseline(BaselineDto? dto)
+    {
+        if (dto is not { BinDeg: > 0f, DistancesMm: { } text })
+            return null;
+
+        string[] parts = text.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length != LidarBaseline.BinCountFor(dto.BinDeg))
+            return null;
+
+        var distances = new float[parts.Length];
+        for (int i = 0; i < parts.Length; i++)
+        {
+            if (!int.TryParse(parts[i], NumberStyles.Integer, CultureInfo.InvariantCulture, out int mm) || mm < 0)
+                return null;
+            distances[i] = mm == 0 ? float.PositiveInfinity : mm;
+        }
+
+        return new LidarBaseline(dto.BinDeg, distances, dto.Rotations);
     }
 
     private static Vector2 ToVector(float[]? xy) => xy is { Length: 2 } ? new Vector2(xy[0], xy[1]) : Vector2.Zero;
@@ -181,6 +218,16 @@ public sealed class LidarConfigStore
         public bool Mirror { get; set; }
         public int? TargetScreen { get; set; }
         public CalibrationDto? Calibration { get; set; }
+        public BaselineDto? CalibrationBaseline { get; set; }
+    }
+
+    private sealed class BaselineDto
+    {
+        public float BinDeg { get; set; }
+        public int Rotations { get; set; }
+
+        /// <summary>One distance per bin in whole millimetres, separated by spaces; 0 where nothing was seen.</summary>
+        public string? DistancesMm { get; set; }
     }
 
     private sealed class CalibrationDto

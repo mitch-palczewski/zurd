@@ -22,6 +22,7 @@ public partial class LidarSetup : Control
     private const double PwmApplyDelaySec = 0.4;
     private const int EventLogLines = 12;
     private const string ConfigPath = "user://lidar_config.json";
+    private const string MenuPath = "uid://68dobhnbf23d"; // main_menu.tscn
 
     /// <summary>Touches this far outside the projected image (as a fraction of it) still count.</summary>
     private const float DetectionMarginUv = 0.05f;
@@ -61,6 +62,9 @@ public partial class LidarSetup : Control
     private WallCalibration? _calibration;
     private Vector2[]? _detectionArea;
 
+    /// <summary>The baseline the last sensor check looked at, so each new one is checked once.</summary>
+    private LidarBaseline? _checkedBaseline;
+
     public override void _Ready()
     {
         _device = new LidarDevice(new LidarDeviceOptions());
@@ -96,6 +100,9 @@ public partial class LidarSetup : Control
             LogEvents(frame);
             ShowTouchSummary(frame);
             RefreshBaselineControls();
+
+            if (_detector.Baseline != _checkedBaseline)
+                CheckSensor();
         }
 
         // The motor-speed slider applies once it has been still for a moment. Each change makes
@@ -158,9 +165,16 @@ public partial class LidarSetup : Control
         left.AddThemeConstantOverride("separation", 10);
         scrollPad.AddChild(left);
 
-        var title = new Label { Text = "LiDAR setup" };
+        var titleRow = new HBoxContainer();
+        left.AddChild(titleRow);
+
+        var title = new Label { Text = "LiDAR setup", SizeFlagsHorizontal = SizeFlags.ExpandFill };
         title.AddThemeFontSizeOverride("font_size", 22);
-        left.AddChild(title);
+        titleRow.AddChild(title);
+
+        var backToMenu = new Button { Text = "Back to menu", TooltipText = "Stops the lidar and returns to the main menu." };
+        backToMenu.Pressed += () => GetNode("/root/SceneChanger").Call("change_scene", MenuPath);
+        titleRow.AddChild(backToMenu);
 
         // -- Connection controls
         left.AddChild(MakeHeading("Connection"));
@@ -538,6 +552,7 @@ public partial class LidarSetup : Control
         }
 
         ApplyCalibration(entry?.Calibration);
+        CheckSensor();
     }
 
     private void ApplyCalibration(WallCalibration? calibration)
@@ -570,12 +585,36 @@ public partial class LidarSetup : Control
 
         LidarConfigEntry entry = _config.GetOrCreate(_serial);
         entry.Calibration = calibration;
+        entry.CalibrationBaseline = _detector.Baseline;
         entry.AngleOffsetDeg = (float)_rotation.Value;
         entry.Mirror = _mirror.ButtonPressed;
         entry.TargetScreen = _calibrationPanel.SelectedScreen;
         SaveConfig();
 
         ApplyCalibration(calibration);
+        CheckSensor();
+    }
+
+    /// <summary>
+    /// Compares the current baseline with the one saved with the calibration, to notice a sensor
+    /// that has moved since. Shown in the calibration panel; nothing to show without both.
+    /// </summary>
+    private void CheckSensor()
+    {
+        LidarBaseline? current = _detector.Baseline;
+        LidarBaseline? reference = _serial is null ? null : _config.Get(_serial)?.CalibrationBaseline;
+        _checkedBaseline = current;
+
+        // Right after saving, the reference is the baseline in use, which says nothing.
+        SensorCheck? check = current is null || reference is null || _calibration is null || current == reference
+            ? null
+            : SensorCheck.Compare(reference, current);
+
+        _calibrationPanel.SetSensorCheck(check);
+        if (check?.Verdict == SensorVerdict.Moved)
+        {
+            GD.PushWarning($"[LidarSetup] Lidar {_serial} seems to have moved since it was calibrated: {check}");
+        }
     }
 
     private void SaveDisplaySettings()

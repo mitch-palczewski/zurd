@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Godot;
 
@@ -5,35 +6,60 @@ namespace Zurd.Lidar;
 
 public enum CalibrationStep
 {
-    /// <summary>Waiting for exactly one hand on the current target.</summary>
+    /// <summary>Waiting for a new touch on the current target.</summary>
     WaitingForTouch,
 
-    /// <summary>One steady touch; counting rotations until it has been held long enough.</summary>
+    /// <summary>One new, steady touch; counting rotations until it has been held long enough.</summary>
     Holding,
 
-    /// <summary>The target was captured; waiting for the hand to leave before the next one.</summary>
+    /// <summary>
+    /// The touch just captured or refused is still down. Only a message: a new touch on the next
+    /// target counts straight away.
+    /// </summary>
     WaitingForRelease,
 
     /// <summary>All targets captured; <see cref="CalibrationWizard.Points"/> is ready to solve.</summary>
     Finished,
 }
 
+/// <summary>What happened last, so the wall can say so until the next hold starts.</summary>
+public enum CalibrationNotice
+{
+    None,
+
+    /// <summary>The last touch was captured.</summary>
+    Captured,
+
+    /// <summary>The last touch was refused; <see cref="CalibrationWizard.Rejection"/> says why.</summary>
+    Rejected,
+
+    /// <summary><see cref="CalibrationWizard.StepBack"/> dropped the last capture.</summary>
+    SteppedBack,
+}
+
 /// <summary>
 /// Walks through the calibration targets: corners TL, TR, BR, BL (inset from the image edges), then
-/// the centre. For each, it waits for exactly one confirmed touch, averages it once it has been held
-/// steady for <see cref="HoldRotations"/> rotations, then waits for the hand to leave.
+/// the centre. For each, it waits for one new touch, held steady for <see cref="HoldRotations"/>
+/// rotations, and averages it. Each capture is checked against the earlier ones straight away
+/// (<see cref="CalibrationSolver.CheckNewTouch"/>), so a touch in the wrong place is refused while
+/// the person is still at the wall.
 /// <para>
-/// Plain C#, main thread only: pass it every <see cref="TouchFrame"/> while it runs. Corners are
-/// inset because a hand next to a baseline surface (the wall's frame, a side wall) isn't detected.
+/// Plain C#, main thread only: pass it every <see cref="TouchFrame"/> while it runs. Only touches
+/// that begin after the current target comes up count (see <see cref="TouchHold"/>), so a hand left
+/// on the wall, or something in the scan plane that the baseline missed, can't block it or be
+/// captured. Corners are inset because a hand next to a baseline surface (the wall's frame, a side
+/// wall) isn't detected.
 /// </para>
 /// </summary>
 public sealed class CalibrationWizard
 {
     public static readonly string[] TargetNames = { "top-left", "top-right", "bottom-right", "bottom-left", "centre" };
 
-    private readonly List<Vector2> _holdSamples = new();
+    private readonly TouchHold _hold = new();
     private readonly List<CalibrationPoint> _points = new();
-    private int _holdTouchId;
+
+    /// <summary>The touch just captured or refused, while it is still down; 0 once it lifts.</summary>
+    private int _lastTouchId;
 
     /// <param name="targetInset">How far the corner targets sit in from the image edges, as a fraction of the image.</param>
     public CalibrationWizard(float targetInset = 0.1f)
@@ -44,23 +70,45 @@ public sealed class CalibrationWizard
     }
 
     /// <summary>Rotations a touch must be held steady. 6 is about a second on an A1.</summary>
-    public int HoldRotations { get; init; } = 6;
+    public int HoldRotations
+    {
+        get => _hold.Rotations;
+        init => _hold.Rotations = value;
+    }
 
-    /// <summary>How far a held touch may wander from its average and still count as steady.</summary>
-    public float HoldToleranceMm { get; init; } = 20f;
+    /// <summary>How far a held touch may wander from its average and still count as steady; far touches get more (<see cref="TouchHold.ToleranceFraction"/>).</summary>
+    public float HoldToleranceMm
+    {
+        get => _hold.ToleranceMm;
+        init => _hold.ToleranceMm = value;
+    }
 
     public IReadOnlyList<Vector2> TargetsUv { get; }
 
     public CalibrationStep Step { get; private set; } = CalibrationStep.WaitingForTouch;
 
+    public CalibrationNotice Notice { get; private set; }
+
+    /// <summary>Why the last touch was refused, written for the person at the wall; set while <see cref="Notice"/> is Rejected.</summary>
+    public string? Rejection { get; private set; }
+
     /// <summary>Index into <see cref="TargetsUv"/> of the target being captured; equals the target count once finished.</summary>
     public int CurrentTarget => _points.Count;
 
     /// <summary>0..1 while holding.</summary>
-    public float HoldProgress => _holdSamples.Count / (float)HoldRotations;
+    public float HoldProgress => _hold.Progress;
 
-    /// <summary>The last rotation had more than one confirmed touch, so nothing could be captured.</summary>
-    public bool TooManyTouches { get; private set; }
+    /// <summary>The last rotation had more than one new touch, so nothing could be held.</summary>
+    public bool TooManyTouches => _hold.NewTouches > 1;
+
+    /// <summary>
+    /// Touches in the last rotation that were ignored because they were already down when the
+    /// target came up, not counting the one just captured. If nobody is touching, something in
+    /// the scan plane isn't in the baseline.
+    /// </summary>
+    public int IgnoredTouches { get; private set; }
+
+    public bool CanStepBack => _points.Count > 0 && Step != CalibrationStep.Finished;
 
     /// <summary>Captured so far, in target order. Complete once <see cref="Step"/> is Finished.</summary>
     public IReadOnlyList<CalibrationPoint> Points => _points;
@@ -70,63 +118,74 @@ public sealed class CalibrationWizard
         if (Step == CalibrationStep.Finished)
             return;
 
-        if (Step == CalibrationStep.WaitingForRelease)
-        {
-            if (frame.ConfirmedCount == 0)
-                Step = _points.Count == TargetsUv.Count ? CalibrationStep.Finished : CalibrationStep.WaitingForTouch;
-            return;
-        }
-
-        TooManyTouches = frame.ConfirmedCount > 1;
-        if (frame.ConfirmedCount != 1)
-        {
-            ResetHold();
-            return;
-        }
-
-        TrackedTouch touch = default;
+        bool lastTouchDown = false;
         foreach (TrackedTouch t in frame.Touches)
         {
-            if (t.Confirmed)
-                touch = t;
+            if (_lastTouchId != 0 && t.Id == _lastTouchId)
+                lastTouchDown = true;
         }
 
-        // Coasting through a missed rotation: no fresh position, but not a reason to start over.
-        if (touch.MissedRotations > 0)
+        if (!lastTouchDown)
+            _lastTouchId = 0;
+
+        bool held = _hold.Update(frame, out int touchId, out Vector2 positionMm);
+        IgnoredTouches = Math.Max(0, _hold.IgnoredTouches - (lastTouchDown ? 1 : 0));
+
+        if (held)
+        {
+            Capture(touchId, positionMm);
             return;
-
-        // A different hand, or the same one drifting: start the hold again from here.
-        if (touch.Id != _holdTouchId ||
-            (_holdSamples.Count > 0 && touch.PositionMm.DistanceTo(Mean(_holdSamples)) > HoldToleranceMm))
-        {
-            ResetHold();
-            _holdTouchId = touch.Id;
         }
 
-        _holdSamples.Add(touch.PositionMm);
-        Step = CalibrationStep.Holding;
-
-        if (_holdSamples.Count >= HoldRotations)
+        if (_hold.IsHolding)
         {
-            _points.Add(new CalibrationPoint(TargetsUv[_points.Count], Mean(_holdSamples)));
-            ResetHold();
-            Step = CalibrationStep.WaitingForRelease;
+            // A new hold replaces whatever the wall was saying about the last touch.
+            Notice = CalibrationNotice.None;
+            Rejection = null;
+            Step = CalibrationStep.Holding;
+        }
+        else
+        {
+            Step = _lastTouchId != 0 ? CalibrationStep.WaitingForRelease : CalibrationStep.WaitingForTouch;
         }
     }
 
-    private void ResetHold()
+    /// <summary>
+    /// Drops the last captured target so it can be touched again. Touches that are down now don't
+    /// count; they must lift and touch again.
+    /// </summary>
+    public bool StepBack()
     {
-        _holdSamples.Clear();
-        _holdTouchId = 0;
-        if (Step == CalibrationStep.Holding)
-            Step = CalibrationStep.WaitingForTouch;
+        if (!CanStepBack)
+            return false;
+
+        _points.RemoveAt(_points.Count - 1);
+        _hold.Restart();
+        _lastTouchId = 0;
+        Notice = CalibrationNotice.SteppedBack;
+        Rejection = null;
+        Step = CalibrationStep.WaitingForTouch;
+        return true;
     }
 
-    private static Vector2 Mean(List<Vector2> points)
+    private void Capture(int touchId, Vector2 positionMm)
     {
-        Vector2 sum = Vector2.Zero;
-        foreach (Vector2 p in points)
-            sum += p;
-        return sum / points.Count;
+        var earlier = new Vector2[_points.Count];
+        for (int i = 0; i < earlier.Length; i++)
+            earlier[i] = _points[i].MeasuredMm;
+
+        Rejection = CalibrationSolver.CheckNewTouch(earlier, positionMm);
+        if (Rejection is null)
+        {
+            _points.Add(new CalibrationPoint(TargetsUv[_points.Count], positionMm));
+            Notice = CalibrationNotice.Captured;
+        }
+        else
+        {
+            Notice = CalibrationNotice.Rejected;
+        }
+
+        _lastTouchId = touchId;
+        Step = _points.Count == TargetsUv.Count ? CalibrationStep.Finished : CalibrationStep.WaitingForRelease;
     }
 }

@@ -35,8 +35,45 @@ public static class CalibrationSolver
     /// <summary>Centre check over this is poor: redo the calibration.</summary>
     public const float FairCentreErrorMm = 60f;
 
-    /// <summary>Corner touches closer together than this mean the same spot was touched twice.</summary>
-    public const float MinCornerSpacingMm = 100f;
+    /// <summary>Calibration touches closer together than this mean the same spot was touched twice.</summary>
+    public const float MinTouchSpacingMm = 100f;
+
+    /// <summary>
+    /// Each corner of the touched shape must measure between this and 180° minus this. A projected
+    /// image's corners are near 90°, even with keystone, so a corner outside that range means a
+    /// touch landed in the wrong place.
+    /// </summary>
+    public const float MinCornerTurnDeg = 20f;
+
+    /// <summary>
+    /// Checks a new calibration touch against the ones already captured (in target order: corners
+    /// TL, TR, BR, BL, then the centre), so a touch in the wrong place can be refused while the
+    /// person is still at the wall. Returns why it can't be used, written for them, or null.
+    /// </summary>
+    public static string? CheckNewTouch(IReadOnlyList<Vector2> earlierMm, Vector2 touchMm)
+    {
+        for (int i = 0; i < earlierMm.Count; i++)
+        {
+            float spacing = touchMm.DistanceTo(earlierMm[i]);
+            if (spacing < MinTouchSpacingMm)
+                return $"That was only {spacing / 10f:0} cm from the {CalibrationWizard.TargetNames[i]} touch.";
+        }
+
+        switch (earlierMm.Count)
+        {
+            case 2 when Turn(earlierMm[0], earlierMm[1], touchMm) == 0:
+                return "That lines up with the first two corners.";
+
+            case 3 when !IsConvexQuad(new[] { earlierMm[0], earlierMm[1], earlierMm[2], touchMm }):
+                return "That doesn't make a clean four-sided shape with the other three corners.";
+
+            case 4 when !LidarGeometry.IsInsideConvex(touchMm, earlierMm):
+                return "That landed outside the four corners.";
+
+            default:
+                return null;
+        }
+    }
 
     public static CalibrationSolveResult Solve(string serial, IReadOnlyList<CalibrationPoint> points)
     {
@@ -56,7 +93,7 @@ public static class CalibrationSolver
         for (int i = 0; i < 4; i++)
         {
             float spacing = cornersMm[i].DistanceTo(cornersMm[(i + 1) % 4]);
-            if (spacing < MinCornerSpacingMm)
+            if (spacing < MinTouchSpacingMm)
                 return Fail($"Two neighbouring corner touches are only {spacing:0} mm apart. Was the same spot touched twice?");
         }
 
@@ -113,20 +150,37 @@ public static class CalibrationSolver
     private static CalibrationSolveResult Fail(string error) =>
         new(null, error, CalibrationQuality.Poor, float.PositiveInfinity, Array.Empty<float>());
 
-    /// <summary>True if the corners, in order, turn the same way at every corner (either winding).</summary>
+    /// <summary>True if the corners, in order, turn the same way at every corner (either winding), each by a clear amount.</summary>
     private static bool IsConvexQuad(Vector2[] q)
     {
         int sign = 0;
         for (int i = 0; i < 4; i++)
         {
-            Vector2 a = q[i], b = q[(i + 1) % 4], c = q[(i + 2) % 4];
-            float cross = (b - a).Cross(c - b);
-            int s = cross > 0f ? 1 : cross < 0f ? -1 : 0;
+            int s = Turn(q[i], q[(i + 1) % 4], q[(i + 2) % 4]);
             if (s == 0 || (sign != 0 && s != sign))
                 return false;
             sign = s;
         }
 
         return true;
+    }
+
+    /// <summary>
+    /// Which way the path a → b → c turns at b: 1 or -1, or 0 if it goes nearly straight on or
+    /// nearly doubles back (within <see cref="MinCornerTurnDeg"/>).
+    /// </summary>
+    private static int Turn(Vector2 a, Vector2 b, Vector2 c)
+    {
+        Vector2 inbound = b - a;
+        Vector2 outbound = c - b;
+        float lengths = inbound.Length() * outbound.Length();
+        if (lengths <= 0f)
+            return 0;
+
+        float sin = inbound.Cross(outbound) / lengths;
+        if (MathF.Abs(sin) < MathF.Sin(Mathf.DegToRad(MinCornerTurnDeg)))
+            return 0;
+
+        return sin > 0f ? 1 : -1;
     }
 }

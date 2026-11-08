@@ -7,24 +7,45 @@ namespace Zurd.Lidar;
 /// <summary>
 /// The calibration section of the setup scene. Picks the projector screen, opens the target window,
 /// runs <see cref="CalibrationWizard"/>, solves with <see cref="CalibrationSolver"/>, and offers the
-/// result. Saving and applying a calibration is <see cref="LidarSetup"/>'s job, via
-/// <see cref="CalibrationAccepted"/>.
+/// result both here and on the wall, as Save and Redo touch buttons. Saving and applying a
+/// calibration is <see cref="LidarSetup"/>'s job, via <see cref="CalibrationAccepted"/>.
+/// <para>
+/// Esc cancels the wizard or else closes the target window; Backspace steps back one target. Both
+/// work while the target window covers this one, because that window never takes focus.
+/// </para>
 /// </summary>
 public partial class CalibrationPanel : VBoxContainer
 {
     /// <summary>Screen id for a plain test window on the setup window's own screen.</summary>
     private const int TestWindowScreen = -1;
 
+    /// <summary>The test window's item id in the screen picker. Not -1: OptionButton reads an id of -1 as "use the index".</summary>
+    private const int TestWindowItemId = 1000;
+
+    private const string WizardKeys = "Keyboard: Esc cancels · Backspace goes back one target";
+    private const string WindowKeys = "Keyboard: Esc closes this window";
+
     private static readonly Color DimTextColor = new(0.72f, 0.74f, 0.80f);
     private static readonly Color GoodColor = new(0.30f, 0.78f, 0.40f);
     private static readonly Color FairColor = new(0.95f, 0.70f, 0.20f);
     private static readonly Color PoorColor = new(0.90f, 0.30f, 0.30f);
 
+    // Touch buttons on the wall once the wizard has finished. Large, so even a poor calibration
+    // places a touch on the right one.
+    private static readonly WallButton SaveOnWall = new("Save", new Rect2(0.15f, 0.55f, 0.3f, 0.25f));
+    private static readonly WallButton RedoOnWall = new("Redo", new Rect2(0.55f, 0.55f, 0.3f, 0.25f));
+    private static readonly WallButton[] ReviewButtons = { SaveOnWall, RedoOnWall };
+
+    /// <summary>After a failed solve there's no calibration to place a touch with, so a touch anywhere counts.</summary>
+    private static readonly WallButton[] RetryButtons = { new("Redo", new Rect2(0.35f, 0.55f, 0.3f, 0.25f)) };
+
     private Label _status = null!;
+    private Label _sensorLabel = null!;
     private Label _windowInfo = null!;
     private OptionButton _screenPicker = null!;
     private Button _windowButton = null!;
     private Button _startButton = null!;
+    private Button _stepBackButton = null!;
     private CheckBox _followCheck = null!;
     private VBoxContainer _resultBox = null!;
     private Label _resultLabel = null!;
@@ -36,7 +57,10 @@ public partial class CalibrationPanel : VBoxContainer
 
     private CalibrationWizard? _wizard;
     private CalibrationSolveResult? _result;
+    private WallChoice? _review;
     private WallCalibration? _calibration;
+    private SensorCheck? _sensorCheck;
+    private bool _calibratingShown;
 
     private bool _streaming;
     private bool _hasBaseline;
@@ -45,13 +69,24 @@ public partial class CalibrationPanel : VBoxContainer
     /// <summary>A solved calibration the user chose to keep.</summary>
     public event Action<WallCalibration>? CalibrationAccepted;
 
-    /// <summary>Raised when capturing starts or stops. While it runs, detection should ignore any old calibrated area.</summary>
+    /// <summary>
+    /// Raised when <see cref="IsCalibrating"/> changes. While it's true, detection should ignore any
+    /// old calibrated area: if the sensor has moved, the old area could hide the touches needed.
+    /// </summary>
     public event Action<bool>? CalibratingChanged;
 
-    public bool IsCalibrating => _wizard is not null;
+    /// <summary>True from the start of the wizard until its result is saved, discarded or redone.</summary>
+    public bool IsCalibrating => _wizard is not null || _result is not null;
 
     /// <summary>Screen index the targets go on, or -1 for a test window on this screen.</summary>
-    public int SelectedScreen => _screenPicker.ItemCount == 0 ? TestWindowScreen : _screenPicker.GetItemId(_screenPicker.Selected);
+    public int SelectedScreen
+    {
+        get
+        {
+            int id = _screenPicker.Selected < 0 ? TestWindowItemId : _screenPicker.GetItemId(_screenPicker.Selected);
+            return id == TestWindowItemId ? TestWindowScreen : id;
+        }
+    }
 
     public override void _Ready()
     {
@@ -85,6 +120,22 @@ public partial class CalibrationPanel : VBoxContainer
             _windowInfo.Text = text;
     }
 
+    public override void _ShortcutInput(InputEvent @event)
+    {
+        if (@event is not InputEventKey { Pressed: true, Echo: false } key)
+            return;
+
+        bool handled = key.Keycode switch
+        {
+            Key.Escape => BackOut(),
+            Key.Backspace => StepBack(),
+            _ => false,
+        };
+
+        if (handled)
+            GetViewport().SetInputAsHandled();
+    }
+
     // ------------------------------------------------------------------ called by the setup scene
 
     /// <summary>Call whenever the connection, baseline or lidar changes.</summary>
@@ -109,16 +160,32 @@ public partial class CalibrationPanel : VBoxContainer
         Refresh();
     }
 
+    /// <summary>How the current baseline compares with the one saved with the calibration; null hides the line.</summary>
+    public void SetSensorCheck(SensorCheck? check)
+    {
+        _sensorCheck = check;
+        if (check is not null)
+        {
+            (string text, Color color) = DescribeSensorCheck(check);
+            _sensorLabel.Text = text;
+            _sensorLabel.AddThemeColorOverride("font_color", color);
+        }
+
+        Refresh();
+    }
+
     /// <summary>Selects the screen used last time for this lidar, if it still exists.</summary>
     public void PreferScreen(int? screen)
     {
         if (screen is null || _targetWindow is not null)
             return;
 
-        int index = _screenPicker.GetItemIndex(screen.Value);
+        int index = ItemIndexOf(screen.Value);
         if (index >= 0)
             _screenPicker.Select(index);
     }
+
+    private int ItemIndexOf(int screen) => _screenPicker.GetItemIndex(screen == TestWindowScreen ? TestWindowItemId : screen);
 
     /// <summary>Feed every new rotation.</summary>
     public void Process(TouchFrame frame)
@@ -130,6 +197,16 @@ public partial class CalibrationPanel : VBoxContainer
                 FinishWizard();
             else
                 ShowWizardProgress();
+        }
+        else if (_review is not null)
+        {
+            _review.Update(frame);
+            if (_review.Chosen == SaveOnWall)
+                OnSavePressed();
+            else if (_review.Chosen is not null)
+                StartWizard();
+            else
+                ShowReview();
         }
         else if (_followCheck.ButtonPressed)
         {
@@ -144,6 +221,14 @@ public partial class CalibrationPanel : VBoxContainer
         _status = new Label { AutowrapMode = TextServer.AutowrapMode.WordSmart, CustomMinimumSize = new Vector2(240f, 0f) };
         _status.AddThemeColorOverride("font_color", DimTextColor);
         AddChild(_status);
+
+        _sensorLabel = new Label
+        {
+            AutowrapMode = TextServer.AutowrapMode.WordSmart,
+            CustomMinimumSize = new Vector2(240f, 0f),
+            Visible = false,
+        };
+        AddChild(_sensorLabel);
 
         var screenRow = new HBoxContainer();
         screenRow.AddThemeConstantOverride("separation", 6);
@@ -193,6 +278,25 @@ public partial class CalibrationPanel : VBoxContainer
         };
         buttonRow.AddChild(_startButton);
 
+        _stepBackButton = new Button
+        {
+            Text = "Back one target",
+            Visible = false,
+            TooltipText = "Forget the last captured target and touch it again. Backspace does the same.",
+        };
+        _stepBackButton.Pressed += () => StepBack();
+        AddChild(_stepBackButton);
+
+        var keys = new Label
+        {
+            Text = "Esc cancels calibration or closes the target window; Backspace steps back one target. " +
+                "Both work while the target window covers this screen.",
+            AutowrapMode = TextServer.AutowrapMode.WordSmart,
+            CustomMinimumSize = new Vector2(240f, 0f),
+        };
+        keys.AddThemeColorOverride("font_color", DimTextColor);
+        AddChild(keys);
+
         _followCheck = new CheckBox
         {
             Text = "Follow test: show touches on the wall",
@@ -200,8 +304,11 @@ public partial class CalibrationPanel : VBoxContainer
         };
         _followCheck.Toggled += on =>
         {
-            if (!on)
-                _targetView?.ShowTouches(null);
+            if (on)
+                return;
+
+            _targetView?.ShowTouches(null);
+            _targetView?.ShowMessage("");
         };
         AddChild(_followCheck);
 
@@ -228,6 +335,7 @@ public partial class CalibrationPanel : VBoxContainer
         discard.Pressed += () =>
         {
             _result = null;
+            _review = null;
             _targetView?.ShowMessage("");
             Refresh();
         };
@@ -258,12 +366,12 @@ public partial class CalibrationPanel : VBoxContainer
             _screenPicker.AddItem(label, i);
         }
 
-        _screenPicker.AddItem("Test window on this screen", TestWindowScreen);
+        _screenPicker.AddItem("Test window on this screen", TestWindowItemId);
 
         // Keep the previous choice; otherwise guess the projector is a screen this window isn't on.
-        int select = _screenPicker.GetItemIndex(previous);
+        int select = ItemIndexOf(previous);
         if (select < 0)
-            select = _screenPicker.GetItemIndex(firstOther >= 0 ? firstOther : TestWindowScreen);
+            select = ItemIndexOf(firstOther >= 0 ? firstOther : TestWindowScreen);
         _screenPicker.Select(select);
     }
 
@@ -271,6 +379,7 @@ public partial class CalibrationPanel : VBoxContainer
     private void Refresh()
     {
         bool canCalibrate = _streaming && _hasBaseline && !string.IsNullOrEmpty(_serial);
+        bool calibrating = IsCalibrating;
 
         _windowButton.Text = _targetWindow is null ? "Open target window" : "Close target window";
         _screenPicker.Disabled = _targetWindow is not null;
@@ -286,10 +395,22 @@ public partial class CalibrationPanel : VBoxContainer
             _startButton.Disabled = !canCalibrate;
         }
 
-        _followCheck.Disabled = _calibration is null || _wizard is not null;
+        _stepBackButton.Visible = _wizard is not null;
+        _stepBackButton.Disabled = _wizard is not { CanStepBack: true };
+        _followCheck.Disabled = _calibration is null || calibrating;
         _resultBox.Visible = _result is not null;
+        _targetView?.SetFooter(_wizard is not null ? WizardKeys : WindowKeys);
 
-        if (_wizard is not null || _result is not null)
+        // The check is about the saved calibration, so it steps aside while a new one is under way.
+        _sensorLabel.Visible = _sensorCheck is not null && _calibration is not null && !calibrating;
+
+        if (calibrating != _calibratingShown)
+        {
+            _calibratingShown = calibrating;
+            CalibratingChanged?.Invoke(calibrating);
+        }
+
+        if (calibrating)
             return;
 
         string state = _calibration is null
@@ -303,6 +424,22 @@ public partial class CalibrationPanel : VBoxContainer
             : "";
 
         _status.Text = state + next;
+    }
+
+    private static (string Text, Color Color) DescribeSensorCheck(SensorCheck check)
+    {
+        string changed = $"{check.ChangedShare * 100f:0}% of directions changed";
+        string details = float.IsNaN(check.ShiftMm)
+            ? changed
+            : $"shifted about {check.ShiftMm:0} mm, turned {check.TurnedDeg:0.0}°, {changed}";
+
+        return check.Verdict switch
+        {
+            SensorVerdict.Unchanged => ($"Sensor check: matches the calibration ({details}).", GoodColor),
+            SensorVerdict.Moved => ($"The sensor seems to have moved since it was calibrated ({details}). " +
+                "Check with the follow test, and recalibrate if the dots land off your finger.", PoorColor),
+            _ => ("Sensor check: too little in view to compare with the calibration.", DimTextColor),
+        };
     }
 
     // ------------------------------------------------------------------ target window
@@ -360,6 +497,8 @@ public partial class CalibrationPanel : VBoxContainer
         if (_wizard is not null)
             StopWizard();
 
+        // A result stays on this screen to save or discard; only the wall's buttons go.
+        _review = null;
         _targetWindow?.QueueFree();
         _targetWindow = null;
         _targetView = null;
@@ -382,9 +521,9 @@ public partial class CalibrationPanel : VBoxContainer
 
         OpenTargetWindow();
         _result = null;
+        _review = null;
         _targetView?.ShowTouches(null);
         _wizard = new CalibrationWizard();
-        CalibratingChanged?.Invoke(true);
 
         ShowWizardProgress();
         Refresh();
@@ -393,9 +532,32 @@ public partial class CalibrationPanel : VBoxContainer
     private void StopWizard()
     {
         _wizard = null;
-        CalibratingChanged?.Invoke(false);
-        _targetView?.ShowMessage("");
+        _targetView?.ShowMessage("Calibration cancelled.");
         Refresh();
+    }
+
+    /// <summary>Esc: cancels the wizard, or else closes the target window. False if there was nothing to back out of.</summary>
+    private bool BackOut()
+    {
+        if (_wizard is not null)
+            StopWizard();
+        else if (_targetWindow is not null)
+            CloseTargetWindow();
+        else
+            return false;
+
+        return true;
+    }
+
+    /// <summary>Backspace or the button: drops the last captured target. False if there was nothing to drop.</summary>
+    private bool StepBack()
+    {
+        if (_wizard is null || !_wizard.StepBack())
+            return false;
+
+        ShowWizardProgress();
+        Refresh();
+        return true;
     }
 
     private void ShowWizardProgress()
@@ -407,15 +569,29 @@ public partial class CalibrationPanel : VBoxContainer
 
         string message = wizard.Step switch
         {
-            CalibrationStep.WaitingForRelease => "Got it. Let go.",
             CalibrationStep.Holding => "Hold still…",
+            CalibrationStep.WaitingForRelease when wizard.Notice == CalibrationNotice.Rejected =>
+                $"{wizard.Rejection} Let go, then try again.",
+            CalibrationStep.WaitingForRelease => "Got it. Let go.",
             _ when wizard.TooManyTouches => "One hand at a time.",
+            _ when wizard.Notice == CalibrationNotice.Rejected => $"{wizard.Rejection} Touch and hold the {name} target.",
+            _ when wizard.Notice == CalibrationNotice.SteppedBack => $"Back to the {name} target. Touch and hold it.",
             _ => $"Touch and hold the {name} target.",
         };
 
         _targetView?.ShowTargets(wizard.TargetsUv, current,
             wizard.Step == CalibrationStep.Holding ? wizard.HoldProgress : 0f, message);
-        _status.Text = $"Target {Math.Min(current + 1, total)} of {total}: {message}";
+        _stepBackButton.Disabled = !wizard.CanStepBack;
+
+        string status = $"Target {Math.Min(current + 1, total)} of {total}: {message}";
+        if (wizard.IgnoredTouches > 0)
+        {
+            string ignored = wizard.IgnoredTouches == 1 ? "1 touch that was" : $"{wizard.IgnoredTouches} touches that were";
+            status += $"\nIgnoring {ignored} already down when this target came up. If nobody is touching there, " +
+                "something new is in the scan plane: recapture the baseline once it's clear.";
+        }
+
+        _status.Text = status;
     }
 
     private void FinishWizard()
@@ -423,12 +599,12 @@ public partial class CalibrationPanel : VBoxContainer
         CalibrationWizard wizard = _wizard!;
         _result = CalibrationSolver.Solve(_serial!, wizard.Points);
         _wizard = null;
-        CalibratingChanged?.Invoke(false);
+
+        // The person at the wall can keep it or start again from there.
+        _review = new WallChoice(_result.Calibration is null ? RetryButtons : ReviewButtons, _result.Calibration);
 
         ShowResult(_result);
-        _targetView?.ShowMessage(_result.Calibration is null
-            ? "Calibration failed. See the setup screen."
-            : "Calibration captured. See the setup screen.");
+        ShowReview();
         Refresh();
     }
 
@@ -438,7 +614,7 @@ public partial class CalibrationPanel : VBoxContainer
 
         if (result.Calibration is null)
         {
-            _status.Text = "Calibration failed.";
+            _status.Text = "Calibration failed. Redo it here or by touching the wall.";
             _resultLabel.Text = result.Error;
             _resultLabel.AddThemeColorOverride("font_color", PoorColor);
             return;
@@ -456,10 +632,31 @@ public partial class CalibrationPanel : VBoxContainer
         for (int i = 0; i < result.ResidualsMm.Count; i++)
             fit.Add($"{shortNames[i]} {result.ResidualsMm[i]:0}");
 
-        _status.Text = "Calibration captured.";
+        _status.Text = "Calibration captured. Save or redo it here, or with the buttons on the wall.";
         _resultLabel.Text = $"Centre check: {result.CentreErrorMm:0} mm. {verdict}\nFit per target (mm): {string.Join(" · ", fit)}";
         _resultLabel.AddThemeColorOverride("font_color", color);
     }
+
+    /// <summary>The result on the wall, with its touch buttons.</summary>
+    private void ShowReview()
+    {
+        if (_targetView is null || _review is null || _result is null)
+            return;
+
+        string message = _result.Calibration is null
+            ? $"Calibration failed. {_result.Error}\nTouch and hold anywhere to start again."
+            : $"Centre check: {_result.CentreErrorMm:0} mm, {QualityWord(_result.Quality)}.\n" +
+              "Hold Save to keep this calibration, or Redo to start again.";
+
+        _targetView.ShowChoice(message, _review.Buttons, _review.HeldButton, _review.Progress);
+    }
+
+    private static string QualityWord(CalibrationQuality quality) => quality switch
+    {
+        CalibrationQuality.Good => "good",
+        CalibrationQuality.Fair => "usable",
+        _ => "poor: better to redo it",
+    };
 
     private void OnSavePressed()
     {
@@ -467,11 +664,12 @@ public partial class CalibrationPanel : VBoxContainer
             return;
 
         _result = null;
+        _review = null;
         CalibrationAccepted?.Invoke(calibration);
 
         // The follow test is the real check, so start it straight away.
         _followCheck.ButtonPressed = true;
-        _targetView?.ShowMessage("");
+        _targetView?.ShowMessage("Saved. Touch anywhere: the dot should land under your finger.");
         Refresh();
     }
 
