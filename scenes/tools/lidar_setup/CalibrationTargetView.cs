@@ -27,7 +27,8 @@ public partial class CalibrationTargetView : Control
 
     public override void _Ready()
     {
-        SetAnchorsPreset(LayoutPreset.FullRect);
+        // Offsets too: anchors alone keep the zero size this view had when it entered the window.
+        SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
     }
 
     /// <summary>Shows the targets: earlier ones ticked off, <paramref name="current"/> highlighted with a progress ring.</summary>
