@@ -18,10 +18,10 @@ A cloud forming is the main payoff of the game: the guests' sculpture is finishe
 From the Sculpture-Mass Design Doc (§4.7, §4.9) and `scenes/sculpture/`:
 
 - When a mass reaches the cloud threshold count, it becomes a cloud permanently and `EventBus.cloud_formed` fires.
-- Its material blends to the cloud look over `cloud_transition_time`. The look is a placeholder.
+- Its look jumps (Sculpture-Mass Design Doc §4.7): until then its objects are solid and only part of the way to white, and at the threshold the mass swaps to the cloud material in a white flash while every object puffs up, settling into the cloud over `cloud_transition_time`. The cloud look is a placeholder.
 - It stops colliding with the ship, Zurds and new objects, and Zurds can no longer eat it.
-- It rises at `rise_speed` to a random height in `atmosphere_y_range` (150–200 m), then drifts slowly. The drift is cosmetic.
-- `SculptureFx` hooks placeholder effects to the signal; the design calls for a gong sound.
+- It holds still for `cloud_rise_delay` (0.8 s), then rises at `rise_speed` to a random height in `atmosphere_y_range` (150–200 m), then drifts slowly. The drift is cosmetic.
+- `SculptureFx` hooks placeholder effects to the signal (the puff-up); the design calls for a gong sound.
 - The game keeps accepting objects, so a new mass can start.
 
 ## 3. Constraints From Other Docs

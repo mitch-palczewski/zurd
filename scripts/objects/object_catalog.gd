@@ -131,9 +131,9 @@ func sync_with_scenes() -> Dictionary:
 
 
 ## Problems with the entries: one without a scene, a scene listed twice (it would be picked twice as
-## often), a group that isn't offered, and a scene that breaks the box-collider contract the
-## sculpture code depends on (a [RigidBody3D] root whose first collision shape is a [BoxShape3D]).
-## Empty when there are none.
+## often), a group that isn't offered, and a scene that breaks the collider contract the launcher and
+## the sculpture code depend on (a [RigidBody3D] root whose first collision shape is a box or a
+## convex hull at scale 1). Empty when there are none.
 func check() -> Array[String]:
 	var problems: Array[String] = []
 	var names := get_group_names()
@@ -191,7 +191,7 @@ static func _list_object_scenes() -> Array[String]:
 	return paths
 
 
-## The empty string when [param scene] keeps the box-collider contract, otherwise what's wrong.
+## The empty string when [param scene] keeps the collider contract, otherwise what's wrong.
 static func _check_scene(scene: PackedScene) -> String:
 	var node := scene.instantiate()
 	if node == null:
@@ -203,8 +203,10 @@ static func _check_scene(scene: PackedScene) -> String:
 		var shape := _get_first_collision_shape(node)
 		if shape == null:
 			problem = "it has no collision shape."
-		elif not shape.shape is BoxShape3D:
-			problem = "its first collision shape isn't a box, and the sculpture code only measures boxes."
+		elif not (shape.shape is BoxShape3D or shape.shape is ConvexPolygonShape3D):
+			problem = "its first collision shape isn't a box or a convex hull, and the sculpture code only measures those."
+		elif not shape.scale.is_equal_approx(Vector3.ONE):
+			problem = "its first collision shape isn't at scale 1; the object's size is read from that scale, and the launcher overwrites it."
 	node.free()
 	return problem
 

@@ -6,22 +6,22 @@
 [ext_resource type="Material" uid="uid://b7wcbqre631h3" path="res://assets/materials/objects/GEO_Stock_03_mat_2.res" id="4_dohnt"]
 [ext_resource type="Material" uid="uid://htk20s5c5pxx" path="res://assets/materials/objects/GEO_Stock_03_mat_3.res" id="5_dg2t5"]
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_jdv2t"]
-size = Vector3(3.1951919, 1.6204934, 1.6848638)
+[sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_ptfy2"]
+points = PackedVector3Array(-1.5328578, -0.81025, -0.8424499, -1.5328578, -0.81025, 0.7222178, -1.5976, -0.040290475, -0.084113, -1.5328578, 0.7544144, -0.8424499, 1.5162811, -0.81025, -0.8424499, -0.7146664, -0.75917315, 0.8419552, -1.521911, -0.7563179, 0.8384917, -1.5247259, -0.7575869, 0.83370876, 1.5162811, -0.81025, 0.7222178, -1.5247259, 0.8064429, 0.83304906, -1.5328578, 0.7544144, 0.7222178, -1.5247259, 0.80628437, -0.73079395, -1.3098568, 0.80787057, -0.73260814, 0.35623848, 0.80882233, -0.7431635, 1.5162811, 0.7544144, -0.8424499, 1.5976, -0.02728331, -0.0921945, -1.5031452, 0.808981, 0.837832, 0.40315318, -0.7577455, 0.84162533, 0.3324684, 0.80834645, 0.8424499, 1.5162811, 0.7544144, 0.7222178, 1.5040834, 0.80755335, 0.83304906, 1.5040834, -0.7582214, 0.8243079, 1.4984536, -0.75520754, 0.83238935, 1.332063, -0.7586973, 0.8350282, -1.5203472, 0.80802923, -0.7227125, -0.18046498, 0.80913955, -0.7365664, 0.4844718, 0.8097741, -0.7331029, 1.5034578, 0.80723614, -0.73079395, -1.2773293, 0.81025, 0.83387375, 1.4412179, 0.8077119, 0.83667755, 1.2889016, 0.8081878, 0.8333789, 1.5003302, -0.7553662, 0.8307401, 1.4800005, 0.8085051, -0.7180945)
 
-[node name="GeoStock03Rigid" type="RigidBody3D" unique_id=736119232]
+[node name="GeoStock03Rigid" type="RigidBody3D" unique_id=199212432]
 collision_layer = 4
 collision_mask = 15
 
-[node name="GEO_Stock_03" type="Node3D" parent="." unique_id=1419841070]
+[node name="GEO_Stock_03" type="Node3D" parent="." unique_id=1628206638]
 
-[node name="GEO_Stock_03" type="MeshInstance3D" parent="GEO_Stock_03" unique_id=2077616871]
+[node name="GEO_Stock_03" type="MeshInstance3D" parent="GEO_Stock_03" unique_id=1847143412]
 mesh = ExtResource("1_ptfy2")
 surface_material_override/0 = ExtResource("2_37oau")
 surface_material_override/1 = ExtResource("3_trm3a")
 surface_material_override/2 = ExtResource("4_dohnt")
 surface_material_override/3 = ExtResource("5_dg2t5")
 
-[node name="CollisionBox" type="CollisionShape3D" parent="." unique_id=2029769437]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.121365905, 0.027870715, 0.060055673)
-shape = SubResource("BoxShape3D_jdv2t")
+[node name="CollisionConvex" type="CollisionShape3D" parent="." unique_id=456869576]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.1214, 0.027850032, 0.06004995)
+shape = SubResource("ConvexPolygonShape3D_ptfy2")

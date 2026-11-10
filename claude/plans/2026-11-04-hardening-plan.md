@@ -269,8 +269,9 @@ Changes from the design below, found while building:
   - `@export_tool_button("Sync with rigid scenes")`: appends missing scenes from
     `res://scenes/objects/rigid/`, then reports with `push_warning`: entries whose scene is null or
     missing, a scene listed twice (it would be picked twice as often), a group not in `groups`,
-    and a scene whose root isn't a `RigidBody3D` with a `BoxShape3D` collider (the box contract
-    the sculpture code depends on). It only reports; it never removes or reorders entries.
+    and a scene whose root isn't a `RigidBody3D` whose first collider is a box or (since
+    2026-11-10) a convex hull at scale 1, the contract the launcher and the sculpture code depend
+    on. It only reports; it never removes or reorders entries.
 - `data/object_catalog.tres`: the one catalog, which gives `data/` its purpose. Scenes are
   referenced by UID, so the snake_case rename of the models doesn't break it.
 - `LaunchObjectComponent`: `projectile_scenes` becomes `@export var catalog: ObjectCatalog`.

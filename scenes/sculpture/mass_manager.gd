@@ -55,8 +55,10 @@ const LOOSE_CONTACTS_REPORTED := 4
 @export var atmosphere_y_range: Vector2 = Vector2(150.0, 200.0)
 @export var rise_speed: float = 6.0
 @export var drift_speed: float = 1.5
-## Length of the switch to the cloud look when a mass becomes a cloud.
+## Length of the white burst settling into the cloud look when a mass becomes a cloud.
 @export var cloud_transition_time: float = 2.0
+## How long a new cloud holds still before it rises, so guests see the change. 0 rises at once.
+@export var cloud_rise_delay: float = 0.8
 
 @export_group("Debug")
 ## Shows each mass's object count above it.

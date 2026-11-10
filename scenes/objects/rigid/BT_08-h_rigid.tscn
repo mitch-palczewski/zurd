@@ -7,16 +7,16 @@
 [ext_resource type="Material" uid="uid://7sq5ksn8vasc" path="res://assets/materials/objects/BT_08-h_mat_3.res" id="5_kvtnl"]
 [ext_resource type="Material" uid="uid://c8bjcy7s67mvj" path="res://assets/materials/objects/BT_08-h_mat_4.res" id="6_0xw6l"]
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_s56oy"]
-size = Vector3(1.5220418, 3.018044, 1.9889314)
+[sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_c26ve"]
+points = PackedVector3Array(-0.34535515, 0.57698226, 0.99448293, 0.7610328, 1.5090756, 0.5270293, -0.76073486, 1.5090756, 0.5270293, -0.34535515, -1.3660856, 0.99448293, 0.7610328, 1.5090756, -0.994483, 0.7610328, -1.5090756, 0.5270293, -0.76073486, 1.5090756, 0.51671064, -0.7610328, 1.4024241, 0.5036663, -0.76073486, -1.5090756, 0.5270293, -0.76073486, 1.507894, -0.994483, 0.7610328, -1.5090756, -0.994483, -0.7610328, -1.3569273, 0.4958787, -0.76073486, -1.5090756, 0.51671064, -0.76073486, -1.5081893, -0.994483)
 
-[node name="Bt08HRigid" type="RigidBody3D" unique_id=2088788217]
+[node name="Bt08HRigid" type="RigidBody3D" unique_id=161709879]
 collision_layer = 4
 collision_mask = 15
 
-[node name="BT_08-h" type="Node3D" parent="." unique_id=894429323]
+[node name="BT_08-h" type="Node3D" parent="." unique_id=1245871612]
 
-[node name="BT_08" type="MeshInstance3D" parent="BT_08-h" unique_id=935748433]
+[node name="BT_08" type="MeshInstance3D" parent="BT_08-h" unique_id=788602940]
 transform = Transform3D(3.71145, 0, 0, 0, 3.71145, 0, 0, 0, 3.71145, 0, 0, 0)
 mesh = ExtResource("1_c26ve")
 surface_material_override/0 = ExtResource("2_cnane")
@@ -25,6 +25,6 @@ surface_material_override/2 = ExtResource("4_amc1n")
 surface_material_override/3 = ExtResource("5_kvtnl")
 surface_material_override/4 = ExtResource("6_0xw6l")
 
-[node name="CollisionBox" type="CollisionShape3D" parent="." unique_id=1330014289]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7.069111e-05, 0.21539259, 0.23352486)
-shape = SubResource("BoxShape3D_s56oy")
+[node name="CollisionConvex" type="CollisionShape3D" parent="." unique_id=1958755431]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.00018560886, 0.21526408, 0.23363572)
+shape = SubResource("ConvexPolygonShape3D_c26ve")

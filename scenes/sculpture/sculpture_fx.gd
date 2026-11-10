@@ -28,6 +28,17 @@ const PUNCH_TWEEN_META := &"fx_punch_tween"
 @export var merge_flash_color: Color = Color(1.0, 1.0, 1.0)
 @export var eaten_flash_color: Color = Color(1.0, 0.0, 0.0)
 
+@export_group("Cloud")
+## How much each object puffs up the moment its mass becomes a cloud (0.5 is half again as big),
+## together with the mass's white burst.
+@export var cloud_pop: float = 0.5
+## How much bigger each object stays in the cloud, so the cloud reads fuller and softer.
+@export var cloud_swell: float = 0.2
+## Time to puff up.
+@export var cloud_pop_time: float = 0.15
+## Time to settle from the puff to the cloud size.
+@export var cloud_settle_time: float = 1.2
+
 
 func _ready() -> void:
 	EventBus.object_hit.connect(_on_object_hit)
@@ -36,6 +47,7 @@ func _ready() -> void:
 	EventBus.object_eaten.connect(_on_object_eaten)
 	EventBus.objects_combined.connect(_on_objects_combined)
 	EventBus.object_resized.connect(_on_object_resized)
+	EventBus.cloud_formed.connect(_on_cloud_formed)
 
 
 func _on_object_hit(obj: RigidBody3D, _other: Node3D) -> void:
@@ -74,6 +86,25 @@ func _on_object_resized(obj: Node3D, old_size: float, new_size: float) -> void:
 		var tween := visual.create_tween()
 		tween.tween_property(visual, "scale", final_scale, resize_time).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 		visual.set_meta(PUNCH_TWEEN_META, tween)
+
+
+## Every object in the new cloud puffs up by [member cloud_pop], then settles [member cloud_swell]
+## bigger than it was. Each grows around its own middle, not its pivot, so tall objects puff in place.
+func _on_cloud_formed(mass: SculptureMass) -> void:
+	for piece in mass.pieces:
+		# The last object to fuse may still be in its fuse punch: puff from its normal size.
+		var base_scale: Vector3 = piece.get_meta(BASE_SCALE_META, piece.scale)
+		piece.set_meta(BASE_SCALE_META, base_scale * (1.0 + cloud_swell))
+		_kill_tween(piece)
+		var center := mass.to_local(piece.get_center())
+		var start := piece.position
+		var set_size := func(factor: float) -> void:
+			piece.scale = base_scale * factor
+			piece.position = center + (start - center) * factor
+		var tween := piece.create_tween()
+		tween.tween_method(set_size, 1.0, 1.0 + cloud_pop, cloud_pop_time).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+		tween.tween_method(set_size, 1.0 + cloud_pop, 1.0 + cloud_swell, cloud_settle_time).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+		piece.set_meta(PUNCH_TWEEN_META, tween)
 
 
 ## Swells [param node]'s visuals by [param amount] and springs them back to their normal scale.

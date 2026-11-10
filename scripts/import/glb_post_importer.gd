@@ -83,7 +83,7 @@ func _make_rigid_body_3d_scene(item_name: String, mesh_nodes: Array[MeshInstance
 
 	_add_visuals(item_name, rigid_root, mesh_nodes, scene_root, shared_meshes)
 	_apply_vertex_color_materials(rigid_root, shared_materials)
-	_attach_primitive_box_collider(rigid_root, mesh_nodes, scene_root)
+	_attach_convex_hull_collider(rigid_root, mesh_nodes, scene_root)
 
 	_save_packed_scene(rigid_root, RIGID_DIR + item_name + "_rigid.tscn")
 
@@ -224,19 +224,42 @@ func _save_vertex_color_material(source: Material, path: String) -> Material:
 # COLLIDER ATTACHMENT HELPERS
 # ==============================================================================
 
-## One box at scale 1 around the whole model. The sculpture-mass code relies on this: growth
-## break-off measures box overlaps ([method MassPiece.get_boxes] skips any other shape), and
-## [method ObjectParts.of] reads an object's size from its first collision shape's scale.
-func _attach_primitive_box_collider(parent_node: Node3D, mesh_nodes: Array[MeshInstance3D], scene_root: Node) -> void:
-	var aabb: AABB = _calculate_combined_aabb(mesh_nodes, scene_root)
+## One convex hull around the whole model: the exact hull of every vertex, not simplified, so it
+## hugs the mesh (simplifying made thin objects up to 45% thicker; Jolt reduces a hull with more
+## than 256 points itself). The mesh transforms are baked into the points, and the node sits at the
+## middle of the hull at scale 1, where the old box sat. The sculpture-mass code relies on that
+## layout: [method ObjectParts.of] reads an object's size from its first collision shape's scale,
+## the launcher rescales that node, [method MassPiece.get_center] averages shape positions, and
+## growth break-off measures the hull by its bounding box ([method MassPiece.get_boxes]).
+func _attach_convex_hull_collider(parent_node: Node3D, mesh_nodes: Array[MeshInstance3D], scene_root: Node) -> void:
+	var vertices := PackedVector3Array()
+	for mesh_node in mesh_nodes:
+		if mesh_node.mesh:
+			vertices.append_array(_get_relative_transform(mesh_node, scene_root) * mesh_node.mesh.get_faces())
+	if vertices.is_empty():
+		push_warning("Importer: No vertices for a collision hull in " + get_source_file())
+		return
+
+	var arrays := []
+	arrays.resize(Mesh.ARRAY_MAX)
+	arrays[Mesh.ARRAY_VERTEX] = vertices
+	var combined := ArrayMesh.new()
+	combined.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+	var hull := combined.create_convex_shape(true, false)
+
+	var bounds := AABB(hull.points[0], Vector3.ZERO)
+	for point in hull.points:
+		bounds = bounds.expand(point)
+	var center := bounds.get_center()
+	var centered := PackedVector3Array()
+	for point in hull.points:
+		centered.append(point - center)
+	hull.points = centered
 
 	var shape_node := CollisionShape3D.new()
-	shape_node.name = "CollisionBox"
-
-	var box := BoxShape3D.new()
-	box.size = aabb.size
-	shape_node.shape = box
-	shape_node.position = aabb.get_center()
+	shape_node.name = "CollisionConvex"
+	shape_node.shape = hull
+	shape_node.position = center
 
 	parent_node.add_child(shape_node)
 	shape_node.owner = parent_node
@@ -273,24 +296,6 @@ func _collect_mesh_instances(node: Node, result: Array[MeshInstance3D]) -> void:
 		result.append(node)
 	for child in node.get_children():
 		_collect_mesh_instances(child, result)
-
-
-func _calculate_combined_aabb(mesh_nodes: Array[MeshInstance3D], scene_root: Node) -> AABB:
-	var combined := AABB()
-	var has_aabb := false
-	for mesh_node in mesh_nodes:
-		if not mesh_node.mesh:
-			continue
-		var local_aabb := mesh_node.mesh.get_aabb()
-		var rel_transform := _get_relative_transform(mesh_node, scene_root)
-		var xformed_aabb := rel_transform * local_aabb
-
-		if not has_aabb:
-			combined = xformed_aabb
-			has_aabb = true
-		else:
-			combined = combined.merge(xformed_aabb)
-	return combined
 
 
 func _get_relative_transform(node: Node3D, root: Node) -> Transform3D:

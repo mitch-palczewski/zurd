@@ -5,21 +5,21 @@
 [ext_resource type="Material" uid="uid://bwfg5ygu7e74w" path="res://assets/materials/objects/BT_07_mat_1.res" id="3_7gwsh"]
 [ext_resource type="Material" uid="uid://df1i7rsjbypix" path="res://assets/materials/objects/BT_07_mat_2.res" id="4_pcdle"]
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_soaml"]
-size = Vector3(1.5163227, 3.0068297, 1.5164139)
+[sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_ot6dm"]
+points = PackedVector3Array(0.6614211, -1.3759583, 0.75824994, -0.6551869, -1.3721321, 0.7581015, 0.7580516, -1.5034, 0.7579531, 0.7582, -1.0174733, 0.7579531, 0.7582, 0.06445658, 0.7579531, 0.7580516, 1.5031055, 0.7579531, -0.7582, 1.5031055, 0.7581015, -0.7582, -1.5034, 0.75765616, 0.75775474, -1.5034, -0.75824994, 0.7582, 1.3435827, -0.5930322, 0.7582, 1.5031055, 0.5456787, 0.6194144, 1.5034, -0.6099548, 0.6131801, 1.5034, 0.35863978, -0.7582, 1.5031055, -0.75824994, -0.7582, -1.5034, -0.75795305, 0.7580516, 1.5031055, -0.75824994, 0.7582, 1.5031055, -0.44028375)
 
-[node name="Bt07Rigid" type="RigidBody3D" unique_id=790181827]
+[node name="Bt07Rigid" type="RigidBody3D" unique_id=1782298734]
 collision_layer = 4
 collision_mask = 15
 
-[node name="BT_07" type="Node3D" parent="." unique_id=1423278379]
+[node name="BT_07" type="Node3D" parent="." unique_id=1792342776]
 
-[node name="BT_07" type="MeshInstance3D" parent="BT_07" unique_id=2029305579]
+[node name="BT_07" type="MeshInstance3D" parent="BT_07" unique_id=192835103]
 mesh = ExtResource("1_ot6dm")
 surface_material_override/0 = ExtResource("2_up1n8")
 surface_material_override/1 = ExtResource("3_7gwsh")
 surface_material_override/2 = ExtResource("4_pcdle")
 
-[node name="CollisionBox" type="CollisionShape3D" parent="." unique_id=1223193985]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.0117919445, 0.12037933, 0.011149168)
-shape = SubResource("BoxShape3D_soaml")
+[node name="CollisionConvex" type="CollisionShape3D" parent="." unique_id=1346010985]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.011799991, 0.12039995, 0.011149943)
+shape = SubResource("ConvexPolygonShape3D_ot6dm")

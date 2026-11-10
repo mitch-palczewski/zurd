@@ -180,8 +180,11 @@ builds the C# project (needs internet once). You need to install these applicati
   a `.glb` into decides which scene it gets under `scenes/objects/` (see
   `assets/models/README.md`):
   - `objects/` → `rigid/<name>_rigid.tscn` — `RigidBody3D`, collision layer 3 (Objects), mask
-    1–4. Uses a single **box collider** sized to the combined AABB (cheap dynamic physics).
-    The sculpture masses depend on this: growth break-off only measures box shapes.
+    1–4. Uses a single **convex-hull collider**: the exact hull around the whole mesh, so
+    objects collide close to their shape (holes and hollows are filled in). The hull's node
+    sits at the model's middle at scale 1; the launcher and the sculpture masses depend on
+    that (the object's size is read from that scale, and growth break-off measures the hull
+    by its bounding box).
   - `scenery/` → `static/<name>_static.tscn` — `StaticBody3D`, collision layer 1
     (Environment). Uses **convex-hull colliders** (one `CollisionConvex` per mesh) so
     structures collide at mesh detail.
@@ -190,17 +193,22 @@ builds the C# project (needs internet once). You need to install these applicati
   Every model's meshes are extracted to shared `.res` files under `assets/meshes/`, and its
   vertex-color materials to `assets/materials/objects/`, so all its scenes reference the same
   resources and look the same. Don't hand-edit the generated files; re-import the source
-  `.glb` instead. A new launchable object also needs a catalog entry: open
-  `data/object_catalog.tres` and press **Sync with rigid scenes**, then pick its group.
+  `.glb` instead. Changing the importer doesn't reimport existing models on its own: select
+  them in the FileSystem dock and press *Reimport* in the Import dock. A new launchable object
+  also needs a catalog entry: open `data/object_catalog.tres` and press **Sync with rigid
+  scenes**, then pick its group.
 - **Sculpture masses** (`scenes/sculpture/`; full spec + plan in `claude/plans/`): the core
   build-up mechanic. `MassManager` (a node in `base_world.tscn` that holds all the tunables)
   watches every body in `ObjectTracker`, counts hits, and handles **fusing, merging, eating,
   and breaking off**. Physics contact callbacks only *queue* requests — the queue is drained
   in the manager's `_physics_process`, because collision shapes can't change inside a physics
   callback. Each clump is one `SculptureMass` (`RigidBody3D`); a fused object becomes a
-  `MassPiece` holding its visuals while its `CollisionShape3D`s move onto the mass. The blend
-  look is `assets/shaders/sculpture_mass.gdshader`; `SculptureFx` wires placeholder effects to
-  the EventBus signals. Try it in `sandbox/test_sculpture_mass.tscn`.
+  `MassPiece` holding its visuals while its `CollisionShape3D`s move onto the mass. Fused
+  objects stay solid (`assets/shaders/sculpture_mass.gdshader`, opaque, only part of the way
+  toward white as the mass grows); at the threshold the mass jumps to the cloud look
+  (`sculpture_cloud.gdshader`) in a white flash while every object puffs up, then holds a
+  moment before rising. `SculptureFx` wires placeholder effects to the EventBus signals. Try
+  it in `sandbox/test_sculpture_mass.tscn`.
 - **Lidar input** (`scripts/lidar/` + `scenes/tools/lidar_setup/`, all C#): drives the
   physical installation. `LidarDevice` wraps the vendored `RpLidar.NET` serial driver; the
   `touch/` code baselines the empty scene and detects touches; `calibration/` maps lidar

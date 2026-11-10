@@ -6,9 +6,11 @@ extends RigidBody3D
 ## children of the mass. The [MassManager] creates masses and does all fusing, merging and removal.
 ## The mass keeps its pieces, its cloud progress and its look, and runs its own cloud transformation.
 
-## Template for the blend material. Each mass works on its own copy, so one value drives the look
-## of all its pieces.
+## Template for the blend material: the solid look before the mass is a cloud. Each mass works on its
+## own copy, so one value drives the look of all its pieces.
 @export var blend_material: ShaderMaterial = preload("res://assets/materials/sculpture_mass.tres")
+## Template for the cloud look. A mass swaps all its pieces to its own copy when it becomes a cloud.
+@export var cloud_material: ShaderMaterial = preload("res://assets/materials/sculpture_cloud.tres")
 
 ## Set by the [MassManager] that created this mass.
 var manager: MassManager
@@ -19,6 +21,8 @@ var cloud_progress: float = 0.0
 var is_cloud: bool = false
 
 var _material: ShaderMaterial
+## This mass's copy of [member cloud_material]; null until it becomes a cloud.
+var _cloud_material: ShaderMaterial
 var _flash_tween: Tween
 var _debug_label: Label3D
 var _cloud_height: float = 0.0
@@ -185,8 +189,8 @@ func get_point_velocity(point: Vector3) -> Vector3:
 
 
 ## Rough moment of inertia about the centre of mass, the same around every axis, with each object
-## as a box of its collision size weighing its parts. Only used to turn hits into spin; Jolt still
-## simulates the real shape.
+## as the box around its collision shapes ([method MassPiece.get_shape_bounds]) weighing its parts.
+## Only used to turn hits into spin; Jolt still simulates the real shape.
 func get_inertia_estimate() -> float:
 	var center := get_global_center_of_mass()
 	var estimate := 0.0
@@ -194,9 +198,8 @@ func get_inertia_estimate() -> float:
 		# Averaged over the three axes, a point at distance r gives 2/3·r² and a box of size s adds |s|²/18.
 		var per_part := piece.get_center().distance_squared_to(center) * 2.0 / 3.0
 		for shape in piece.shapes:
-			var box := shape.shape as BoxShape3D
-			if box:
-				per_part += (box.size * shape.global_basis.get_scale()).length_squared() / 18.0
+			var bounds := MassPiece.get_shape_bounds(shape.shape)
+			per_part += (bounds.size * shape.global_basis.get_scale()).length_squared() / 18.0
 		var weight: int = piece.parts.count()
 		estimate += per_part * weight
 	return estimate * manager.object_mass
@@ -217,8 +220,11 @@ func refresh() -> void:
 	_update_debug_label()
 
 
-## Blinks the whole mass in [param color] (placeholder effect for eating and merging).
+## Blinks the whole mass in [param color] (placeholder effect for eating and merging). A cloud
+## doesn't blink: it can't be eaten or merged, and its look is the cloud material.
 func flash(color: Color, blinks: int = 2, duration: float = 0.5) -> void:
+	if is_cloud:
+		return
 	_material.set_shader_parameter(&"flash_color", color)
 	if _flash_tween:
 		_flash_tween.kill()
@@ -229,8 +235,11 @@ func flash(color: Color, blinks: int = 2, duration: float = 0.5) -> void:
 		_flash_tween.tween_method(_set_flash_amount, 1.0, 0.0, step)
 
 
-## Turns the mass into a permanent cloud (Design Doc §4.7): it stops colliding, stops being a Zurd
-## target, switches to the cloud look and rises into the atmosphere band.
+## Turns the mass into a permanent cloud (Design Doc §4.7): it stops colliding and stops being a
+## Zurd target. Its look jumps to the cloud material in a white burst that settles over the manager's
+## [member MassManager.cloud_transition_time] ([SculptureFx] puffs the objects up on
+## [signal EventBus.cloud_formed]). It holds still for [member MassManager.cloud_rise_delay], so the
+## change is seen, then rises into the atmosphere band.
 func _become_cloud() -> void:
 	is_cloud = true
 	collision_layer = 0
@@ -242,12 +251,16 @@ func _become_cloud() -> void:
 		ObjectTracker.unregister_object(piece)
 
 	_set_cloud_progress(1.0)
+	_switch_to_cloud_look()
+	# Full burst from this frame on; the tween's first step only comes next frame.
+	_set_burst(1.0)
 	_cloud_height = randf_range(manager.atmosphere_y_range.x, manager.atmosphere_y_range.y)
 	_drift_heading = randf() * TAU
-	set_physics_process(true)
 
-	var tween := create_tween()
-	tween.tween_method(_set_cloud_form, 0.0, 1.0, maxf(manager.cloud_transition_time, 0.01))
+	var tween := create_tween().set_parallel()
+	# Exponential: a short white-hot flash, then a long soft settle into the cloud.
+	tween.tween_method(_set_burst, 1.0, 0.0, maxf(manager.cloud_transition_time, 0.01)).set_trans(Tween.TRANS_EXPO).set_ease(Tween.EASE_OUT)
+	tween.tween_callback(set_physics_process.bind(true)).set_delay(maxf(manager.cloud_rise_delay, 0.0))
 	EventBus.cloud_formed.emit(self)
 
 
@@ -259,8 +272,21 @@ func _set_cloud_progress(progress: float) -> void:
 	EventBus.cloud_progress_changed.emit(self, progress)
 
 
-func _set_cloud_form(amount: float) -> void:
-	_material.set_shader_parameter(&"cloud_form", amount)
+## Puts every piece on this mass's own copy of [member cloud_material], so becoming a cloud is a jump
+## rather than the end of the blend.
+func _switch_to_cloud_look() -> void:
+	if cloud_material == null:
+		push_warning("SculptureMass: No cloud_material assigned; the cloud keeps the blend look.")
+		return
+	_cloud_material = cloud_material.duplicate() as ShaderMaterial
+	for piece in pieces:
+		for mesh_instance in piece.get_meshes():
+			mesh_instance.material_override = _cloud_material
+
+
+func _set_burst(amount: float) -> void:
+	if _cloud_material:
+		_cloud_material.set_shader_parameter(&"burst", amount)
 
 
 func _set_flash_amount(amount: float) -> void:

@@ -114,23 +114,39 @@ func get_meshes() -> Array[MeshInstance3D]:
 	return meshes
 
 
-## The piece's collision boxes as they would be at [param size], in global space (shapes scale
-## around the piece's origin, as in [method resize]). Each box maps the cube from -1 to 1 onto the
-## box: its origin is the centre and its basis columns reach to the faces. Objects use box colliders
-## (the GLB importer makes them); other shapes are left out, so an object with none never breaks
-## off a neighbour when it grows. Several boxes per object work.
+## The piece's collision shapes as boxes as they would be at [param size], in global space (shapes
+## scale around the piece's origin, as in [method resize]). Each box maps the cube from -1 to 1 onto
+## the box: its origin is the centre and its basis columns reach to the faces. A box shape is used as
+## it is and a convex hull (what the GLB importer makes) by its bounding box, so growth break-off
+## measures a hull roughly. Other shapes are left out, so an object with none never breaks off a
+## neighbour when it grows. Several shapes per object work.
 func get_boxes(size: float) -> Array[Transform3D]:
 	var ratio := size / parts.get_size()
 	var boxes: Array[Transform3D] = []
 	for shape in shapes:
-		var box := shape.shape as BoxShape3D
-		if box == null:
+		var bounds := get_shape_bounds(shape.shape)
+		if not bounds.has_volume():
 			continue
-		var xform := shape.global_transform * Transform3D(Basis.from_scale(box.size * 0.5), Vector3.ZERO)
+		var xform := shape.global_transform * Transform3D(Basis.from_scale(bounds.size * 0.5), bounds.get_center())
 		xform.origin = global_position + (xform.origin - global_position) * ratio
 		xform.basis = xform.basis * ratio
 		boxes.append(xform)
 	return boxes
+
+
+## The box around [param shape] in its own space: a [BoxShape3D] itself, or the bounding box of a
+## [ConvexPolygonShape3D]'s points. Empty for any other shape.
+static func get_shape_bounds(shape: Shape3D) -> AABB:
+	var box := shape as BoxShape3D
+	if box:
+		return AABB(-box.size * 0.5, box.size)
+	var hull := shape as ConvexPolygonShape3D
+	if hull == null or hull.points.is_empty():
+		return AABB()
+	var bounds := AABB(hull.points[0], Vector3.ZERO)
+	for point in hull.points:
+		bounds = bounds.expand(point)
+	return bounds
 
 
 ## The deepest overlap between any box of [param a] and any box of [param b] (see

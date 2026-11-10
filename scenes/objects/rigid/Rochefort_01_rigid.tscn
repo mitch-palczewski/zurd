@@ -8,16 +8,16 @@
 [ext_resource type="Material" uid="uid://c1vwbwswgbhi0" path="res://assets/materials/objects/Rochefort_01_mat_4.res" id="6_y88r8"]
 [ext_resource type="Material" uid="uid://d3i252owjpy0s" path="res://assets/materials/objects/Rochefort_01_mat_5.res" id="7_xvhxx"]
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_yp0xs"]
-size = Vector3(3.3513017, 0.47889522, 3.3486466)
+[sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_ownkh"]
+points = PackedVector3Array(-1.6731898, -0.23945, -1.6743, -1.6731898, -0.23945, 1.5494158, -1.6754861, 0.062206373, -0.12848973, -1.6731898, 0.1045367, -1.6743, 1.6754861, 0.1045367, -1.6743, 1.6754861, -0.23945, -1.6674166, -1.6659728, -0.23945, 1.6743, -1.6731898, 0.1045367, 1.6743, -1.407802, 0.2105266, 0.0075389147, -1.3973045, 0.21174543, -1.3193142, -1.3448174, 0.23134018, -1.2835863, -1.326447, 0.2257149, -1.3527478, -1.2673991, 0.21122976, -1.403226, -0.030672193, 0.22651182, -1.3655313, 1.2834733, 0.2223397, -1.3743813, 1.3038118, 0.23602794, -1.3114475, 1.3667965, 0.21910517, -1.3416033, 1.370405, 0.2257149, -1.2862085, 1.3812304, 0.22252722, 1.2816195, 1.6754861, 0.1045367, 0.6260598, 1.6754861, -0.23945, 1.6743, -1.2874098, 0.2163394, 1.4006038, -1.3287433, 0.22782438, 1.3432422, -1.3618758, 0.22721498, 1.2901418, 1.6407135, 0.1045367, 1.6743, -1.3323518, 0.23471536, 0.0016388893, -1.311685, 0.23621546, -1.245236, -1.2611662, 0.23841868, -1.2891585, -1.2657588, 0.22913696, -1.3488145, -0.005412698, 0.23813741, -1.3068587, 1.2483723, 0.23363717, -1.3261976, 1.2631345, 0.23813741, -1.2465471, 1.2883937, 0.23945, 0, 1.3405528, 0.23134018, -1.2367138, 1.3687646, 0.22623055, 0.010161161, 1.311357, 0.23644982, 1.3052197, 1.3307116, 0.22510548, 1.3615978, -1.2637906, 0.23260589, 1.34357, 1.2733037, 0.21652691, 1.3999481, -1.2992194, 0.23884057, 1.2871919, 1.2762561, 0.23832493, 1.2508082, -0.013941884, 0.2386062, 1.2681806, 1.2506688, 0.23541851, 1.321281)
 
-[node name="Rochefort01Rigid" type="RigidBody3D" unique_id=583772494]
+[node name="Rochefort01Rigid" type="RigidBody3D" unique_id=1848388307]
 collision_layer = 4
 collision_mask = 15
 
-[node name="Rochefort_01" type="Node3D" parent="." unique_id=501254953]
+[node name="Rochefort_01" type="Node3D" parent="." unique_id=1419844492]
 
-[node name="Rochefort_01" type="MeshInstance3D" parent="Rochefort_01" unique_id=282972402]
+[node name="Rochefort_01" type="MeshInstance3D" parent="Rochefort_01" unique_id=2059639006]
 mesh = ExtResource("1_ownkh")
 surface_material_override/0 = ExtResource("2_r8thj")
 surface_material_override/1 = ExtResource("3_3rpx7")
@@ -26,6 +26,6 @@ surface_material_override/3 = ExtResource("5_6bb8s")
 surface_material_override/4 = ExtResource("6_y88r8")
 surface_material_override/5 = ExtResource("7_xvhxx")
 
-[node name="CollisionBox" type="CollisionShape3D" parent="." unique_id=783717924]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.01397562, -0.074238226, 0.0009901524)
-shape = SubResource("BoxShape3D_yp0xs")
+[node name="CollisionConvex" type="CollisionShape3D" parent="." unique_id=1800394209]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0137860775, -0.07425, 0.0010000467)
+shape = SubResource("ConvexPolygonShape3D_ownkh")

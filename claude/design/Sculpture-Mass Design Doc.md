@@ -37,6 +37,8 @@ All parameters are exposed as exported values so they can be tuned.
 | Fuse push | How hard a fusing object pushes the mass. 1 = plain momentum conservation (4.1); higher counts the object as that many objects, so masses get knocked around more | 1 (the world currently uses 7.15) |
 | Fuse spin | How much an off-centre fuse spins the mass. 0 = no spin; 1 = roughly physical (5) | 0 (the world currently uses 3.25) |
 | Growth break depth | How far a growing object must push into a fused neighbour before the neighbour breaks off (4.10) | 0.1 m |
+| Cloud transition time | How long the white burst takes to settle into the cloud look (4.7) | 2 s (most of the flash is gone in about 0.3 s) |
+| Cloud rise delay | How long a new cloud holds still before it rises, so guests see the change (4.7) | 0.8 s |
 
 ## 4. Behaviors
 
@@ -68,9 +70,10 @@ All parameters are exposed as exported values so they can be tuned.
 
 ### 4.4 Growth and cloud blend
 
-- As the mass grows, each object's look moves linearly toward cloud-like: color toward white and a subtle transparency.
-- The blend equals cloud progress, so it is **reversible**: if objects are eaten or broken off, the blend moves back.
-- At 100% the appearance changes dramatically (see 4.7).
+- Fused objects stay **solid**: opaque, shaded and casting shadows like loose objects, so a mass reads as a real thing until it becomes a cloud.
+- As the mass grows, each object's look moves **part of the way** toward cloud-like: color toward white (about 45% of the way just before 100%) and slightly more matte. The change eases in, so most of it comes in the last stretch.
+- The blend follows cloud progress, so it is **reversible**: if objects are eaten or broken off, the blend moves back.
+- At 100% the appearance **jumps** (see 4.7). The blend deliberately stops well short of the cloud look, so the jump is big.
 
 ### 4.5 Zurds eating objects
 
@@ -94,8 +97,8 @@ All parameters are exposed as exported values so they can be tuned.
 ### 4.7 Cloud transformation
 
 - When a mass's object count reaches the *Cloud threshold count*, a **gong sound** plays and the mass takes on full cloud properties.
-- At 100% the objects stay visible but their material changes dramatically. Additional cloud puffs or fog may appear around the mass (placeholder effect). The mass does not collapse.
-- The mass then floats up into the *Atmosphere Y range*, above the play area.
+- At 100% the objects stay visible but the look jumps at once: the whole mass flashes white and every object puffs up (to 1.5× in 0.15 s), then over the *Cloud transition time* the flash settles into the see-through, glowing cloud material and each object settles 1.2× its size, so the cloud reads fuller and softer. Each object puffs around its own middle. Additional cloud puffs or fog may appear around the mass (placeholder effect). The mass does not collapse.
+- The cloud holds still for the *Cloud rise delay*, then floats up into the *Atmosphere Y range*, above the play area.
 - **Permanent:** a cloud never shrinks back, and Zurds are no longer a threat to it.
 - **Collisions:** a cloud stops colliding with the ship, Zurds and new objects, so it does not interfere with gameplay.
 - As a cloud it drifts around for the rest of play. The drift is purely cosmetic.
@@ -110,11 +113,11 @@ All parameters are exposed as exported values so they can be tuned.
 
 ### 4.9 Cloud look (material)
 
-The cloud appearance comes from one cloud material on every fused object, driven by a single cloud amount value per mass. Extra puff and fog effects are deferred.
+The look comes from two materials per mass, each shared by all its fused objects: a solid blend material before 100%, driven by a single cloud amount value, and a cloud material from 100%. Extra puff and fog effects are deferred.
 
 - Cloud amount equals cloud progress (0 to 1) and updates whenever the mass's object count changes.
-- From 0% to 99%, each fused object blends linearly from its original look toward white, with a subtle transparency. The blend reverses if objects are eaten or broken off.
-- At 100%, the material switches to the dramatic cloud look, with a short transition timed to the gong. The exact look is a placeholder.
+- From 0% to 99%, each fused object stays opaque and blends part of the way from its original look toward white and matte, easing in (4.4). The blend reverses if objects are eaten or broken off.
+- At 100%, the mass swaps to the cloud material: white, see-through, glowing at the rim, with a hint of each object's own color. It starts as a white flash timed to the gong (4.7). The exact cloud look is a placeholder.
 - Only fused objects show the blend. An object that leaves the mass returns to its original look.
 - Additional puff and fog effects are out of scope for now.
 
@@ -161,7 +164,7 @@ Animation and sound hooks are signals on an Event Bus, so audio and effects can 
 | objects\_combined | Two matching objects combine | Yellow flash and combine sound |
 | object\_resized | An object grows from a combine or shrinks from a bite | Grow and shrink animation |
 | cloud\_progress\_changed | A mass's count changes | Cloud blend update |
-| cloud\_formed | A mass reaches the threshold | Gong sound and cloud material and puffs |
+| cloud\_formed | A mass reaches the threshold | Gong sound; objects puff up (the white flash and cloud material are the mass's own); later, cloud puffs |
 
 ## 7. Out of Scope
 

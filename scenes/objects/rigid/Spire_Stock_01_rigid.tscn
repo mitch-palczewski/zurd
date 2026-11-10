@@ -7,16 +7,16 @@
 [ext_resource type="Material" uid="uid://bpgyacbrihpa2" path="res://assets/materials/objects/Spire_Stock_01_mat_3.res" id="5_kgu0v"]
 [ext_resource type="Material" uid="uid://bqkbyc4athbyr" path="res://assets/materials/objects/Spire_Stock_01_mat_4.res" id="6_l0ivc"]
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_5d4jc"]
-size = Vector3(0.56852156, 4.000502, 0.5805601)
+[sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_k6ipe"]
+points = PackedVector3Array(-0.077656806, -1.9180156, 0.2903, -0.16174096, -1.9180156, 0.28529876, -0.28422222, -2.0002499, 0.2776832, 0.17993781, -2.0002499, 0.28109318, 0.20815137, -1.930155, 0.28166145, 0.20664886, -1.9180156, 0.28177512, -0.009432346, -1.2468276, 0.2879699, -0.09457381, -1.2468276, 0.28546923, -0.28416657, -1.2468276, 0.27756953, -0.28383267, -1.9180156, 0.27785373, -0.2814398, -2.0002499, -0.2876289, -0.28155112, -1.2201993, -0.28774256, -0.28155112, -1.9184072, -0.28774256, 0.28066072, -2.0002499, -0.2876289, 0.28333184, -1.9990752, 0.27779686, 0.28422222, -1.9180156, 0.27819473, 0.28327617, -1.246436, 0.2776832, 0.11716688, -1.2468276, 0.28387797, -0.0006399751, -0.047774076, 0.24216294, -0.28333184, -1.2201993, 0.27688754, -0.24665982, -0.049340487, -0.0044329464, -0.21282582, -1.2448697, -0.28984535, -0.1323588, -1.2221574, -0.2901295, 0.021841824, -1.2201993, -0.2903, 0.28132847, -1.9184072, -0.28842455, -0.00047302246, 2.0002499, -0.0058537424, 0.0012520552, -0.044249773, -0.24972165, 0.0013633668, -0.04973209, -0.25023314, -0.21872452, -1.2201993, -0.28944752, 0.28105024, -1.2213742, -0.2883109, 0.28294227, -1.2201993, 0.2772854, 0.28093895, -1.2201993, -0.28842455, 0.24727193, -0.046599388, -0.003921449)
 
-[node name="SpireStock01Rigid" type="RigidBody3D" unique_id=160184114]
+[node name="SpireStock01Rigid" type="RigidBody3D" unique_id=1068337559]
 collision_layer = 4
 collision_mask = 15
 
-[node name="Spire_Stock_01" type="Node3D" parent="." unique_id=82995639]
+[node name="Spire_Stock_01" type="Node3D" parent="." unique_id=486968611]
 
-[node name="Spire_Stock_01" type="MeshInstance3D" parent="Spire_Stock_01" unique_id=1073676560]
+[node name="Spire_Stock_01" type="MeshInstance3D" parent="Spire_Stock_01" unique_id=1806462353]
 mesh = ExtResource("1_k6ipe")
 surface_material_override/0 = ExtResource("2_g66w7")
 surface_material_override/1 = ExtResource("3_ph785")
@@ -24,6 +24,6 @@ surface_material_override/2 = ExtResource("4_wlfkt")
 surface_material_override/3 = ExtResource("5_kgu0v")
 surface_material_override/4 = ExtResource("6_l0ivc")
 
-[node name="CollisionBox" type="CollisionShape3D" parent="." unique_id=698467274]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0030599833, 1.4228277, -0.0010014176)
-shape = SubResource("BoxShape3D_5d4jc")
+[node name="CollisionConvex" type="CollisionShape3D" parent="." unique_id=30062179]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0030222237, 1.4228499, -0.0009999871)
+shape = SubResource("ConvexPolygonShape3D_k6ipe")

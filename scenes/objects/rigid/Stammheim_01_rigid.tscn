@@ -4,20 +4,20 @@
 [ext_resource type="Material" uid="uid://h25o2v3dl4xd" path="res://assets/materials/objects/Stammheim_01_mat_0.res" id="2_rxroe"]
 [ext_resource type="Material" uid="uid://dk5a3fcqbe57c" path="res://assets/materials/objects/Stammheim_01_mat_1.res" id="3_387yx"]
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_cclx1"]
-size = Vector3(2.97292, 2.97292, 0.550355)
+[sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_ijx2q"]
+points = PackedVector3Array(1.4862089, 1.4864501, -0.27517304, 1.4623458, 1.4864501, 0.01899138, 1.4865, -1.4864501, 0.01899138, 1.4865, -1.4864501, -0.27517304, -1.4865, 1.4864501, -0.27517304, -0.014259696, 1.282456, 0.23568173, 0.03026545, 1.278382, 0.23961468, 0.026773214, 1.2743078, 0.24338605, 0.0011639595, 1.2670327, 0.24990506, 0.017751813, 1.2574295, 0.2550233, 0.055583596, 1.2527734, 0.2536764, 0.024736166, 1.2361861, 0.26240432, 0.025318146, 1.2131969, 0.26719934, 0.05267346, 1.1936997, 0.26628345, 0.044525146, 0.6032518, 0.27172494, -1.4865, 1.4864501, 0.01899138, 0.046271205, -0.2979884, 0.27129394, 0.058493733, -1.210578, 0.26897722, 0.053255558, -1.2405515, 0.26682222, 0.014550686, -1.2507366, 0.26628345, 0.03986883, -1.2647048, 0.2575016, 0.017751813, -1.274599, 0.24877365, -1.4626368, -1.4864501, 0.01899138, -1.4865, -1.4864501, -0.27517304, -0.016587853, 1.2489904, 0.25728607, -0.0049473047, 1.217853, 0.2666067, -0.033175707, 1.1878794, 0.26827687, 0.003492117, 0.71732557, 0.275173, 0.025027156, 0.5817176, 0.27388, -1.4865, -1.4864501, -0.23320343, -0.054710746, -0.8383835, 0.27048576, -0.057911873, 0.044523597, 0.26930052, -0.05121851, 0.32155967, 0.2702164, -0.032884598, 0.62100303, 0.27301794, -0.07857382, 0.9850496, 0.2636974, -0.036667824, 1.2228001, 0.26261985, 0.014550686, -0.28576624, 0.27441877, 0.006402254, -1.2248372, 0.27247918, 0.0052381754, -1.2673239, 0.25518495, -0.028519392, -1.2277472, 0.269085, -0.07886481, -1.1966099, 0.2632125, -0.05965793, -1.0959224, 0.26919276, -0.016005874, 0.68124115, 0.27452648, -0.022408128, 0.16587245, 0.27388, -0.02095306, 0.6454476, 0.27420324)
 
-[node name="Stammheim01Rigid" type="RigidBody3D" unique_id=960565529]
+[node name="Stammheim01Rigid" type="RigidBody3D" unique_id=522656879]
 collision_layer = 4
 collision_mask = 15
 
-[node name="Stammheim_01" type="Node3D" parent="." unique_id=2089617169]
+[node name="Stammheim_01" type="Node3D" parent="." unique_id=519147468]
 
-[node name="Stammheim_01" type="MeshInstance3D" parent="Stammheim_01" unique_id=2045452832]
+[node name="Stammheim_01" type="MeshInstance3D" parent="Stammheim_01" unique_id=1955033880]
 mesh = ExtResource("1_ijx2q")
 surface_material_override/0 = ExtResource("2_rxroe")
 surface_material_override/1 = ExtResource("3_387yx")
 
-[node name="CollisionBox" type="CollisionShape3D" parent="." unique_id=1738623202]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0074076653, -0.012232423, 0.084798485)
-shape = SubResource("BoxShape3D_cclx1")
+[node name="CollisionConvex" type="CollisionShape3D" parent="." unique_id=90308196]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.007400036, -0.012249827, 0.08477305)
+shape = SubResource("ConvexPolygonShape3D_ijx2q")

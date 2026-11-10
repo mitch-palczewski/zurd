@@ -3,19 +3,19 @@
 [ext_resource type="ArrayMesh" uid="uid://r5f6651km051" path="res://assets/meshes/Misc_04.res" id="1_h7frl"]
 [ext_resource type="Material" uid="uid://dxwnttrakijfq" path="res://assets/materials/objects/Misc_04_mat.res" id="2_v0d3d"]
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_btp2t"]
-size = Vector3(2.0144024, 3.0599327, 1.1016084)
+[sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_h7frl"]
+points = PackedVector3Array(-1.0072, -1.53, -0.55079997, 1.0072, -1.53, -0.55079997, -1.0072, -1.53, 0.55079997, -1.0072, -1.4137824, -0.55079997, 1.0072, -1.53, 0.55079997, 1.0072, -1.4137824, -0.55079997, -1.0072, -1.4137824, 0.55079997, -1.0072, -0.37950468, -0.5386151, 1.0072, -1.4137824, 0.55079997, 1.0072, -0.37950468, -0.5386151, -0.028394043, 1.53, 0.17317635, -0.56374013, 1.4847708, 0.17349982, -0.7824138, 1.4545183, 0.17371553, -0.96421456, 0.76260376, 0.23960018, -0.97703135, 0.71857285, 0.23819834, -1.0072, -0.37950468, 0.30710226, -0.97998905, 0.71138406, 0.21231896, -0.9042716, 0.76050687, -0.4429691, -0.89717305, 0.7661979, -0.44943896, -0.78793484, 1.4299569, -0.40997288, -0.5325856, 0.40706146, -0.50454056, -0.46455818, 0.30791688, -0.51521575, 1.0072, -0.37950468, 0.30710226, 0.9178771, 0.76140547, 0.21824962, 0.90821517, 0.76410127, 0.23420858, 0.7962165, 1.461108, 0.16584384, 0.23918045, 1.4886646, 0.17349982, 0.69368243, 0.74642897, -0.46367264, 0.7975967, 1.4494262, -0.40889457, 0.89579284, 0.7497239, -0.45644796, 0.8985534, 0.76499987, -0.448145, 0.58385265, 1.4883652, -0.014557183, 0.5735992, 1.4856694, -0.088852614, -0.032929182, 1.4979501, -0.39131814, -0.53593767, 1.4913604, -0.08518636, -0.6238803, 1.4883652, -0.035260677, -0.7806392, 1.4626055, 0.027065575, -0.9726933, 0.76260376, 0.2150147, -0.5594022, 1.4491267, -0.41018856, -0.699795, 1.4269614, -0.41234517, -0.24529302, 0.7425351, -0.47553402, 0.8080473, 1.4377446, -0.16778478, 0.79956853, 1.4632046, 0.015419841)
 
-[node name="Misc04Rigid" type="RigidBody3D" unique_id=715770543]
+[node name="Misc04Rigid" type="RigidBody3D" unique_id=885897]
 collision_layer = 4
 collision_mask = 15
 
-[node name="Misc_04" type="Node3D" parent="." unique_id=42430947]
+[node name="Misc_04" type="Node3D" parent="." unique_id=547055603]
 
-[node name="Misc_04" type="MeshInstance3D" parent="Misc_04" unique_id=888355466]
+[node name="Misc_04" type="MeshInstance3D" parent="Misc_04" unique_id=363461255]
 mesh = ExtResource("1_h7frl")
 surface_material_override/0 = ExtResource("2_v0d3d")
 
-[node name="CollisionBox" type="CollisionShape3D" parent="." unique_id=273894356]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.0025578737, 0.46840155, 0.048245072)
-shape = SubResource("BoxShape3D_btp2t")
+[node name="CollisionConvex" type="CollisionShape3D" parent="." unique_id=282726578]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.0025999546, 0.4684, 0.04819995)
+shape = SubResource("ConvexPolygonShape3D_h7frl")
