@@ -13,8 +13,13 @@ import:
 Every model gets the shared mesh and material files. A model left directly in `assets/models/` gets
 those too, plus a warning, and no scenes.
 
+A new object only launches once it's in the object catalog: open `data/object_catalog.tres` and
+press **Sync with rigid scenes**. That adds every rigid scene that isn't listed yet to the group
+Unsorted; pick its group in the Inspector. To remove an object, delete its catalog entry first: a
+catalog that lists a missing scene fails to load in the game, and the ship with it.
+
 Name files in snake_case (`arch_01.glb`): the importer names every generated file after the model,
 and exported builds are case-sensitive. Move and rename models in Godot's FileSystem dock, not in
 Explorer. Renaming a model changes its generated files' names, so rename those files the same way
-in the dock before reimporting; otherwise scenes that use the old files (such as the ship's object
-list) keep pointing at them.
+in the dock before reimporting; otherwise scenes and resources that use the old files (such as the
+object catalog) keep pointing at them.

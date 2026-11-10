@@ -26,10 +26,13 @@ var body_angular_damp_mode: RigidBody3D.DampMode = RigidBody3D.DAMP_MODE_COMBINE
 var body_angular_damp: float = 0.0
 
 
-## Remembers how [param body] was set up, so [method restore_body] can rebuild it later.
+## Remembers how [param body] was set up, so [method restore_body] can rebuild it later. The piece
+## takes over the body's catalog group meta ([constant ObjectCatalog.GROUP_META]).
 func capture_body(body: RigidBody3D) -> void:
 	parts = ObjectParts.of(body)
 	source_scene_path = body.scene_file_path
+	if body.has_meta(ObjectCatalog.GROUP_META):
+		set_meta(ObjectCatalog.GROUP_META, body.get_meta(ObjectCatalog.GROUP_META))
 	body_gravity_scale = body.gravity_scale
 	body_linear_damp_mode = body.linear_damp_mode
 	body_linear_damp = body.linear_damp
@@ -38,8 +41,10 @@ func capture_body(body: RigidBody3D) -> void:
 
 
 ## Applies the settings saved by [method capture_body] to a fresh instance of the object, including
-## its parts, size and weight, so a combined object stays combined.
+## its parts, size and weight, so a combined object stays combined, and its catalog group.
 func restore_body(body: RigidBody3D) -> void:
+	if has_meta(ObjectCatalog.GROUP_META):
+		body.set_meta(ObjectCatalog.GROUP_META, get_meta(ObjectCatalog.GROUP_META))
 	body.gravity_scale = body_gravity_scale
 	body.linear_damp_mode = body_linear_damp_mode
 	body.linear_damp = body_linear_damp

@@ -34,7 +34,7 @@ Items marked **(later)** are part of the design but not the first build (see sec
 - **The selection is remembered.** Hiding the preview doesn't reset the selection. The station starts on the first object in the list.
 - **Hide timer.** Every Select or Launch press restarts it. When it runs out the preview hides and Launch goes back to random.
 - **Cooldown** is per station and unchanged (Ship-Controls §4). Select buttons work during the cooldown.
-- The object list is shared by every station (the launcher's list). Each station keeps its own selected index.
+- The object list is shared by every station: the object catalog (`data/object_catalog.tres`), in its list order. Each station keeps its own selected index.
 - Launch sizes stay random, as they are now. The preview doesn't show the size an object will launch at.
 
 ## 4. The Preview

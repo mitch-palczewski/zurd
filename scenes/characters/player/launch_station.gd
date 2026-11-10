@@ -28,7 +28,8 @@ extends Node
 ## random objects.
 @export var preview_hide_delay: float = 5.0
 
-## Index of the selected object in the launcher's [member LaunchObjectComponent.projectile_scenes].
+## Index of the selected object among the launcher's catalog objects
+## ([method LaunchObjectComponent.get_object_scene]).
 var selected_index: int = 0
 ## True while the selected object is shown, so a launch fires it.
 var is_showing: bool = false
@@ -83,11 +84,11 @@ func has_selection() -> bool:
 func get_selected_scene() -> PackedScene:
 	if not has_selection() or not launcher:
 		return null
-	var count := launcher.get_projectile_count()
+	var count := launcher.get_object_count()
 	if count == 0:
 		return null
 	selected_index = wrapi(selected_index, 0, count)
-	return launcher.projectile_scenes[selected_index]
+	return launcher.get_object_scene(selected_index)
 
 
 ## The object a launch fires: the shown object, or null (random) while nothing is shown.
@@ -98,7 +99,7 @@ func get_launch_scene() -> PackedScene:
 ## Shows the selected object without stepping when it's hidden, so a guest never skips an object they
 ## didn't see. When it's already showing, steps by [param step].
 func _select(step: int) -> void:
-	var count := launcher.get_projectile_count()
+	var count := launcher.get_object_count()
 	if count == 0:
 		return
 	if is_showing:

@@ -146,11 +146,15 @@ builds the C# project (needs internet once). You need to install these applicati
   never pitches or rolls, and it stays between a ground clearance and a ceiling. It emits
   `impact_occurred` on collision. `LaunchObjectComponent` (the `LaunchMuzzle` node) is the one
   shared launcher: `launch_object(scene, side_offset)` spawns that scene (or a random one from
-  `projectile_scenes`) straight ahead, from the middle or moved sideways to a station's own
+  its object catalog) straight ahead, from the middle or moved sideways to a station's own
   side, gravity-free with linear-damp "braking" so it coasts to a stop, adds random
   scale/spin/spread and half the ship's velocity, briefly excludes the player from collision
   until the object clears, then emits `EventBus.spawn_requested` and registers it with
-  `ObjectTracker`. Launch buttons live under `Stations`: each
+  `ObjectTracker`. The **object catalog** (`data/object_catalog.tres`, an `ObjectCatalog`
+  resource from `scripts/objects/`) lists every launchable object: its scene and one group
+  (Animals, Figures, …; labels only for now). Random launches pick evenly from it, and every
+  launched object carries its group as meta `catalog_group`, which it keeps while fused into a
+  mass and after breaking off. Launch buttons live under `Stations`: each
   `LaunchStation` has its own cooldown and side offset. The launch station also keeps a
   selected object (designed in `claude/plans/Launch-Station Design Doc.md`): the first
   select press shows it on its `LaunchPreview` (a pedestal in the cockpit with a turning,
@@ -186,7 +190,8 @@ builds the C# project (needs internet once). You need to install these applicati
   Every model's meshes are extracted to shared `.res` files under `assets/meshes/`, and its
   vertex-color materials to `assets/materials/objects/`, so all its scenes reference the same
   resources and look the same. Don't hand-edit the generated files; re-import the source
-  `.glb` instead.
+  `.glb` instead. A new launchable object also needs a catalog entry: open
+  `data/object_catalog.tres` and press **Sync with rigid scenes**, then pick its group.
 - **Sculpture masses** (`scenes/sculpture/`; full spec + plan in `claude/plans/`): the core
   build-up mechanic. `MassManager` (a node in `base_world.tscn` that holds all the tunables)
   watches every body in `ObjectTracker`, counts hits, and handles **fusing, merging, eating,

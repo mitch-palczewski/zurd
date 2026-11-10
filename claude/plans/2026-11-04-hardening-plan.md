@@ -199,33 +199,148 @@ HUD and attract mode can hook in later through its signals.
 
 ## 4. Object catalog
 
+*Redefined 2026-11-10.* The asset library (2026-11-08) brought the launchable objects from 3 to
+51, all listed by hand in one `projectile_scenes` array in `player_ship.tscn`. The catalog moves
+that list into one curated resource, gives each object a group, and makes adding a model a
+button press.
+
+### Status (2026-11-10)
+
+Built, except the root-model cleanup, which is done by hand in the editor (below). A scratch
+harness (not committed) ran against a copy of the project, headless in Godot 4.7.2 at a fixed
+60 fps, and passed **63 of 63 checks**: every item under "Done when", plus the Inspector hints
+(the group dropdown and the tool button, read from the property list), a second sync adding
+nothing, sync leaving an unchanged catalog's file alone, and editing `groups` refreshing the
+entries' dropdown. 102,000 picks gave each of the 51 objects between 1907 and 2072 picks
+(2000 expected). The Inspector itself (the dropdown and the Sync button) hasn't been checked
+in the editor yet.
+
+Changes from the design below, found while building:
+
+- **The launcher warns about an empty or missing catalog**, not `pick_random()`, which returns
+  null quietly. The launcher knows the context.
+- **A catalog that lists a missing scene fails to load in the game**, and so does the ship
+  (checked: the `.tres` parse stops at the missing `ext_resource`). The old array in
+  `player_ship.tscn` behaved the same. Sync can't report a missing file in the game for that
+  reason; in the editor the FileSystem dock warns before deleting a scene the catalog uses.
+- **Sync is `sync_with_scenes()`** (`sync` was a keyword in Godot 3). It returns
+  `{"added": paths, "problems": messages}` for tests, and prints a one-line summary besides the
+  warnings, so a press with nothing to do still shows a result.
+- **Messages name objects without `_rigid`** (`Archway is listed twice ...`).
+
+### Decisions (2026-11-10)
+
+- **An entry is a scene and one group.** No launch weight, size range, display name, icon or
+  station flag. Random launches pick evenly across all entries, and the launch size stays the
+  launcher's global `min_scale`–`max_scale` (1–7). The models are already normalised to a longest
+  side of about 3 m (spires and pillar about 4 m), so per-object sizes aren't needed yet. Fields
+  can be added later without changing the file format of the rest.
+- **Groups are labels for later.** Nothing reads them yet: no group weights, filters or station
+  order. Each entry has exactly one group, chosen from a list of names kept on the catalog.
+- **Launched objects carry their group** as meta `catalog_group`, and it survives fusing and
+  breaking off, so later systems (HUD, Zurds, combining rules) can read it from any loose object
+  or `MassPiece` without a lookup.
+- **Curated, with a sync button.** Nothing launches until it's in the catalog. A tool button adds
+  every scene in `scenes/objects/rigid/` that isn't listed yet, at the end of the list, in group
+  `Unsorted`, and reports problems (below).
+- **The launch station steps through the whole catalog in list order**, the same set random
+  launches use. The list order is hand-arranged; sync only appends.
+- **Combining stays as it is.** With 51 even picks, matching objects rarely meet, so combining
+  (Sculpture-Mass §4.10) will be rare. Revisit after playtests; a session palette or
+  group-based combining were considered and left out.
+- `EventBus.launch_selection_changed(station, scene)` and `launch_object(scene, side_offset)` keep
+  passing the scene. Nothing listens to the signal, and the preview shows the model itself.
+
 ### Design
 
-- `scripts/objects/object_catalog_entry.gd` (`class_name ObjectCatalogEntry`, a Resource):
-  `scene` (PackedScene), `display_name`, `icon` (Texture2D), `launch_weight` (1.0).
-- `scripts/objects/object_catalog.gd` (`class_name ObjectCatalog`, a Resource): `entries`,
-  `pick_random()` weighted by `launch_weight` (skipping empty or zero-weight entries), `size()`,
-  `get_entry(i)`.
-- `data/object_catalog.tres`: the one catalog, which gives `data/` its purpose. It starts with
-  today's list: Archway, Arch_01, Crocodile_01, each at weight 1.
-- `LaunchObjectComponent`: `projectile_scenes` becomes `catalog: ObjectCatalog`;
-  `launch_object(scene = null)` picks from the catalog when no scene is given;
-  `get_projectile_count()` becomes `catalog.size()`. `player_ship.tscn` points at the catalog.
-- `LaunchStation` selects catalog entries, and `EventBus.launch_selection_changed(station, entry)`
-  passes the entry, or null when the station's preview hides. Nothing listens yet. The station
-  passes `entry.scene` to its `LaunchPreview` and to `launch_object`. The preview shows the model
-  itself, so it needs no names or icons (`2026-11-06-launch-station-plan.md`).
-- Optional, cheap: the catalog warns in the editor when an entry's scene isn't a `RigidBody3D`
-  with a `BoxShape3D`, the box-collider contract from the review, checked where objects are listed.
-- Adding a launchable model becomes: drop the `.glb` into `assets/models/objects/`, then add a
-  catalog entry. The catalog references scenes by UID, so the snake_case rename doesn't break it.
+- `scripts/objects/object_catalog_entry.gd` (`@tool`, `class_name ObjectCatalogEntry`, a
+  Resource): `scene: PackedScene`, `group: StringName` (default `&"Unsorted"`). In the Inspector,
+  `group` is a dropdown built from the catalog's `groups` (`_validate_property` with an enum hint;
+  the catalog hands its names to its entries when it loads or its `groups` change). The name is
+  stored, not an index, so reordering groups changes nothing.
+- `scripts/objects/object_catalog.gd` (`@tool`, `class_name ObjectCatalog`, a Resource):
+  - `groups: Array[StringName]`, starting with the draft below. `Unsorted` is always present.
+  - `entries: Array[ObjectCatalogEntry]`.
+  - `pick_random() -> ObjectCatalogEntry`: even pick over usable entries (scene not null), null
+    when there are none.
+  - `size()`, `get_entry(i)`: over usable entries only, so the station never lands on an empty slot.
+  - `find_entry(scene)`, `get_group(scene)` (`Unsorted` when unlisted), `get_group_names()`,
+    `check()`, the static `group_of(node)`, and `const GROUP_META := &"catalog_group"`.
+  - `@export_tool_button("Sync with rigid scenes")`: appends missing scenes from
+    `res://scenes/objects/rigid/`, then reports with `push_warning`: entries whose scene is null or
+    missing, a scene listed twice (it would be picked twice as often), a group not in `groups`,
+    and a scene whose root isn't a `RigidBody3D` with a `BoxShape3D` collider (the box contract
+    the sculpture code depends on). It only reports; it never removes or reorders entries.
+- `data/object_catalog.tres`: the one catalog, which gives `data/` its purpose. Scenes are
+  referenced by UID, so the snake_case rename of the models doesn't break it.
+- `LaunchObjectComponent`: `projectile_scenes` becomes `@export var catalog: ObjectCatalog`.
+  A random launch uses `catalog.pick_random()`. Every launched object gets
+  `set_meta(ObjectCatalog.GROUP_META, group)` from its entry (`find_entry` for a scene passed in
+  by a station; `Unsorted` if the scene isn't in the catalog). `get_projectile_count()` becomes
+  `get_object_count()` → `catalog.size()`, and a new `get_object_scene(i)` replaces the station's
+  direct read of `projectile_scenes[i]`.
+- `LaunchStation`: uses `get_object_count()` / `get_object_scene(i)`; otherwise unchanged.
+- `MassPiece`: `capture_body` stores the body's `catalog_group` and also sets it as meta on the
+  piece; `restore_body` puts it back on the new body when an object breaks off. Combined objects
+  share a model, so they share a group. `SculptureMass` itself has no group.
+- `player_ship.tscn`: `LaunchMuzzle.catalog` points at `data/object_catalog.tres`; the 51
+  `ExtResource` lines for the old array go.
+
+### Starting groups (draft; re-sort in the Inspector)
+
+| Group | Objects |
+| --- | --- |
+| Animals | Bull_01, Bull_02, Cavallo_01, Crocodile_01, Eagle_01, Leone_01–03 |
+| Figures | Gargoyle_01–05, BurntBoy_01, Shield_Man, Tounge_01 |
+| Architecture | Arch_01, Archway, BrickWall_01, Pillar_01, Piling_01–02, Spire_Stock_01–02, Stairs_01, Pathway_01 |
+| Geometry | GEO_Stock_02–07, Texture_Form_01 |
+| Nature | Bush_Stock_01, Tree_Stock_01 |
+| Unsorted | BT_02, BT_07, BT_08, BT_08-h, BT_09, BT_10, Carpet_01, Medallion_01, Misc_01, Misc_02, Misc_04, Misc_05, Fribourg, Rochefort_01, Stammheim_01, Zuzgen |
+
+The list starts in today's `projectile_scenes` order, so the station steps through objects as it
+does now.
+
+### Cleanup in the same step: root model duplicates
+
+`Arch_01.glb`, `Archway.glb` and `Crocodile_01.glb` sit both directly in `assets/models/` and in
+`assets/models/objects/`. Both copies write the same generated mesh and material files, so
+whichever imports last wins. `Zurd_01.glb` is still directly in `assets/models/` too. In the
+editor's FileSystem dock:
+
+1. Delete the three root copies (and their `.import` files).
+2. Move `Zurd_01.glb` into `assets/models/characters/`; the dock updates the Zurd scene's
+   references.
+3. Reimport the three `objects/` copies and `Zurd_01.glb`, then check that the rigid scenes and
+   the Zurd still show their meshes.
+4. Update `assets/models/README.md` and the "Model files" known gap in `CLAUDE.md` (only the
+   snake_case rename remains).
 
 ### Done when
 
-- Over 10,000 picks the counts match the weights within a few percent; a zero weight is never
-  picked; an empty catalog warns and launches nothing.
-- Station selection wraps and emits the entry.
-- Launching plays as before.
+- Over 10,000 picks every usable entry is picked within a few percent of evenly; null entries are
+  never picked; an empty catalog warns and launches nothing (and the station shows nothing).
+- Sync on the current project adds nothing after the first run, and reports a planted null entry,
+  duplicate, unknown group and non-box scene.
+- The station steps and wraps through the catalog in list order.
+- A launched object has the `catalog_group` meta of its entry; after it fuses and breaks off, the
+  new body has the same group, and the `MassPiece` had it while fused.
+- Launching plays as before. No `projectile_scenes` references are left (grep).
+- Checked with a scratch headless harness until step 1 exists; then these checks become
+  `tests/unit/test_object_catalog.gd` and part of `tests/scene/test_sculpture.gd`.
+
+### Edge cases
+
+- **Removing a model:** delete its catalog entry first. A catalog that lists a missing scene
+  fails to load in the game, and the ship with it (see Status).
+- **Keeping a model out:** Sync adds back every rigid scene that isn't listed, so deleting an
+  entry alone doesn't keep a model out; move its `.glb` out of `objects/` and delete its rigid
+  scene too. If that gets in the way, an "excluded" list that Sync skips is a small addition.
+- **Renaming or removing a group** leaves entries with a name not in `groups`; they still work,
+  and sync reports them.
+- **A scene launched by a station that isn't in the catalog** (only possible if a script passes
+  one) gets group `Unsorted`.
+- **Sandbox scenes** that instance `player_ship.tscn` get the same catalog. A test can point
+  `LaunchMuzzle.catalog` at a smaller `.tres`.
 
 ## 5. Terrain bake
 
@@ -290,11 +405,13 @@ references.
 | `scenes/world/base_world.tscn`, `scenes/world/base_world.gd` | 2 | Composition of sub-scenes, actor containers, spawn routing |
 | `sandbox/test_sculpture_mass.tscn` | 2 | Editable children, overrides set again |
 | `scenes/world/game_session.gd` | 3 | New |
-| `scripts/autoload/event_bus.gd` | 3, 4 | `session_started`, `session_resetting`; `launch_selection_changed` passes the entry |
+| `scripts/autoload/event_bus.gd` | 3 | `session_started`, `session_resetting` |
 | `scripts/autoload/object_tracker.gd`, `scenes/sculpture/mass_manager.gd` | 3 | Reject despawning objects |
 | `scenes/sculpture/sculpture_mass.gd` | 3 | `fade_out(time)` |
 | `scripts/objects/object_catalog.gd`, `scripts/objects/object_catalog_entry.gd`, `data/object_catalog.tres` | 4 | New |
-| `scenes/characters/player/launch_object_component.gd`, `launch_station.gd`, `player_ship.tscn` | 4 | Use the catalog |
+| `scenes/characters/player/launch_object_component.gd`, `launch_station.gd`, `player_ship.tscn` | 4 | Use the catalog; group meta on launch |
+| `scenes/sculpture/mass_piece.gd` | 4 | Carry `catalog_group` through fuse and break-off |
+| `assets/models/{Arch_01,Archway,Crocodile_01}.glb`, `Zurd_01.glb`, `assets/models/README.md` | 4 | Delete root duplicates, move Zurd into `characters/` (in the editor) |
 | `scenes/world/terrain.gd`, `terrain.tscn`, `terrain_mesh.res`, `terrain_collision.res` | 5 | Bake |
 | `scenes/ui/menus/main_menu.tscn`, `sandbox/world/*`, unused static scenes, `golf_terrain.*` | 6 | Remove |
 | `CLAUDE.md`, `claude/ONBOARDING.md` | all | Keep current with each step |
@@ -307,7 +424,9 @@ Defaults are in place, so building can start before these are answered.
    They'll be tuned on the exhibit PC with the frame rate logged.
 2. **What guests see during a reset:** the loading screen (default) or a fade to black?
 3. **Should masses have a cap too?** Default: no. Each mass leaves as a cloud at the threshold.
-4. **Catalog names and icons:** fill them in now, or with the launch station display?
+4. ~~**Catalog names and icons:** fill them in now, or with the launch station display?~~
+   Answered 2026-11-10: neither. The preview shows the model itself; entries hold a scene and a
+   group (step 4).
 5. **Terrain baking:** who presses Bake, and when (default: whoever changes the terrain, before
    committing)?
 6. **When is the 1000 × 1000 map idea done?** That triggers step 6.

@@ -1,0 +1,299 @@
+[gd_resource type="Resource" script_class="ObjectCatalog" format=3 uid="uid://7s0dcfr0nrlo"]
+
+[ext_resource type="Script" path="res://scripts/objects/object_catalog.gd" id="1_catalog"]
+[ext_resource type="Script" path="res://scripts/objects/object_catalog_entry.gd" id="2_entry"]
+[ext_resource type="PackedScene" uid="uid://dpqwpgb74ljan" path="res://scenes/objects/rigid/Archway_rigid.tscn" id="archway"]
+[ext_resource type="PackedScene" uid="uid://b017sf5law80l" path="res://scenes/objects/rigid/Arch_01_rigid.tscn" id="arch_01"]
+[ext_resource type="PackedScene" uid="uid://k26ut7r8lc7u" path="res://scenes/objects/rigid/BrickWall_01_rigid.tscn" id="brickwall_01"]
+[ext_resource type="PackedScene" uid="uid://vl37qn7elgme" path="res://scenes/objects/rigid/BT_02_rigid.tscn" id="bt_02"]
+[ext_resource type="PackedScene" uid="uid://btyg1rk645ow3" path="res://scenes/objects/rigid/BT_07_rigid.tscn" id="bt_07"]
+[ext_resource type="PackedScene" uid="uid://cntj2ltnkc23t" path="res://scenes/objects/rigid/BT_08-h_rigid.tscn" id="bt_08_h"]
+[ext_resource type="PackedScene" uid="uid://c0l4sxyhvphf4" path="res://scenes/objects/rigid/BT_08_rigid.tscn" id="bt_08"]
+[ext_resource type="PackedScene" uid="uid://c0kits825fg8q" path="res://scenes/objects/rigid/BT_09_rigid.tscn" id="bt_09"]
+[ext_resource type="PackedScene" uid="uid://xa4byhkjhb5e" path="res://scenes/objects/rigid/BT_10_rigid.tscn" id="bt_10"]
+[ext_resource type="PackedScene" uid="uid://blivjoauwxo6m" path="res://scenes/objects/rigid/Bull_01_rigid.tscn" id="bull_01"]
+[ext_resource type="PackedScene" uid="uid://dnxqhcqu6of7l" path="res://scenes/objects/rigid/Bull_02_rigid.tscn" id="bull_02"]
+[ext_resource type="PackedScene" uid="uid://c18g7v0xsopao" path="res://scenes/objects/rigid/BurntBoy_01_rigid.tscn" id="burntboy_01"]
+[ext_resource type="PackedScene" uid="uid://cp85xw5ylqfpq" path="res://scenes/objects/rigid/Bush_Stock_01_rigid.tscn" id="bush_stock_01"]
+[ext_resource type="PackedScene" uid="uid://6imnjes0q1cs" path="res://scenes/objects/rigid/Carpet_01_rigid.tscn" id="carpet_01"]
+[ext_resource type="PackedScene" uid="uid://cq21i701wu7uk" path="res://scenes/objects/rigid/Cavallo_01_rigid.tscn" id="cavallo_01"]
+[ext_resource type="PackedScene" uid="uid://de5u3qjy3l6ap" path="res://scenes/objects/rigid/Crocodile_01_rigid.tscn" id="crocodile_01"]
+[ext_resource type="PackedScene" uid="uid://2s0k0deyib2w" path="res://scenes/objects/rigid/Eagle_01_rigid.tscn" id="eagle_01"]
+[ext_resource type="PackedScene" uid="uid://cjyvu0qrq7rmi" path="res://scenes/objects/rigid/Fribourg_rigid.tscn" id="fribourg"]
+[ext_resource type="PackedScene" uid="uid://bnm1hp7cml50t" path="res://scenes/objects/rigid/Gargoyle_01_rigid.tscn" id="gargoyle_01"]
+[ext_resource type="PackedScene" uid="uid://1eiykqhyyhbo" path="res://scenes/objects/rigid/Gargoyle_02_rigid.tscn" id="gargoyle_02"]
+[ext_resource type="PackedScene" uid="uid://b4b5702bpsu2a" path="res://scenes/objects/rigid/Gargoyle_03_rigid.tscn" id="gargoyle_03"]
+[ext_resource type="PackedScene" uid="uid://d27xxo852y7s4" path="res://scenes/objects/rigid/Gargoyle_04_rigid.tscn" id="gargoyle_04"]
+[ext_resource type="PackedScene" uid="uid://4ml08tk28rcm" path="res://scenes/objects/rigid/Gargoyle_05_rigid.tscn" id="gargoyle_05"]
+[ext_resource type="PackedScene" uid="uid://d0g4uhdwsm7rc" path="res://scenes/objects/rigid/GEO_Stock_02_rigid.tscn" id="geo_stock_02"]
+[ext_resource type="PackedScene" uid="uid://dytjbnhgrkcm" path="res://scenes/objects/rigid/GEO_Stock_03_rigid.tscn" id="geo_stock_03"]
+[ext_resource type="PackedScene" uid="uid://d2tla2rv12w1y" path="res://scenes/objects/rigid/GEO_Stock_04_rigid.tscn" id="geo_stock_04"]
+[ext_resource type="PackedScene" uid="uid://be5lfcn5rc3fa" path="res://scenes/objects/rigid/GEO_Stock_05_rigid.tscn" id="geo_stock_05"]
+[ext_resource type="PackedScene" uid="uid://dbf18pja0kx2c" path="res://scenes/objects/rigid/GEO_Stock_06_rigid.tscn" id="geo_stock_06"]
+[ext_resource type="PackedScene" uid="uid://bmw0tfkvdnhfq" path="res://scenes/objects/rigid/GEO_Stock_07_rigid.tscn" id="geo_stock_07"]
+[ext_resource type="PackedScene" uid="uid://dh58xwdgwneva" path="res://scenes/objects/rigid/Leone_01_rigid.tscn" id="leone_01"]
+[ext_resource type="PackedScene" uid="uid://b0hy262iaxldw" path="res://scenes/objects/rigid/Leone_02_rigid.tscn" id="leone_02"]
+[ext_resource type="PackedScene" uid="uid://dg7lupx6gm57n" path="res://scenes/objects/rigid/Leone_03_rigid.tscn" id="leone_03"]
+[ext_resource type="PackedScene" uid="uid://bup8cerbqgiy7" path="res://scenes/objects/rigid/Medallion_01_rigid.tscn" id="medallion_01"]
+[ext_resource type="PackedScene" uid="uid://d1jk6gwxne3p5" path="res://scenes/objects/rigid/Misc_01_rigid.tscn" id="misc_01"]
+[ext_resource type="PackedScene" uid="uid://d0t4flu337qnb" path="res://scenes/objects/rigid/Misc_02_rigid.tscn" id="misc_02"]
+[ext_resource type="PackedScene" uid="uid://dcwgivxb717en" path="res://scenes/objects/rigid/Misc_04_rigid.tscn" id="misc_04"]
+[ext_resource type="PackedScene" uid="uid://deu56fa3ydgqh" path="res://scenes/objects/rigid/Misc_05_rigid.tscn" id="misc_05"]
+[ext_resource type="PackedScene" uid="uid://hxihc0w2mjx4" path="res://scenes/objects/rigid/Pathway_01_rigid.tscn" id="pathway_01"]
+[ext_resource type="PackedScene" uid="uid://cud3djcwq6f6u" path="res://scenes/objects/rigid/Piling_01_rigid.tscn" id="piling_01"]
+[ext_resource type="PackedScene" uid="uid://cb1shbj2vr7kn" path="res://scenes/objects/rigid/Piling_02_rigid.tscn" id="piling_02"]
+[ext_resource type="PackedScene" uid="uid://o42lbyipyeyc" path="res://scenes/objects/rigid/Pillar_01_rigid.tscn" id="pillar_01"]
+[ext_resource type="PackedScene" uid="uid://ovldfoaaohkr" path="res://scenes/objects/rigid/Rochefort_01_rigid.tscn" id="rochefort_01"]
+[ext_resource type="PackedScene" uid="uid://cyiairxv0vati" path="res://scenes/objects/rigid/Shield_Man_rigid.tscn" id="shield_man"]
+[ext_resource type="PackedScene" uid="uid://0hc41vqgkxtr" path="res://scenes/objects/rigid/Spire_Stock_01_rigid.tscn" id="spire_stock_01"]
+[ext_resource type="PackedScene" uid="uid://d3giuaak48otn" path="res://scenes/objects/rigid/Spire_Stock_02_rigid.tscn" id="spire_stock_02"]
+[ext_resource type="PackedScene" uid="uid://contv2abhvr3w" path="res://scenes/objects/rigid/Stairs_01_rigid.tscn" id="stairs_01"]
+[ext_resource type="PackedScene" uid="uid://bkh7vmtxxdpeh" path="res://scenes/objects/rigid/Stammheim_01_rigid.tscn" id="stammheim_01"]
+[ext_resource type="PackedScene" uid="uid://b1t1xkfp40ue4" path="res://scenes/objects/rigid/Texture_Form_01_rigid.tscn" id="texture_form_01"]
+[ext_resource type="PackedScene" uid="uid://d1jogxwb2jwlu" path="res://scenes/objects/rigid/Tounge_01_rigid.tscn" id="tounge_01"]
+[ext_resource type="PackedScene" uid="uid://cd07dgw0xxpnt" path="res://scenes/objects/rigid/Tree_Stock_01_rigid.tscn" id="tree_stock_01"]
+[ext_resource type="PackedScene" uid="uid://q3ytmn8n8edp" path="res://scenes/objects/rigid/Zuzgen_rigid.tscn" id="zuzgen"]
+
+[sub_resource type="Resource" id="Resource_archway"]
+script = ExtResource("2_entry")
+scene = ExtResource("archway")
+group = &"Architecture"
+
+[sub_resource type="Resource" id="Resource_arch_01"]
+script = ExtResource("2_entry")
+scene = ExtResource("arch_01")
+group = &"Architecture"
+
+[sub_resource type="Resource" id="Resource_brickwall_01"]
+script = ExtResource("2_entry")
+scene = ExtResource("brickwall_01")
+group = &"Architecture"
+
+[sub_resource type="Resource" id="Resource_bt_02"]
+script = ExtResource("2_entry")
+scene = ExtResource("bt_02")
+
+[sub_resource type="Resource" id="Resource_bt_07"]
+script = ExtResource("2_entry")
+scene = ExtResource("bt_07")
+
+[sub_resource type="Resource" id="Resource_bt_08_h"]
+script = ExtResource("2_entry")
+scene = ExtResource("bt_08_h")
+
+[sub_resource type="Resource" id="Resource_bt_08"]
+script = ExtResource("2_entry")
+scene = ExtResource("bt_08")
+
+[sub_resource type="Resource" id="Resource_bt_09"]
+script = ExtResource("2_entry")
+scene = ExtResource("bt_09")
+
+[sub_resource type="Resource" id="Resource_bt_10"]
+script = ExtResource("2_entry")
+scene = ExtResource("bt_10")
+
+[sub_resource type="Resource" id="Resource_bull_01"]
+script = ExtResource("2_entry")
+scene = ExtResource("bull_01")
+group = &"Animals"
+
+[sub_resource type="Resource" id="Resource_bull_02"]
+script = ExtResource("2_entry")
+scene = ExtResource("bull_02")
+group = &"Animals"
+
+[sub_resource type="Resource" id="Resource_burntboy_01"]
+script = ExtResource("2_entry")
+scene = ExtResource("burntboy_01")
+group = &"Figures"
+
+[sub_resource type="Resource" id="Resource_bush_stock_01"]
+script = ExtResource("2_entry")
+scene = ExtResource("bush_stock_01")
+group = &"Nature"
+
+[sub_resource type="Resource" id="Resource_carpet_01"]
+script = ExtResource("2_entry")
+scene = ExtResource("carpet_01")
+
+[sub_resource type="Resource" id="Resource_cavallo_01"]
+script = ExtResource("2_entry")
+scene = ExtResource("cavallo_01")
+group = &"Animals"
+
+[sub_resource type="Resource" id="Resource_crocodile_01"]
+script = ExtResource("2_entry")
+scene = ExtResource("crocodile_01")
+group = &"Animals"
+
+[sub_resource type="Resource" id="Resource_eagle_01"]
+script = ExtResource("2_entry")
+scene = ExtResource("eagle_01")
+group = &"Animals"
+
+[sub_resource type="Resource" id="Resource_fribourg"]
+script = ExtResource("2_entry")
+scene = ExtResource("fribourg")
+
+[sub_resource type="Resource" id="Resource_gargoyle_01"]
+script = ExtResource("2_entry")
+scene = ExtResource("gargoyle_01")
+group = &"Figures"
+
+[sub_resource type="Resource" id="Resource_gargoyle_02"]
+script = ExtResource("2_entry")
+scene = ExtResource("gargoyle_02")
+group = &"Figures"
+
+[sub_resource type="Resource" id="Resource_gargoyle_03"]
+script = ExtResource("2_entry")
+scene = ExtResource("gargoyle_03")
+group = &"Figures"
+
+[sub_resource type="Resource" id="Resource_gargoyle_04"]
+script = ExtResource("2_entry")
+scene = ExtResource("gargoyle_04")
+group = &"Figures"
+
+[sub_resource type="Resource" id="Resource_gargoyle_05"]
+script = ExtResource("2_entry")
+scene = ExtResource("gargoyle_05")
+group = &"Figures"
+
+[sub_resource type="Resource" id="Resource_geo_stock_02"]
+script = ExtResource("2_entry")
+scene = ExtResource("geo_stock_02")
+group = &"Geometry"
+
+[sub_resource type="Resource" id="Resource_geo_stock_03"]
+script = ExtResource("2_entry")
+scene = ExtResource("geo_stock_03")
+group = &"Geometry"
+
+[sub_resource type="Resource" id="Resource_geo_stock_04"]
+script = ExtResource("2_entry")
+scene = ExtResource("geo_stock_04")
+group = &"Geometry"
+
+[sub_resource type="Resource" id="Resource_geo_stock_05"]
+script = ExtResource("2_entry")
+scene = ExtResource("geo_stock_05")
+group = &"Geometry"
+
+[sub_resource type="Resource" id="Resource_geo_stock_06"]
+script = ExtResource("2_entry")
+scene = ExtResource("geo_stock_06")
+group = &"Geometry"
+
+[sub_resource type="Resource" id="Resource_geo_stock_07"]
+script = ExtResource("2_entry")
+scene = ExtResource("geo_stock_07")
+group = &"Geometry"
+
+[sub_resource type="Resource" id="Resource_leone_01"]
+script = ExtResource("2_entry")
+scene = ExtResource("leone_01")
+group = &"Animals"
+
+[sub_resource type="Resource" id="Resource_leone_02"]
+script = ExtResource("2_entry")
+scene = ExtResource("leone_02")
+group = &"Animals"
+
+[sub_resource type="Resource" id="Resource_leone_03"]
+script = ExtResource("2_entry")
+scene = ExtResource("leone_03")
+group = &"Animals"
+
+[sub_resource type="Resource" id="Resource_medallion_01"]
+script = ExtResource("2_entry")
+scene = ExtResource("medallion_01")
+
+[sub_resource type="Resource" id="Resource_misc_01"]
+script = ExtResource("2_entry")
+scene = ExtResource("misc_01")
+
+[sub_resource type="Resource" id="Resource_misc_02"]
+script = ExtResource("2_entry")
+scene = ExtResource("misc_02")
+
+[sub_resource type="Resource" id="Resource_misc_04"]
+script = ExtResource("2_entry")
+scene = ExtResource("misc_04")
+
+[sub_resource type="Resource" id="Resource_misc_05"]
+script = ExtResource("2_entry")
+scene = ExtResource("misc_05")
+
+[sub_resource type="Resource" id="Resource_pathway_01"]
+script = ExtResource("2_entry")
+scene = ExtResource("pathway_01")
+group = &"Architecture"
+
+[sub_resource type="Resource" id="Resource_piling_01"]
+script = ExtResource("2_entry")
+scene = ExtResource("piling_01")
+group = &"Architecture"
+
+[sub_resource type="Resource" id="Resource_piling_02"]
+script = ExtResource("2_entry")
+scene = ExtResource("piling_02")
+group = &"Architecture"
+
+[sub_resource type="Resource" id="Resource_pillar_01"]
+script = ExtResource("2_entry")
+scene = ExtResource("pillar_01")
+group = &"Architecture"
+
+[sub_resource type="Resource" id="Resource_rochefort_01"]
+script = ExtResource("2_entry")
+scene = ExtResource("rochefort_01")
+
+[sub_resource type="Resource" id="Resource_shield_man"]
+script = ExtResource("2_entry")
+scene = ExtResource("shield_man")
+group = &"Figures"
+
+[sub_resource type="Resource" id="Resource_spire_stock_01"]
+script = ExtResource("2_entry")
+scene = ExtResource("spire_stock_01")
+group = &"Architecture"
+
+[sub_resource type="Resource" id="Resource_spire_stock_02"]
+script = ExtResource("2_entry")
+scene = ExtResource("spire_stock_02")
+group = &"Architecture"
+
+[sub_resource type="Resource" id="Resource_stairs_01"]
+script = ExtResource("2_entry")
+scene = ExtResource("stairs_01")
+group = &"Architecture"
+
+[sub_resource type="Resource" id="Resource_stammheim_01"]
+script = ExtResource("2_entry")
+scene = ExtResource("stammheim_01")
+
+[sub_resource type="Resource" id="Resource_texture_form_01"]
+script = ExtResource("2_entry")
+scene = ExtResource("texture_form_01")
+group = &"Geometry"
+
+[sub_resource type="Resource" id="Resource_tounge_01"]
+script = ExtResource("2_entry")
+scene = ExtResource("tounge_01")
+group = &"Figures"
+
+[sub_resource type="Resource" id="Resource_tree_stock_01"]
+script = ExtResource("2_entry")
+scene = ExtResource("tree_stock_01")
+group = &"Nature"
+
+[sub_resource type="Resource" id="Resource_zuzgen"]
+script = ExtResource("2_entry")
+scene = ExtResource("zuzgen")
+
+[resource]
+script = ExtResource("1_catalog")
+groups = Array[StringName]([&"Animals", &"Figures", &"Architecture", &"Geometry", &"Nature", &"Unsorted"])
+entries = Array[ExtResource("2_entry")]([SubResource("Resource_archway"), SubResource("Resource_arch_01"), SubResource("Resource_brickwall_01"), SubResource("Resource_bt_02"), SubResource("Resource_bt_07"), SubResource("Resource_bt_08_h"), SubResource("Resource_bt_08"), SubResource("Resource_bt_09"), SubResource("Resource_bt_10"), SubResource("Resource_bull_01"), SubResource("Resource_bull_02"), SubResource("Resource_burntboy_01"), SubResource("Resource_bush_stock_01"), SubResource("Resource_carpet_01"), SubResource("Resource_cavallo_01"), SubResource("Resource_crocodile_01"), SubResource("Resource_eagle_01"), SubResource("Resource_fribourg"), SubResource("Resource_gargoyle_01"), SubResource("Resource_gargoyle_02"), SubResource("Resource_gargoyle_03"), SubResource("Resource_gargoyle_04"), SubResource("Resource_gargoyle_05"), SubResource("Resource_geo_stock_02"), SubResource("Resource_geo_stock_03"), SubResource("Resource_geo_stock_04"), SubResource("Resource_geo_stock_05"), SubResource("Resource_geo_stock_06"), SubResource("Resource_geo_stock_07"), SubResource("Resource_leone_01"), SubResource("Resource_leone_02"), SubResource("Resource_leone_03"), SubResource("Resource_medallion_01"), SubResource("Resource_misc_01"), SubResource("Resource_misc_02"), SubResource("Resource_misc_04"), SubResource("Resource_misc_05"), SubResource("Resource_pathway_01"), SubResource("Resource_piling_01"), SubResource("Resource_piling_02"), SubResource("Resource_pillar_01"), SubResource("Resource_rochefort_01"), SubResource("Resource_shield_man"), SubResource("Resource_spire_stock_01"), SubResource("Resource_spire_stock_02"), SubResource("Resource_stairs_01"), SubResource("Resource_stammheim_01"), SubResource("Resource_texture_form_01"), SubResource("Resource_tounge_01"), SubResource("Resource_tree_stock_01"), SubResource("Resource_zuzgen")])

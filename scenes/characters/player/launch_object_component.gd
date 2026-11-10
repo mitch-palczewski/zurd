@@ -3,10 +3,11 @@ extends Node3D
 
 ## The ship's one launcher, at the middle of the ship. Every launch flies straight ahead. Launch
 ## buttons ([LaunchStation]) call [method launch_object], from the middle or from their own side;
-## this node owns the object list and the launch physics.
+## this node holds the object catalog and owns the launch physics.
 
 @export_group("Launch Settings")
-@export var projectile_scenes: Array[PackedScene] = []
+## The objects this launcher fires (data/object_catalog.tres).
+@export var catalog: ObjectCatalog
 @export var launch_speed: float = 45.0
 @export var target_stop_distance: float = 70.0
 @export var clearance_distance: float = 21.0
@@ -29,13 +30,24 @@ extends Node3D
 @export var player_ship: CharacterBody3D
 
 
-## Launches [param scene], or a random object from [member projectile_scenes] when it is null.
-## [param side_offset] moves the start point sideways from this node (positive is right), for a
-## station's own launch point (Launch-Station Design Doc §5).
+## Launches [param scene], or a random object from [member catalog] when it is null. The object
+## carries its catalog group as meta ([constant ObjectCatalog.GROUP_META]). [param side_offset]
+## moves the start point sideways from this node (positive is right), for a station's own launch
+## point (Launch-Station Design Doc §5).
 func launch_object(scene: PackedScene = null, side_offset: float = 0.0) -> void:
+	var entry: ObjectCatalogEntry = null
+	if scene == null:
+		entry = _pick_random_entry()
+		if entry == null:
+			return
+		scene = entry.scene
+	elif catalog:
+		entry = catalog.find_entry(scene)
+
 	var projectile := _instantiate_projectile(scene)
 	if projectile == null:
 		return
+	projectile.set_meta(ObjectCatalog.GROUP_META, entry.group if entry else ObjectCatalog.DEFAULT_GROUP)
 
 	_setup_transform_and_scale(projectile, side_offset)
 	_setup_physics(projectile)
@@ -50,8 +62,15 @@ func launch_object(scene: PackedScene = null, side_offset: float = 0.0) -> void:
 		_re_enable_player_collision_when_clear(projectile)
 
 
-func get_projectile_count() -> int:
-	return projectile_scenes.size()
+## The number of objects a station can step through: the catalog's usable entries.
+func get_object_count() -> int:
+	return catalog.size() if catalog else 0
+
+
+## The scene of the catalog's usable entry at [param index], or null when it's out of range.
+func get_object_scene(index: int) -> PackedScene:
+	var entry: ObjectCatalogEntry = catalog.get_entry(index) if catalog else null
+	return entry.scene if entry else null
 
 
 func _re_enable_player_collision_when_clear(projectile: RigidBody3D) -> void:
@@ -65,19 +84,18 @@ func _re_enable_player_collision_when_clear(projectile: RigidBody3D) -> void:
 		projectile.remove_collision_exception_with(player_ship)
 
 
-func _instantiate_projectile(scene: PackedScene) -> RigidBody3D:
-	var selected_scene := scene
-	if selected_scene == null:
-		if projectile_scenes.is_empty():
-			push_warning("LaunchObjectComponent: No scenes assigned to projectile_scenes array!")
-			return null
-		selected_scene = projectile_scenes.pick_random()
-
-	if not selected_scene:
-		push_warning("LaunchObjectComponent: Selected projectile scene slot is empty/null!")
+func _pick_random_entry() -> ObjectCatalogEntry:
+	if catalog == null:
+		push_warning("LaunchObjectComponent: No object catalog assigned.")
 		return null
+	var entry: ObjectCatalogEntry = catalog.pick_random()
+	if entry == null:
+		push_warning("LaunchObjectComponent: The object catalog has no objects with a scene.")
+	return entry
 
-	var instance := selected_scene.instantiate()
+
+func _instantiate_projectile(scene: PackedScene) -> RigidBody3D:
+	var instance := scene.instantiate()
 	if not (instance is RigidBody3D):
 		push_error("LaunchObjectComponent: Projectile scene root must be a RigidBody3D!")
 		instance.queue_free()
