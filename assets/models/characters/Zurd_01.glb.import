@@ -3,13 +3,13 @@
 importer="scene"
 importer_version=1
 type="PackedScene"
-uid="uid://uek2bqgqxlc2"
-path="res://.godot/imported/Arch_01.glb-b3546f5fdd246c17e6d7c53788401d4e.scn"
+uid="uid://c5f5m6qxtjorg"
+path="res://.godot/imported/Zurd_01.glb-fe84b61496fe5faf348049e449668393.scn"
 
 [deps]
 
-source_file="res://assets/models/Arch_01.glb"
-dest_files=["res://.godot/imported/Arch_01.glb-b3546f5fdd246c17e6d7c53788401d4e.scn"]
+source_file="res://assets/models/characters/Zurd_01.glb"
+dest_files=["res://.godot/imported/Zurd_01.glb-fe84b61496fe5faf348049e449668393.scn"]
 
 [params]
 
