@@ -138,7 +138,7 @@ builds the C# project (needs internet once). You need to install these applicati
   `base_world.tscn` plus the procedural terrain. The world doesn't wrap: the toroidal world
   was removed in November 2026, and teleportation may come later for a small part of the map.
 - **Player ship** (`scenes/characters/player/`, designed in
-  `claude/plans/Ship-Controls Design Doc.md`): `PlayerShip` (`class_name PlayerShip`, a
+  `claude/design/Ship-Controls Design Doc.md`): `PlayerShip` (`class_name PlayerShip`, a
   `CharacterBody3D`) sets up `PlayerFlightController` on ready. The controller flies the ship
   "like a fish in water" from the `ship_*` inputs: thrust, turn, rise and sink, each eased in
   so a digital arcade stick feels smooth. With no input the ship coasts to a hover with a
@@ -156,7 +156,7 @@ builds the C# project (needs internet once). You need to install these applicati
   launched object carries its group as meta `catalog_group`, which it keeps while fused into a
   mass and after breaking off. Launch buttons live under `Stations`: each
   `LaunchStation` has its own cooldown and side offset. The launch station also keeps a
-  selected object (designed in `claude/plans/Launch-Station Design Doc.md`): the first
+  selected object (designed in `claude/design/Launch-Station Design Doc.md`): the first
   select press shows it on its `LaunchPreview` (a pedestal in the cockpit with a turning,
   mesh-only copy of the object), later presses step, and its launch button fires it until
   the preview hides 5 s after the last press. Then it's back to random objects
@@ -197,7 +197,7 @@ builds the C# project (needs internet once). You need to install these applicati
   them in the FileSystem dock and press *Reimport* in the Import dock. A new launchable object
   also needs a catalog entry: open `data/object_catalog.tres` and press **Sync with rigid
   scenes**, then pick its group.
-- **Sculpture masses** (`scenes/sculpture/`; full spec + plan in `claude/plans/`): the core
+- **Sculpture masses** (`scenes/sculpture/`; spec in `claude/design/`, plan in `claude/plans/archive/`): the core
   build-up mechanic. `MassManager` (a node in `base_world.tscn` that holds all the tunables)
   watches every body in `ObjectTracker`, counts hits, and handles **fusing, merging, eating,
   and breaking off**. Physics contact callbacks only *queue* requests — the queue is drained
