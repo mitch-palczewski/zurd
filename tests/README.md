@@ -39,12 +39,10 @@ file as it was before is kept in the OS temp folder under `zurd_tests_backup/`.
 | Folder | Runs | Covers |
 | --- | --- | --- |
 | `unit/` | without the game world | object parts and sizes, break-off geometry, the object catalog (and that every rigid scene is in it and keeps the collider contract), the object tracker, controller profiles and the Controllers autoload, scene loading, the main menu, and that every scene and resource loads |
-| `scene/` | in `zurd_world.tscn` | sculpture masses (fuse, combine, merge, growth break-off, bites, break-off, clouds), the ship's flight, launching and the launch station, and the world's layout (its parts, where spawned things go, the worlds built on it) |
+| `scene/` | in `zurd_world.tscn` | sculpture masses (fuse, combine, merge, growth break-off, bites, break-off, clouds), the ship's flight, launching and the launch station, the world's layout (its parts, where spawned things go, the worlds built on it), and the Zurds (starting Zurds, nibbling, anger, who turns Hostile and what they hunt, calming down, swats, ramming, object hits) |
 
 Not covered, on purpose:
 
-- **Zurd behaviour.** The Zurd scripts are temporary. Scene tests remove the hand-placed Zurd, and
-  bites come from `EventBus.eat_requested`.
 - **Visuals and effects** (shaders, SculptureFx, the preview's animation).
 - **The lidar C# code.** It needs the .NET build. It was tested with scratch C# harnesses.
 - **The GLB importer.** It only runs in the editor. To check it by hand:
@@ -80,12 +78,13 @@ Every method named `test_...` is a test, run in order. A test can `await`. Optio
   failure prints.
 - **Waiting:** `wait_frames`, `wait_physics`, `wait_seconds` (game time), and
   `wait_until(condition, seconds)`, which also allows that long in real time, for loading on other
-  threads.
+  threads. `wait_until_freed(obj, seconds)` waits for an object to be freed (a condition that held
+  the object itself would log an error once it's gone).
 - **Signals:** `watch(signal)` records each emission's arguments; `listen(signal, callable)`
   connects for the rest of the test.
 - **Input:** `tap(action)` presses an action for one frame; `hold` and `release` keep it down.
-- **The world:** `load_world(with_terrain)` loads the game world for the test, without its Zurd,
-  and frees it after. `get_ship`, `get_mass_manager`, `spawn_object` and `spawn_beside` place
+- **The world:** `load_world(with_terrain, with_zurds)` loads the game world for the test (without
+  Zurds unless `with_zurds`), and frees it after. `get_zurd_director` finds the director. `get_ship`, `get_mass_manager`, `spawn_object` and `spawn_beside` place
   objects the way the launcher does.
 - **Errors and files:** `allow_error(text)` for code that should report an error, `was_logged(text)`,
   and `temp_path(name)` for files a test writes.

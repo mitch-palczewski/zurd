@@ -46,17 +46,20 @@ All Zurds know the state of the whole world: the number of loose objects, the sc
 their sizes, and recent launches. That keeps aggression simple to scale: one shared **anger**
 value, worked out once for the world (by a single "Zurd director").
 
-**Anger rises with:**
+**Anger rises when the players provoke the Zurds** (decided 2026-11-12):
 
-- **Mess:** loose objects above the **tolerated mess** (*proposed:* 15). Each loose object over
-  the limit adds anger.
-- **Large sculptures:** a sculpture above the **tolerated sculpture size** (*proposed:* 15
-  objects, a hard cut-off) adds anger. Smaller sculptures add nothing.
-- **Rushing:** a burst of launches, more than *proposed* 5 within 10 seconds, adds a spike of
-  anger.
+- **Adding mess:** each object launched while the loose objects are over the **tolerated mess**
+  (*proposed:* 15) adds anger.
+- **Growing a large sculpture:** each object added to a sculpture beyond the **tolerated
+  sculpture size** (*proposed:* 15 objects, a hard cut-off) adds anger. Smaller sculptures add
+  nothing.
+- **Rushing:** each launch past *proposed* 5 within 10 seconds adds anger.
+- **Attacking Zurds:** each swat, ram, or launched object that hits a Zurd adds anger.
 
-**Anger falls** steadily when none of these is happening, so a calm, methodical player brings the
-Zurds back down.
+**Anger falls** once the players stop provoking the Zurds: when no objects are added past the
+limits and the Zurds are left alone for a few seconds (*proposed:* 3 s), it falls steadily. A mess
+that just sits there doesn't keep angering them; adding to it does. A calm, methodical player
+brings the Zurds back down.
 
 **The ramp:** the tolerated amounts are generous at the start and tighten as objectives are
 completed (section 7). During the first objective the Zurds stay Passive whatever happens.
@@ -76,15 +79,17 @@ completed (section 7). During the first objective the Zurds stay Passive whateve
 
 - Wanders around a loose home area, alone or in pairs.
 - Ignores the ship and the players' objects. It doesn't go looking for food.
-- **Nibbles** only an object it happens to drift really close to (*proposed:* within 3 m), and
-  slowly (*proposed:* a third of the Hostile eating speed). Moving the object away, or a swat,
-  stops it.
+- **Nibbles** only a loose object it happens to drift really close to (*proposed:* within 3 m),
+  and slowly (*proposed:* a third of the Hostile eating speed). Moving the object away, or a swat,
+  stops it. It leaves sculptures alone, so small sculptures really are safe.
 
 ### 5.2 Hostile
 
 - Goes after what angers the Zurds: **loose objects first**, then large sculptures.
 - **Eats objects** (eating mechanics: Sculpture-Mass Design Doc §4.5).
 - Looks and sounds different from a Passive Zurd (placeholder tint and sound).
+
+**Bumping:** a Zurd that flies into objects or sculptures it isn't eating knocks them around.
 
 ### 5.3 Switching
 
@@ -108,6 +113,9 @@ to hold it in place while someone gets close enough to swat it.
 - **After a few swats it's driven off** (*proposed:* the 3rd swat): it retreats **away from the
   ship** (there are no set places in the terrain yet), stays away for a while (*proposed:* 20 s),
   then comes back Passive. Its swat count resets.
+- **One swat counts once.** Hits within a short cooldown of the last one (*proposed:* 0.4 s)
+  don't count, so a swat's spread of projectiles, or a ram that stays in contact for a moment,
+  counts as one swat.
 - **No killing** at this stage. (Killing, and Zurds that won't be driven off, are in the idea
   bank.)
 
@@ -137,16 +145,21 @@ All *proposed*, tuned in playtests.
 | Starting Zurds | Zurds in the world at the start | 3 |
 | Sight radius | Radius of the sight cylinder | 150 m |
 | Tolerated mess | Loose objects allowed before anger rises | 15 |
-| Mess anger | Anger added per loose object over the limit | *playtest* |
+| Mess anger | Anger added per object launched while over the mess limit | 0.05 |
 | Tolerated sculpture size | Objects in a sculpture before it angers the Zurds (hard cut-off) | 15 |
-| Rush | Launches in the window that count as rushing | 5 in 10 s |
-| Anger decay | How fast anger falls with no provocation | *playtest* |
+| Sculpture anger | Anger added per object added beyond the sculpture size limit | 0.03 |
+| Rush | Launches in the window before each launch adds anger | 5 in 10 s |
+| Rush anger | Anger added per launch past the rush limit | 0.1 |
+| Attack anger | Anger added per swat, ram or object hit on a Zurd | 0.1 |
+| Calm delay | Time without provocation before anger starts to fall | 3 s |
+| Anger decay | How fast anger falls once it does | 0.05 per second |
 | Hostile cooldown | Least time a Zurd stays Hostile | 10 s |
 | Nibble distance | How close a Passive Zurd must drift to an object to nibble it | 3 m |
 | Nibble speed | Passive eating speed, compared with Hostile | ×0.33 |
 | Stun swats | Swats that stun | 2 |
 | Stun time | Length of a stun | 1.5 s |
 | Drive-off swat | The swat that drives a Zurd off (ramming counts; launched objects only stun) | 3rd |
+| Hit cooldown | Least time between two hits that count | 0.4 s |
 | Away time | How long a driven-off Zurd stays away | 20 s |
 | Retreat distance | How far from the ship a driven-off Zurd goes | *proposed:* 300 m |
 | Difficulty step | How much the tolerances tighten per completed objective | *playtest* |

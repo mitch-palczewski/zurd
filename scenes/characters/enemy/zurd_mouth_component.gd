@@ -2,9 +2,10 @@ class_name ZurdMouthComponent
 extends Area3D
 
 ## Eats the Zurd's target: a loose object, or one object of a sculpture mass. The target has to stay
-## in the mouth for [member eat_duration]. If it leaves the mouth or stops being a valid target, or
-## [method cancel_eating] is called, the object is unharmed and the timer starts over. A combined
-## object loses one part per bite and stays the target, so the Zurd keeps chewing it.
+## in the mouth for [member eat_duration] (longer at a lower eating speed: a Passive Zurd nibbles).
+## If it leaves the mouth or stops being a valid target, or [method cancel_eating] is called, the
+## object is unharmed and the timer starts over. A combined object loses one part per bite and stays
+## the target, so the Zurd keeps chewing it.
 
 ## Fired when the Zurd finishes a bite of [param obj], before the [MassManager] takes it. Not the
 ## same as [signal EventBus.object_eaten], which fires after.
@@ -18,6 +19,7 @@ var active_target: Node3D = null
 var _excepted_body: PhysicsBody3D = null
 var _is_eating: bool = false
 var _eat_time: float = 0.0
+var _eat_speed: float = 1.0
 
 func _ready() -> void:
 	if not owner_body:
@@ -30,15 +32,18 @@ func _physics_process(delta: float) -> void:
 		return
 
 	_is_eating = true
-	_eat_time += delta
+	_eat_time += delta * _eat_speed
 	if _eat_time >= eat_duration:
 		_eat_target()
 
 
-func set_target(obj: Node3D) -> void:
+## Makes [param obj] the target (null for none). [param eat_speed] scales how fast it's eaten: 1 is
+## normal, lower is slower.
+func set_target(obj: Node3D, eat_speed: float = 1.0) -> void:
 	if obj != active_target:
 		cancel_eating()
 		active_target = obj
+	_eat_speed = eat_speed
 	_update_collision_exception()
 
 

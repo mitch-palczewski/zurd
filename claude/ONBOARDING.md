@@ -107,8 +107,8 @@ builds the C# project (needs internet once). You need to install these applicati
 5. **Press F5** (Play). You'll boot → main menu → press *Start* → the world loads. The menu
    also has a **Lidar Setup** entry (only needed for the physical install).
 6. **Controls:** **W/S** forward/back, **A/D** turn, **Shift/Ctrl** rise/sink, **Space**
-   launches a random object. **Left-click** swats a Zurd (makes it smaller and forces it to
-   pick a new target). A gamepad works too (left stick or d-pad; Y/A or the triggers to
+   launches a random object. **Left-click** swats a Zurd (the first swats stun it; the third
+   drives it away for a while). A gamepad works too (left stick or d-pad; Y/A or the triggers to
    rise/sink; B to launch). The launch station is **J/L** (or LB/RB) to show and choose an
    object, which appears on a pedestal in the cockpit, and **K** (or X) to launch it; with no
    object shown, K launches a random one from the right side. Input actions:
@@ -173,18 +173,19 @@ builds the C# project (needs internet once). You need to install these applicati
   the preview hides 5 s after the last press. Then it's back to random objects
   (`launch_selection_changed`, null on hide). Each `StationActivity` reports a station going
   active or empty (`station_activity_changed`).
-- **Zurd enemy** (`scenes/characters/enemy/`): `Zurd` (`class_name Zurd`, a `CharacterBody3D`)
-  is a thin coordinator that delegates to three components each physics frame:
-  `ZurdTargetComponent` (asks `ObjectTracker` for a target — `CLOSEST` or `RANDOM`),
-  `ZurdMovementComponent` (steers toward the target with slerped turning plus a forward
-  raycast for obstacle avoidance against layer 1; holds the mouth on the target while eating
-  and pushes masses it bumps), and `ZurdMouthComponent` (an area that eats the target — a
-  loose object **or** a fused `MassPiece` — once it has stayed in the mouth for
-  `eat_duration`; interrupted if the target leaves or the Zurd is swatted; emits
-  `object_eaten`). This component pattern is the intended style for new actors. The Zurd
-  scripts themselves are **temporary**: a Zurd design doc and a full overhaul are coming. For
-  now there is one hand-placed Zurd; `ZurdSpawner` is kept out of the world while the
-  sculpture system is tested.
+- **Zurds** (`scenes/characters/enemy/`, designed in `claude/design/Zurd Core Design Doc.md`):
+  they push players to build sculptures instead of scattering objects. A `ZurdDirector` (in
+  `GameSystems`) keeps one shared **anger**: it rises when objects are launched past a mess limit,
+  sculptures grow past a size limit, launches come in a rush, or Zurds are attacked, and falls
+  once the players calm down. The angrier, the more Zurds turn **Hostile** (nearest the mess
+  first) and hunt loose objects, then large sculptures; **Passive** Zurds wander near home and
+  only nibble a loose object they drift into. Swats stun a Zurd, and the third drives it away
+  for a while; ramming counts as a swat; a launched object only stuns it, then it eats that
+  object. `Zurd` (`class_name Zurd`, a `CharacterBody3D`) delegates to components:
+  `ZurdSightComponent` (what it sees and goes after), `ZurdMovementComponent` (wander, hunt,
+  hold while eating, stun, retreat) and `ZurdMouthComponent` (eats what stays in its mouth).
+  This component pattern is the intended style for new actors. A placeholder health bar, a red
+  tint for Hostile and a testing HUD (anger, Zurds, mess) are there for playtests.
 - **GLB post-importer** (`scripts/import/glb_post_importer.gd`): a `@tool`
   `EditorScenePostImport` script, set as the project's default for scene imports, so a new
   model needs no setup. It only handles models under `assets/models/`, and the folder you drop
@@ -238,7 +239,7 @@ builds the C# project (needs internet once). You need to install these applicati
   and old terrain and map prototypes in `world/`). Not part of the shipped game: the export
   presets exclude it, and the main menu hides entries whose scene isn't in the build.
 - **`tests/`:** the automated tests ([../tests/README.md](../tests/README.md)). `unit/` tests
-  run without the game world; `scene/` tests load `zurd_world.tscn`, without its Zurd. Each
+  run without the game world; `scene/` tests load `zurd_world.tscn`, without Zurds unless a test asks for them. Each
   test extends `tests/test_case.gd` by path. The export presets exclude this folder too.
 
 ---
@@ -248,13 +249,13 @@ builds the C# project (needs internet once). You need to install these applicati
 New contributors hit these — they are known and not yet fixed:
 
 1. **Lidar touches don't reach gameplay yet** (see Lidar input above). Use the mouse to swat.
-2. **Zurds are temporary.** Expect odd behaviour, such as a Zurd swatted many times shrinking
-   to nothing; the overhaul will replace these scripts.
+2. **Zurds are at their first iteration.** Two states, placeholder looks and no sounds; their
+   numbers are starting points to tune at playtests (the director's Inspector).
 3. **Nothing despawns.** Long sessions pile up loose objects and clouds; there's no object
    budget (the Zurds eating the mess should keep loose objects in check). The world never resets
    between groups, by design.
-4. **The tests skip a few areas on purpose:** Zurd behaviour (temporary), visuals, the lidar C#
-   code and the GLB importer (see the tests README for the manual importer check).
+4. **The tests skip a few areas on purpose:** visuals, the lidar C# code and the GLB importer
+   (see the tests README for the manual importer check).
 
 Style: every `.gd` and `.gdshader` file is indented with **tabs** (the GDScript style guide;
 `.editorconfig` sets it), and file and folder names are snake_case except C# files.

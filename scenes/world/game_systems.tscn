@@ -3,6 +3,9 @@
 [ext_resource type="Script" uid="uid://ddsa51mwf45mx" path="res://scenes/sculpture/mass_manager.gd" id="1_mmgr"]
 [ext_resource type="PackedScene" uid="uid://4rc7r62mw8he" path="res://scenes/sculpture/sculpture_mass.tscn" id="2_smass"]
 [ext_resource type="Script" uid="uid://dbnhn3if4i3xu" path="res://scenes/sculpture/sculpture_fx.gd" id="3_sfx"]
+[ext_resource type="Script" uid="uid://c4238dscey2i" path="res://scenes/characters/enemy/zurd_director.gd" id="4_zdir"]
+[ext_resource type="PackedScene" uid="uid://bxjnraf4ofxwq" path="res://scenes/characters/enemy/zurd.tscn" id="5_zurd"]
+[ext_resource type="PackedScene" uid="uid://dg40uonmum030" path="res://scenes/ui/hud/zurd_testing_hud.tscn" id="6_zhud"]
 
 [node name="GameSystems" type="Node" unique_id=976592037]
 
@@ -16,3 +19,12 @@ combine_size_mode = 1
 
 [node name="SculptureFx" type="Node" parent="." unique_id=1577201930]
 script = ExtResource("3_sfx")
+
+[node name="ZurdDirector" type="Node" parent="." unique_id=1191661251]
+script = ExtResource("4_zdir")
+zurd_scene = ExtResource("5_zurd")
+starting_zurds = 8
+tolerated_mess = 17
+rush_launches = 15
+rush_window = 15.0
+testing_hud_scene = ExtResource("6_zhud")

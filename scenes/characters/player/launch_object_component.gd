@@ -57,6 +57,7 @@ func launch_object(scene: PackedScene = null, side_offset: float = 0.0) -> void:
 
 	EventBus.spawn_requested.emit(projectile)
 	ObjectTracker.register_object(projectile)
+	EventBus.object_launched.emit(projectile)
 
 	if player_ship:
 		_re_enable_player_collision_when_clear(projectile)

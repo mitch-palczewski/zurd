@@ -94,6 +94,13 @@ func wait_until(condition: Callable, seconds: float) -> bool:
 	return true
 
 
+## Waits until [param obj] is freed, like [method wait_until]. A condition that held the object
+## itself would log an error once it's freed, so this holds it weakly.
+func wait_until_freed(obj: Object, seconds: float) -> bool:
+	var ref: WeakRef = weakref(obj)
+	return await wait_until(func() -> bool: return ref.get_ref() == null, seconds)
+
+
 # ==============================================================================
 # SIGNALS AND INPUT
 # ==============================================================================
@@ -136,14 +143,19 @@ func release(action: StringName) -> void:
 # ==============================================================================
 
 ## Loads the game world for a scene test and returns it; it's freed after the test. Without
-## [param with_terrain] the terrain is left out, which saves building it. The hand-placed Zurd is
-## always left out: Zurds are temporary, and tests don't pin their behaviour.
-func load_world(with_terrain := true) -> Node3D:
+## [param with_terrain] the terrain is left out, which saves building it. Without
+## [param with_zurds] the world has no Zurds (the ZurdDirector spawns none, and any placed by hand
+## are removed), so tests that aren't about Zurds aren't disturbed by them.
+func load_world(with_terrain := true, with_zurds := false) -> Node3D:
 	var world := (load(WORLD_PATH) as PackedScene).instantiate() as Node3D
 	if not with_terrain:
 		_remove_now(world.get_node_or_null(^"Terrain"))
-	for zurd in world.find_children("*", "", true, false).filter(_is_zurd):
-		_remove_now(zurd)
+	if not with_zurds:
+		for zurd in world.find_children("*", "", true, false).filter(_is_zurd):
+			_remove_now(zurd)
+		var director := world.find_child("ZurdDirector", true, false)
+		if director:
+			director.set(&"starting_zurds", 0)
 	get_tree().root.add_child(world)
 	_worlds.append(world)
 	await get_tree().process_frame
@@ -157,6 +169,10 @@ func get_ship(world: Node) -> PlayerShip:
 
 func get_mass_manager(world: Node) -> MassManager:
 	return world.find_child("MassManager", true, false) as MassManager
+
+
+func get_zurd_director(world: Node) -> ZurdDirector:
+	return world.find_child("ZurdDirector", true, false) as ZurdDirector
 
 
 ## Spawns the object scene at [param path] the way the launcher does, without its randomness: at

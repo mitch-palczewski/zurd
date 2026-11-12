@@ -1,0 +1,18 @@
+[gd_scene format=3 uid="uid://dg40uonmum030"]
+
+[ext_resource type="Script" uid="uid://huwk53qy4upp" path="res://scenes/ui/hud/zurd_testing_hud.gd" id="1_zthud"]
+
+[node name="ZurdTestingHud" type="CanvasLayer" unique_id=1825422595]
+layer = 10
+script = ExtResource("1_zthud")
+
+[node name="Readout" type="Label" parent="." unique_id=602154154]
+offset_left = 16.0
+offset_top = 16.0
+offset_right = 420.0
+offset_bottom = 160.0
+theme_override_font_sizes/font_size = 18
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 6
+text = "ZURDS (testing)"

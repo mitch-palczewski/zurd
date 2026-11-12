@@ -5,7 +5,6 @@
 [ext_resource type="PackedScene" uid="uid://rcmqxnrsmabn" path="res://scenes/world/game_systems.tscn" id="3_gsyst"]
 [ext_resource type="PackedScene" uid="uid://cn1wrcmxj2k1a" path="res://scenes/input/input.tscn" id="4_input"]
 [ext_resource type="PackedScene" uid="uid://catisab22bqfg" path="res://scenes/characters/player/player_ship.tscn" id="5_oh0aj"]
-[ext_resource type="PackedScene" uid="uid://bxjnraf4ofxwq" path="res://scenes/characters/enemy/zurd.tscn" id="6_sxtq4"]
 
 [node name="BaseWorld" type="Node3D" unique_id=1406931788]
 script = ExtResource("1_simjs")
@@ -23,9 +22,6 @@ script = ExtResource("1_simjs")
 [node name="PlayerShip" parent="Actors/Ship" unique_id=1780835481 instance=ExtResource("5_oh0aj")]
 
 [node name="Zurds" type="Node3D" parent="Actors" unique_id=897577910]
-
-[node name="Zurd" parent="Actors/Zurds" unique_id=1857394916 instance=ExtResource("6_sxtq4")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.386339, 0, -8.351191)
 
 [node name="Objects" type="Node3D" parent="Actors" unique_id=1451920597]
 

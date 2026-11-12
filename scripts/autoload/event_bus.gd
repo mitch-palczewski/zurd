@@ -106,3 +106,30 @@ signal launch_selection_changed(station: StringName, scene: PackedScene)
 ## Fired when a station becomes active (a guest used it) or empty (no input for its idle timeout).
 @warning_ignore("unused_signal")
 signal station_activity_changed(station: StringName, active: bool)
+
+
+# Zurds (see claude/design/Zurd Core Design Doc.md, §9).
+
+## Fired when the ship launches an object, once it's in the world and tracked. Zurds count launches.
+@warning_ignore("unused_signal")
+signal object_launched(obj: RigidBody3D)
+
+
+## Fired when the Zurds' shared anger (0 to 1) changes by a noticeable amount.
+@warning_ignore("unused_signal")
+signal zurd_anger_changed(anger: float)
+
+
+## Fired when a Zurd turns Hostile ([param hostile] true) or Passive.
+@warning_ignore("unused_signal")
+signal zurd_state_changed(zurd: Node3D, hostile: bool)
+
+
+## Fired when a hit stuns a Zurd: one of its first swats, the ship ramming it, or a launched object.
+@warning_ignore("unused_signal")
+signal zurd_stunned(zurd: Node3D)
+
+
+## Fired when a swat drives a Zurd off: it flies away from the ship for a while.
+@warning_ignore("unused_signal")
+signal zurd_driven_off(zurd: Node3D)
