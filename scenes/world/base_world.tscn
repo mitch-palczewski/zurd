@@ -1,52 +1,34 @@
 [gd_scene format=3 uid="uid://8u5j2653xk4d"]
 
-[ext_resource type="Texture2D" uid="uid://bqwcx5o4ofubv" path="res://assets/_misc/citrus_orchard_road.hdr" id="1_s1lny"]
 [ext_resource type="Script" uid="uid://dacd63gayji04" path="res://scenes/world/base_world.gd" id="1_simjs"]
-[ext_resource type="PackedScene" uid="uid://catisab22bqfg" path="res://scenes/characters/player/player_ship.tscn" id="2_oh0aj"]
-[ext_resource type="PackedScene" uid="uid://bxjnraf4ofxwq" path="res://scenes/characters/enemy/zurd.tscn" id="3_sxtq4"]
-[ext_resource type="Script" uid="uid://b3fwxl5c0urfu" path="res://scenes/input/swat/mouse_swat_input.gd" id="6_a0k6d"]
-[ext_resource type="Script" uid="uid://ddsa51mwf45mx" path="res://scenes/sculpture/mass_manager.gd" id="7_mmgr"]
-[ext_resource type="PackedScene" uid="uid://4rc7r62mw8he" path="res://scenes/sculpture/sculpture_mass.tscn" id="8_smass"]
-[ext_resource type="Script" uid="uid://dbnhn3if4i3xu" path="res://scenes/sculpture/sculpture_fx.gd" id="9_sfx"]
-
-[sub_resource type="PanoramaSkyMaterial" id="PanoramaSkyMaterial_sxtq4"]
-panorama = ExtResource("1_s1lny")
-energy_multiplier = 0.4
-
-[sub_resource type="Sky" id="Sky_oh0aj"]
-sky_material = SubResource("PanoramaSkyMaterial_sxtq4")
-
-[sub_resource type="Environment" id="Environment_s1lny"]
-background_mode = 2
-sky = SubResource("Sky_oh0aj")
+[ext_resource type="PackedScene" uid="uid://bkhrrs0778r1k" path="res://scenes/world/environment.tscn" id="2_envir"]
+[ext_resource type="PackedScene" uid="uid://rcmqxnrsmabn" path="res://scenes/world/game_systems.tscn" id="3_gsyst"]
+[ext_resource type="PackedScene" uid="uid://cn1wrcmxj2k1a" path="res://scenes/input/input.tscn" id="4_input"]
+[ext_resource type="PackedScene" uid="uid://catisab22bqfg" path="res://scenes/characters/player/player_ship.tscn" id="5_oh0aj"]
+[ext_resource type="PackedScene" uid="uid://bxjnraf4ofxwq" path="res://scenes/characters/enemy/zurd.tscn" id="6_sxtq4"]
 
 [node name="BaseWorld" type="Node3D" unique_id=1406931788]
 script = ExtResource("1_simjs")
 
-[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=1743470536]
-transform = Transform3D(0.29243976, 0.8660162, -0.4055798, -0.49999997, 0.49999997, 0.70710677, 0.81515586, -0.003996223, 0.579228, 0, 0, 0)
-shadow_enabled = true
+[node name="Environment" parent="." unique_id=1975508464 instance=ExtResource("2_envir")]
 
-[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1561718671]
-environment = SubResource("Environment_s1lny")
+[node name="GameSystems" parent="." unique_id=976592037 instance=ExtResource("3_gsyst")]
 
-[node name="ObjectContainer" type="Node3D" parent="." unique_id=1341661257]
+[node name="Input" parent="." unique_id=369120188 instance=ExtResource("4_input")]
 
-[node name="PlayerShip" parent="ObjectContainer" unique_id=1780835481 instance=ExtResource("2_oh0aj")]
+[node name="Actors" type="Node3D" parent="." unique_id=891117025]
 
-[node name="Zurd" parent="ObjectContainer" unique_id=1857394916 instance=ExtResource("3_sxtq4")]
+[node name="Ship" type="Node3D" parent="Actors" unique_id=1204900820]
+
+[node name="PlayerShip" parent="Actors/Ship" unique_id=1780835481 instance=ExtResource("5_oh0aj")]
+
+[node name="Zurds" type="Node3D" parent="Actors" unique_id=897577910]
+
+[node name="Zurd" parent="Actors/Zurds" unique_id=1857394916 instance=ExtResource("6_sxtq4")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.386339, 0, -8.351191)
 
-[node name="MouseSwatInput" type="Node" parent="." unique_id=1683797661]
-script = ExtResource("6_a0k6d")
+[node name="Objects" type="Node3D" parent="Actors" unique_id=1451920597]
 
-[node name="MassManager" type="Node" parent="." unique_id=1093488417]
-script = ExtResource("7_mmgr")
-cloud_threshold_count = 20
-fuse_push = 7.15
-fuse_spin = 3.25
-mass_scene = ExtResource("8_smass")
-combine_size_mode = 1
+[node name="Masses" type="Node3D" parent="Actors" unique_id=51092563]
 
-[node name="SculptureFx" type="Node" parent="." unique_id=1577201930]
-script = ExtResource("9_sfx")
+[node name="Projectiles" type="Node3D" parent="Actors" unique_id=589341416]

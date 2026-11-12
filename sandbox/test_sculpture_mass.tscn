@@ -4,7 +4,9 @@
 
 [node name="TestSculptureMass" unique_id=1406931788 instance=ExtResource("1_world")]
 
-[node name="MassManager" parent="." unique_id=1093488417]
+[node name="MassManager" parent="GameSystems" parent_id_path=PackedInt32Array(976592037) index="0" unique_id=1093488417]
 cloud_threshold_count = 5
 hits_to_fuse = 1
 debug_labels = true
+
+[editable path="GameSystems"]

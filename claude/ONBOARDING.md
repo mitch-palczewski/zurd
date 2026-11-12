@@ -140,10 +140,13 @@ builds the C# project (needs internet once). You need to install these applicati
   which calls `SceneChanger.change_scene(...)` to go to the **main menu**
   (`scenes/ui/menus/main_menu.tscn`). The menu's *Start* button calls
   `SceneChanger.change_scene_async(...)` to load the **world**.
-- **World:** `scenes/world/base_world.gd` (`class_name BaseWorld`) holds an
-  `ObjectContainer` and, on ready, listens for `EventBus.spawn_requested` — when fired it
-  parents the spawnable under `ObjectContainer`. The playable world, `zurd_world.tscn`, is
-  `base_world.tscn` plus the procedural terrain. The world doesn't wrap: the toroidal world
+- **World:** `scenes/world/base_world.tscn` is the template every world builds on. It has
+  four parts: `Environment` (sky and light), `GameSystems` (the sculpture `MassManager` and its
+  effects), `Input` (mouse swats; the lidar later) and `Actors`, with a container each for the
+  `Ship`, `Zurds`, loose `Objects`, sculpture `Masses` and swat `Projectiles`. Its script
+  (`base_world.gd`, `class_name BaseWorld`) listens for `EventBus.spawn_requested` and puts each
+  spawned node in its container. The playable world, `zurd_world.tscn`, is `base_world.tscn`
+  plus the procedural terrain. The world doesn't wrap: the toroidal world
   was removed in November 2026, and teleportation may come later for a small part of the map.
 - **Player ship** (`scenes/characters/player/`, designed in
   `claude/design/Ship-Controls Design Doc.md`): `PlayerShip` (`class_name PlayerShip`, a
@@ -206,7 +209,7 @@ builds the C# project (needs internet once). You need to install these applicati
   also needs a catalog entry: open `data/object_catalog.tres` and press **Sync with rigid
   scenes**, then pick its group.
 - **Sculpture masses** (`scenes/sculpture/`; spec in `claude/design/`, plan in `claude/plans/archive/`): the core
-  build-up mechanic. `MassManager` (a node in `base_world.tscn` that holds all the tunables)
+  build-up mechanic. `MassManager` (a node in `game_systems.tscn` that holds all the tunables)
   watches every body in `ObjectTracker`, counts hits, and handles **fusing, merging, eating,
   and breaking off**. Physics contact callbacks only *queue* requests — the queue is drained
   in the manager's `_physics_process`, because collision shapes can't change inside a physics

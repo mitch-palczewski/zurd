@@ -51,10 +51,10 @@ Baked sizes, compressed binary: mesh 751 KB, collision shape 710 KB. The raw hei
 
 Each step is its own commit (or a few) and leaves the game playable.
 
-**Status (2026-11-11):** step 4 was built first and is done (commit `e3ed361`; root-model
+**Status (2026-11-12):** step 4 was built first and is done (commit `e3ed361`; root-model
 cleanup in `a5c7b6d`); only an Inspector check in the editor is left for Mitch. Step 1 is built
-(2026-11-11, below). Step 3 was dropped (2026-11-12). Steps 2 and 5 are not started; step 6 waits
-on its trigger. Step 2 is next, as groundwork for the Zurd overhaul
+(2026-11-11) and step 2 is built (2026-11-12; both below). Step 3 was dropped (2026-11-12). Step 5
+is not started; step 6 waits on its trigger. Next is the Zurd overhaul
 (`2026-11-11-zurd-overhaul-plan.md`).
 
 ## 1. Tests
@@ -229,6 +229,31 @@ approach), the importer (editor only; manual check in `tests/README.md`), shader
 - Physics checks use tolerances; `--fixed-fps 60` keeps runs repeatable enough.
 
 ## 2. Split `base_world.tscn`
+
+### Status (2026-11-12): built
+
+Built by editing the scene files directly with the editor closed (Mitch's choice), instead of the
+editor steps below. To get the format right, Godot first wrote a miniature of the same layout in
+a throwaway project; then every changed scene was re-saved by the engine the way the editor saves,
+and matched the hand-written files line for line (node IDs, `parent_id_path`, child indices,
+`[editable path="GameSystems"]`). The new scenes keep the moved nodes' IDs (MassManager,
+SculptureFx, the light, the environment, MouseSwatInput), and each sub-scene's root ID equals its
+instance's ID in `base_world.tscn`, as the editor makes them.
+
+- New: `environment.tscn`, `game_systems.tscn`, `scenes/input/input.tscn`; `Actors` with `Ship`,
+  `Zurds`, `Objects`, `Masses`, `Projectiles`; `base_world.gd` routes spawns by type
+  (`get_container_for`).
+- `zurd_world.tscn` and `sandbox/world/idea_large_world.tscn`: their added node moved to child
+  index 4 (the end). `sandbox/test_sculpture_mass.tscn`: its three MassManager overrides now sit
+  under the editable `GameSystems` instance.
+- `tests/scene/test_world_layout.gd`: the parts exist, each kind of spawned node lands in its
+  container, and the worlds built on the base keep their additions and the sculpture test scene's
+  overrides. All 76 tests pass (about 33 s).
+- Until the editor next opens the project, loading prints `invalid UID ... using text path
+  instead` for the three new scenes: their IDs aren't in Godot's cache yet. Opening the editor
+  registers them.
+- Left for Mitch: open the editor once, and play `zurd_world.tscn` and
+  `sandbox/test_sculpture_mass.tscn` (F6) to see they play as before.
 
 ### Target
 

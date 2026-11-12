@@ -1,0 +1,23 @@
+[gd_scene format=3 uid="uid://bkhrrs0778r1k"]
+
+[ext_resource type="Texture2D" uid="uid://bqwcx5o4ofubv" path="res://assets/_misc/citrus_orchard_road.hdr" id="1_s1lny"]
+
+[sub_resource type="PanoramaSkyMaterial" id="PanoramaSkyMaterial_sxtq4"]
+panorama = ExtResource("1_s1lny")
+energy_multiplier = 0.4
+
+[sub_resource type="Sky" id="Sky_oh0aj"]
+sky_material = SubResource("PanoramaSkyMaterial_sxtq4")
+
+[sub_resource type="Environment" id="Environment_s1lny"]
+background_mode = 2
+sky = SubResource("Sky_oh0aj")
+
+[node name="Environment" type="Node3D" unique_id=1975508464]
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=1743470536]
+transform = Transform3D(0.29243976, 0.8660162, -0.4055798, -0.49999997, 0.49999997, 0.70710677, 0.81515586, -0.003996223, 0.579228, 0, 0, 0)
+shadow_enabled = true
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1561718671]
+environment = SubResource("Environment_s1lny")

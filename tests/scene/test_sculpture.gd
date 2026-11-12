@@ -123,6 +123,12 @@ func test_growth_breaks_off_only_newly_overlapped_neighbours() -> void:
 	check_equal(mass.pieces.size(), 3, "set-up: three fused objects")
 
 	var broken_off := watch(EventBus.objects_broken_off)
+	# The velocity it leaves with, read when it breaks off: by the next physics step it may already
+	# be pushed out of the grown slab in another direction.
+	var leaving_velocities: Array[Vector3] = []
+	listen(EventBus.objects_broken_off, func(_mass: SculptureMass, objects: Array[RigidBody3D]) -> void:
+		for body in objects:
+			leaving_velocities.append(body.linear_velocity))
 	await _combine_into(slab_piece)
 	check_equal(slab_piece.parts.count(), 2, "the slab grew")
 	check(broken_off.size() == 1 and broken_off[0][0] == mass, "objects_broken_off names the mass")
@@ -130,8 +136,8 @@ func test_growth_breaks_off_only_newly_overlapped_neighbours() -> void:
 	check(bodies.size() == 1 and bodies[0].scene_file_path == THIRD, "the neighbour it grew into breaks off, and only that one")
 	check(_piece_of(mass, THIRD) == null, "it left the mass")
 	check(_piece_of(mass, OTHER) != null, "the neighbour it didn't reach stays")
-	if bodies.size() == 1 and manager.detach_speed > 0.0:
-		check(bodies[0].linear_velocity.x > 0.0, "the broken-off object is pushed away from the slab")
+	if leaving_velocities.size() == 1 and manager.detach_speed > 0.0:
+		check(leaving_velocities[0].x > 0.0, "the broken-off object leaves moving away from the slab")
 
 
 func test_bites_on_loose_objects() -> void:

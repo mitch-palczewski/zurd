@@ -1,0 +1,18 @@
+[gd_scene format=3 uid="uid://rcmqxnrsmabn"]
+
+[ext_resource type="Script" uid="uid://ddsa51mwf45mx" path="res://scenes/sculpture/mass_manager.gd" id="1_mmgr"]
+[ext_resource type="PackedScene" uid="uid://4rc7r62mw8he" path="res://scenes/sculpture/sculpture_mass.tscn" id="2_smass"]
+[ext_resource type="Script" uid="uid://dbnhn3if4i3xu" path="res://scenes/sculpture/sculpture_fx.gd" id="3_sfx"]
+
+[node name="GameSystems" type="Node" unique_id=976592037]
+
+[node name="MassManager" type="Node" parent="." unique_id=1093488417]
+script = ExtResource("1_mmgr")
+cloud_threshold_count = 20
+fuse_push = 7.15
+fuse_spin = 3.25
+mass_scene = ExtResource("2_smass")
+combine_size_mode = 1
+
+[node name="SculptureFx" type="Node" parent="." unique_id=1577201930]
+script = ExtResource("3_sfx")
