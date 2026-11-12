@@ -25,6 +25,5 @@ script = ExtResource("4_zdir")
 zurd_scene = ExtResource("5_zurd")
 starting_zurds = 8
 tolerated_mess = 17
-rush_launches = 15
-rush_window = 15.0
+tolerated_sculpture_size = 10
 testing_hud_scene = ExtResource("6_zhud")
