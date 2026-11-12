@@ -123,6 +123,14 @@ builds the C# project (needs internet once). You need to install these applicati
    control when asked → *Save*. The same screen lights up pressed controls, to test a layout.
    Choices are saved in `user://controller_config.json`. Don't add controller bindings in
    Project Settings: they would match every controller, so the game drops them at startup.
+8. **Run the tests** before committing code changes (see [../tests/README.md](../tests/README.md)).
+   One headless command, safe while the editor is open, checks the sculpture masses, flight,
+   launching, the object catalog, controllers and loading in about half a minute:
+   ```
+   <Godot console exe> --headless --fixed-fps 60 --path . -s res://tests/run_tests.gd
+   ```
+   It ends with `RESULT: PASS` (exit code 0) or lists what failed. The console exe sits next to
+   the editor exe in the Godot download. The tests never touch your `user://` settings.
 
 ---
 
@@ -226,6 +234,9 @@ builds the C# project (needs internet once). You need to install these applicati
 - **`sandbox/`:** a scratch area for playtesting (`test_sculpture_mass`, `TestLidarTouch`,
   and old terrain and map prototypes in `world/`). Not part of the shipped game: the export
   presets exclude it, and the main menu hides entries whose scene isn't in the build.
+- **`tests/`:** the automated tests ([../tests/README.md](../tests/README.md)). `unit/` tests
+  run without the game world; `scene/` tests load `zurd_world.tscn`, without its Zurd. Each
+  test extends `tests/test_case.gd` by path. The export presets exclude this folder too.
 
 ---
 
@@ -238,7 +249,8 @@ New contributors hit these — they are known and not yet fixed:
    to nothing; the overhaul will replace these scripts.
 3. **Nothing despawns.** Long sessions pile up loose objects and clouds; there's no object
    budget or session reset yet.
-4. **No automated tests are committed yet.**
+4. **The tests skip a few areas on purpose:** Zurd behaviour (temporary), visuals, the lidar C#
+   code and the GLB importer (see the tests README for the manual importer check).
 
 Style: every `.gd` and `.gdshader` file is indented with **tabs** (the GDScript style guide;
 `.editorconfig` sets it), and file and folder names are snake_case except C# files.

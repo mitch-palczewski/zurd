@@ -1,13 +1,12 @@
 [gd_resource type="Resource" script_class="ObjectCatalog" format=3 uid="uid://7s0dcfr0nrlo"]
 
-[ext_resource type="Script" path="res://scripts/objects/object_catalog.gd" id="1_catalog"]
-[ext_resource type="Script" path="res://scripts/objects/object_catalog_entry.gd" id="2_entry"]
+[ext_resource type="Script" uid="uid://bvg00jj1hhomb" path="res://scripts/objects/object_catalog.gd" id="1_catalog"]
+[ext_resource type="Script" uid="uid://d28e4ydkto5wj" path="res://scripts/objects/object_catalog_entry.gd" id="2_entry"]
 [ext_resource type="PackedScene" uid="uid://dpqwpgb74ljan" path="res://scenes/objects/rigid/Archway_rigid.tscn" id="archway"]
 [ext_resource type="PackedScene" uid="uid://b017sf5law80l" path="res://scenes/objects/rigid/Arch_01_rigid.tscn" id="arch_01"]
 [ext_resource type="PackedScene" uid="uid://k26ut7r8lc7u" path="res://scenes/objects/rigid/BrickWall_01_rigid.tscn" id="brickwall_01"]
 [ext_resource type="PackedScene" uid="uid://vl37qn7elgme" path="res://scenes/objects/rigid/BT_02_rigid.tscn" id="bt_02"]
 [ext_resource type="PackedScene" uid="uid://btyg1rk645ow3" path="res://scenes/objects/rigid/BT_07_rigid.tscn" id="bt_07"]
-[ext_resource type="PackedScene" uid="uid://cntj2ltnkc23t" path="res://scenes/objects/rigid/BT_08-h_rigid.tscn" id="bt_08_h"]
 [ext_resource type="PackedScene" uid="uid://c0l4sxyhvphf4" path="res://scenes/objects/rigid/BT_08_rigid.tscn" id="bt_08"]
 [ext_resource type="PackedScene" uid="uid://c0kits825fg8q" path="res://scenes/objects/rigid/BT_09_rigid.tscn" id="bt_09"]
 [ext_resource type="PackedScene" uid="uid://xa4byhkjhb5e" path="res://scenes/objects/rigid/BT_10_rigid.tscn" id="bt_10"]
@@ -76,10 +75,6 @@ scene = ExtResource("bt_02")
 [sub_resource type="Resource" id="Resource_bt_07"]
 script = ExtResource("2_entry")
 scene = ExtResource("bt_07")
-
-[sub_resource type="Resource" id="Resource_bt_08_h"]
-script = ExtResource("2_entry")
-scene = ExtResource("bt_08_h")
 
 [sub_resource type="Resource" id="Resource_bt_08"]
 script = ExtResource("2_entry")
@@ -296,4 +291,4 @@ scene = ExtResource("zuzgen")
 [resource]
 script = ExtResource("1_catalog")
 groups = Array[StringName]([&"Animals", &"Figures", &"Architecture", &"Geometry", &"Nature", &"Unsorted"])
-entries = Array[ExtResource("2_entry")]([SubResource("Resource_archway"), SubResource("Resource_arch_01"), SubResource("Resource_brickwall_01"), SubResource("Resource_bt_02"), SubResource("Resource_bt_07"), SubResource("Resource_bt_08_h"), SubResource("Resource_bt_08"), SubResource("Resource_bt_09"), SubResource("Resource_bt_10"), SubResource("Resource_bull_01"), SubResource("Resource_bull_02"), SubResource("Resource_burntboy_01"), SubResource("Resource_bush_stock_01"), SubResource("Resource_carpet_01"), SubResource("Resource_cavallo_01"), SubResource("Resource_crocodile_01"), SubResource("Resource_eagle_01"), SubResource("Resource_fribourg"), SubResource("Resource_gargoyle_01"), SubResource("Resource_gargoyle_02"), SubResource("Resource_gargoyle_03"), SubResource("Resource_gargoyle_04"), SubResource("Resource_gargoyle_05"), SubResource("Resource_geo_stock_02"), SubResource("Resource_geo_stock_03"), SubResource("Resource_geo_stock_04"), SubResource("Resource_geo_stock_05"), SubResource("Resource_geo_stock_06"), SubResource("Resource_geo_stock_07"), SubResource("Resource_leone_01"), SubResource("Resource_leone_02"), SubResource("Resource_leone_03"), SubResource("Resource_medallion_01"), SubResource("Resource_misc_01"), SubResource("Resource_misc_02"), SubResource("Resource_misc_04"), SubResource("Resource_misc_05"), SubResource("Resource_pathway_01"), SubResource("Resource_piling_01"), SubResource("Resource_piling_02"), SubResource("Resource_pillar_01"), SubResource("Resource_rochefort_01"), SubResource("Resource_shield_man"), SubResource("Resource_spire_stock_01"), SubResource("Resource_spire_stock_02"), SubResource("Resource_stairs_01"), SubResource("Resource_stammheim_01"), SubResource("Resource_texture_form_01"), SubResource("Resource_tounge_01"), SubResource("Resource_tree_stock_01"), SubResource("Resource_zuzgen")])
+entries = Array[ExtResource("2_entry")]([SubResource("Resource_archway"), SubResource("Resource_arch_01"), SubResource("Resource_brickwall_01"), SubResource("Resource_bt_02"), SubResource("Resource_bt_07"), SubResource("Resource_bt_08"), SubResource("Resource_bt_09"), SubResource("Resource_bt_10"), SubResource("Resource_bull_01"), SubResource("Resource_bull_02"), SubResource("Resource_burntboy_01"), SubResource("Resource_bush_stock_01"), SubResource("Resource_carpet_01"), SubResource("Resource_cavallo_01"), SubResource("Resource_crocodile_01"), SubResource("Resource_eagle_01"), SubResource("Resource_fribourg"), SubResource("Resource_gargoyle_01"), SubResource("Resource_gargoyle_02"), SubResource("Resource_gargoyle_03"), SubResource("Resource_gargoyle_04"), SubResource("Resource_gargoyle_05"), SubResource("Resource_geo_stock_02"), SubResource("Resource_geo_stock_03"), SubResource("Resource_geo_stock_04"), SubResource("Resource_geo_stock_05"), SubResource("Resource_geo_stock_06"), SubResource("Resource_geo_stock_07"), SubResource("Resource_leone_01"), SubResource("Resource_leone_02"), SubResource("Resource_leone_03"), SubResource("Resource_medallion_01"), SubResource("Resource_misc_01"), SubResource("Resource_misc_02"), SubResource("Resource_misc_04"), SubResource("Resource_misc_05"), SubResource("Resource_pathway_01"), SubResource("Resource_piling_01"), SubResource("Resource_piling_02"), SubResource("Resource_pillar_01"), SubResource("Resource_rochefort_01"), SubResource("Resource_shield_man"), SubResource("Resource_spire_stock_01"), SubResource("Resource_spire_stock_02"), SubResource("Resource_stairs_01"), SubResource("Resource_stammheim_01"), SubResource("Resource_texture_form_01"), SubResource("Resource_tounge_01"), SubResource("Resource_tree_stock_01"), SubResource("Resource_zuzgen")])

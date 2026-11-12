@@ -4,7 +4,7 @@ extends Node
 ## that controller only (Ship-Controls Design Doc §6.3), so the 8BitDo and the arcade kit can be
 ## connected at once with different layouts. Keyboard and mouse bindings stay in Project Settings.[br]
 ## A controller gets the profile last chosen for it (remembered by its GUID), else a profile that lists
-## its name, else the standard gamepad. Choices and learned profiles are saved in [constant CONFIG_PATH].
+## its name, else the standard gamepad. Choices and learned profiles are saved in [member config_path].
 
 ## Fired when a controller connects or disconnects, or a controller's profile or bindings change.
 signal devices_changed
@@ -12,6 +12,10 @@ signal devices_changed
 const CONFIG_PATH := "user://controller_config.json"
 ## The profile choice for a controller the game ignores.
 const OFF := &"off"
+
+## Where choices and learned profiles are saved: [constant CONFIG_PATH]. The test runner points it at a
+## temporary file before this node is ready, so a test run never reads or writes the real one.
+var config_path: String = CONFIG_PATH
 
 ## Every profile by id, in menu order.
 var profiles: Dictionary[StringName, ControllerProfile] = {}
@@ -25,8 +29,7 @@ var _learned: Dictionary[StringName, bool] = {}
 
 
 func _ready() -> void:
-	for profile in ControllerProfile.create_built_in():
-		profiles[profile.id] = profile
+	_reset_profiles()
 	_load_config()
 	_remove_project_joypad_events()
 	Input.joy_connection_changed.connect(_on_joy_connection_changed)
@@ -110,6 +113,27 @@ func disconnect_device(device: int) -> void:
 	devices_changed.emit()
 
 
+## Saves to and loads from [param path] from now on. Starts over from the built-in profiles and what
+## [param path] holds, and gives the connected controllers their remembered (or default) profiles.
+## Tests use it to work on a file of their own.
+func set_config_path(path: String) -> void:
+	config_path = path
+	_assignments.clear()
+	_learned.clear()
+	_reset_profiles()
+	_load_config()
+	for device in _devices:
+		_devices[device]["profile"] = _choose_profile(_devices[device])
+	_bind_all()
+	devices_changed.emit()
+
+
+func _reset_profiles() -> void:
+	profiles.clear()
+	for profile in ControllerProfile.create_built_in():
+		profiles[profile.id] = profile
+
+
 func _on_joy_connection_changed(device: int, connected: bool) -> void:
 	if connected:
 		connect_device(device, Input.get_joy_name(device), Input.get_joy_guid(device))
@@ -176,11 +200,11 @@ func _is_joypad(event: InputEvent) -> bool:
 
 
 func _load_config() -> void:
-	if not FileAccess.file_exists(CONFIG_PATH):
+	if not FileAccess.file_exists(config_path):
 		return
 	var json := JSON.new()
-	if json.parse(FileAccess.get_file_as_string(CONFIG_PATH)) != OK or not json.data is Dictionary:
-		push_warning("Controllers: %s isn't valid (%s); using the built-in profiles." % [CONFIG_PATH, json.get_error_message()])
+	if json.parse(FileAccess.get_file_as_string(config_path)) != OK or not json.data is Dictionary:
+		push_warning("Controllers: %s isn't valid (%s); using the built-in profiles." % [config_path, json.get_error_message()])
 		return
 	var data: Dictionary = json.data
 	var assignments = data.get("assignments", {})
@@ -192,7 +216,7 @@ func _load_config() -> void:
 		for profile_id in learned:
 			var profile: ControllerProfile = profiles.get(StringName(profile_id))
 			if profile == null or not learned[profile_id] is Dictionary:
-				push_warning("Controllers: %s has an unknown profile '%s'; it's ignored." % [CONFIG_PATH, profile_id])
+				push_warning("Controllers: %s has an unknown profile '%s'; it's ignored." % [config_path, profile_id])
 				continue
 			profile.load_dict(learned[profile_id])
 			_learned[profile.id] = true
@@ -205,8 +229,8 @@ func _save_config() -> void:
 	var learned := {}
 	for profile_id in _learned:
 		learned[String(profile_id)] = profiles[profile_id].to_dict()
-	var file := FileAccess.open(CONFIG_PATH, FileAccess.WRITE)
+	var file := FileAccess.open(config_path, FileAccess.WRITE)
 	if file == null:
-		push_error("Controllers: can't write %s (%s)." % [CONFIG_PATH, error_string(FileAccess.get_open_error())])
+		push_error("Controllers: can't write %s (%s)." % [config_path, error_string(FileAccess.get_open_error())])
 		return
 	file.store_string(JSON.stringify({"assignments": assignments, "profiles": learned}, "\t"))

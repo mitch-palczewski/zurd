@@ -51,14 +51,42 @@ Baked sizes, compressed binary: mesh 751 KB, collision shape 710 KB. The raw hei
 Each step is its own commit (or a few) and leaves the game playable.
 
 **Status (2026-11-11):** step 4 was built first and is done (commit `e3ed361`; root-model
-cleanup in `a5c7b6d`); only an Inspector check in the editor is left for Mitch. Step 1 is revised
-and approved (2026-11-11). Steps 2, 3 and 5 are not started; step 6 waits on its trigger. The
-object-colliders experiment (`2026-11-11-object-colliders-plan.md`) runs after step 1.
+cleanup in `a5c7b6d`); only an Inspector check in the editor is left for Mitch. Step 1 is built
+(2026-11-11, below). Steps 2, 3 and 5 are not started; step 6 waits on its trigger. The
+object-colliders experiment (`2026-11-11-object-colliders-plan.md`) is next.
 
 ## 1. Tests
 
 *Revised and approved 2026-11-11* for the object catalog, convex-hull colliders and Controllers,
 with Mitch's answers (Decisions below).
+
+### Status (2026-11-11): built
+
+73 tests (about 830 checks) in 12 files pass in about 25 s. Planted failures were all caught: a
+failed check, a script error partway through a test, a hung test, an unexpected error, a test
+with no checks, a write to a guarded file, and a run over its time limit. Each gave exit code 1.
+The first run of the catalog test found a real break: `BT_08-h`'s files had been deleted but its
+catalog entry stayed, so the catalog (and the ship) failed to load. The entry is removed.
+
+Changes from the design below, found while building:
+
+- **No `--quit-after`.** It counts frames, and without a world loaded, frames run tens of
+  thousands a second, so it cut runs short. The runner stops itself after 10 real minutes
+  instead, from a `_process` that keeps running even if a test's coroutine stops.
+- **Errors fail tests.** The runner registers a Godot `Logger` and fails a test for any error,
+  script error or shader error it logged without allowing it (`allow_error`). Warnings don't fail.
+- **A stuck test fails after its frame limit and at least 20 real seconds**, and the run goes
+  on. Waits (`wait_until`) also allow real time, because threaded loading runs in real time
+  while `--fixed-fps` frames run faster.
+- **The runner prints one line per test** (not per check), plus each failed check with what was
+  expected.
+- **Contacts are simulated by emitting the bodies' own contact signals** (`body_entered`,
+  `body_shape_entered`), the same entry points physics uses, so sculpture cases are exact. One
+  test uses real collisions.
+- **Controllers:** `config_path` is a variable the runner sets before the autoload is ready, so
+  the real file is never even read; `set_config_path(path)` reloads from another file for tests.
+- The test files are those listed below, with `test_ship.gd` split into `test_ship_flight.gd`
+  and `test_launch_station.gd`.
 
 ### Why, and what it costs
 
@@ -121,10 +149,11 @@ tests/
 - Test files say `extends "res://tests/test_case.gd"`, by path rather than class name, so a new
   test runs without the editor first registering its class.
 - One command, in game mode (safe while the editor is open):
-  `<Godot console exe> --headless --fixed-fps 60 --quit-after 36000 --path . -s res://tests/run_tests.gd`.
+  `<Godot console exe> --headless --fixed-fps 60 --path . -s res://tests/run_tests.gd`.
   An optional filter after `--` runs one folder or file (`-- unit`, `-- test_object_parts`).
-  `--fixed-fps 60` makes simulated minutes run in seconds; `--quit-after` stops a hung run.
-  Write the output to a file rather than piping it, or it arrives only at exit.
+  `--fixed-fps 60` makes simulated minutes run in seconds; the runner stops a hung run itself
+  (Status above: `--quit-after` was dropped). Write the output to a file rather than piping it,
+  or it arrives only at exit.
 - Each scene test loads its own fresh world and frees it after, so tests don't leak into each
   other.
 - Add `tests/*` to both export presets' `exclude_filter` (`sandbox/*,tests/*`).
