@@ -1,7 +1,8 @@
 extends "res://tests/test_case.gd"
 
 ## ZurdAnger: the Zurds' shared anger (Zurd Core Design Doc §3). It rises when objects are added
-## past the limits or Zurds are attacked, and falls once the players stop.
+## past the limits or Zurds are attacked, holds while the players launch under the limits, and falls
+## once they stop.
 
 
 func test_starts_calm_and_stays_calm_without_provocation() -> void:
@@ -43,18 +44,15 @@ func test_anger_falls_at_the_decay_rate() -> void:
 	check_near(start - anger.value, anger.decay_rate * 2.0, 0.0001, "anger falls by decay_rate per second")
 
 
-func test_rushing_adds_anger() -> void:
+func test_launching_under_the_limit_holds_anger() -> void:
 	var anger := ZurdAnger.new()
-	for i in anger.rush_launches:
+	anger.value = 0.5
+	for i in 20:
 		anger.on_launch(1)
-		anger.update(0.5)
-	check_equal(anger.value, 0.0, "up to rush_launches launches in the window add nothing")
-	anger.on_launch(1)
-	check_near(anger.value, anger.rush_anger, 0.0001, "each launch past the limit adds rush_anger")
-	anger.value = 0.0
-	anger.update(anger.rush_window + 0.1)
-	anger.on_launch(1)
-	check_equal(anger.value, 0.0, "launches older than the window no longer count")
+		anger.update(anger.calm_delay * 0.5)
+	check_equal(anger.value, 0.5, "launching under the limit, however fast, neither raises nor lowers the anger")
+	anger.update(anger.calm_delay + 1.0)
+	check(anger.value < 0.5, "once the launches stop, it falls")
 
 
 func test_only_sculpture_growth_beyond_the_limit_adds_anger() -> void:

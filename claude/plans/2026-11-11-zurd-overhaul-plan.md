@@ -45,7 +45,7 @@ playtest checklist below.
 
 Three Zurds drift around near the ship, ignoring the players. If a Zurd happens to drift into an
 object, it nibbles it slowly. As loose objects pile up past 15, as a sculpture grows past 15
-objects, or as players launch in a rush, a shared anger rises. The Zurds nearest the mess turn
+objects, or as Zurds get swatted, a shared anger rises; launching under the limits only holds it. The Zurds nearest the mess turn
 Hostile: tinted red, faster, and hunting loose objects, then large sculptures. Two swats stun a
 Zurd and the third drives it far away for 20 s. Ramming it with the ship counts as a swat. Hitting
 it with a launched object only stuns it, and then it eats that object. When the players calm
@@ -68,8 +68,8 @@ unit-tested. Each event adds a fixed amount:
   part added beyond `tolerated_sculpture_size` adds `sculpture_anger`. The director compares each
   mass's part count with the last one it saw, so a merge followed by a combine isn't counted
   twice.
-- **Rushing:** each launch that makes more than `rush_launches` launches within `rush_window`
-  (game time) adds `rush_anger`.
+- **Launches under the limits hold the anger** (changed 2026-11-12 after the first play; the
+  rush rule was dropped): they reset the calm timer without adding anything.
 - **Attacks:** each swat, ram or launched-object hit on a Zurd (`zurd_stunned`,
   `zurd_driven_off`) adds `attack_anger`.
 - **Falling:** once nothing has added anger for `calm_delay`, it falls by `decay_rate` per second.
@@ -84,8 +84,6 @@ Starting values (exports on the director, tuned at playtests):
 | `mess_anger` | 0.05 | Per launch while over the limit |
 | `tolerated_sculpture_size` | 15 | Parts before growth adds anger (hard cut-off) |
 | `sculpture_anger` | 0.03 | Per part added beyond the limit |
-| `rush_launches`, `rush_window` | 5, 10 s | More than 5 launches in 10 s is rushing |
-| `rush_anger` | 0.1 | Per launch past the rush limit |
 | `attack_anger` | 0.1 | Per swat, ram or object hit |
 | `calm_delay` | 3 s | Quiet time before anger falls |
 | `decay_rate` | 0.05 /s | Full anger to calm in 20 s |
@@ -180,8 +178,7 @@ re-saves each changed scene and the result is compared with the hand-written fil
 - Loose objects at the limit add nothing; over it, anger rises in proportion.
 - A sculpture at the size limit adds nothing; over it, anger rises in proportion; clouds don't
   count.
-- More than `rush_launches` in the window adds `rush_spike` per extra launch; launches older than
-  the window drop out.
+- Launching under the limit, however fast, holds the anger; once launches stop, it falls.
 - Anger stays within 0…1. The Hostile count is 0 at anger 0, all at anger 1.
 
 **`tests/scene/test_zurds.gd`** (in the world, with Zurds):
@@ -196,7 +193,7 @@ re-saves each changed scene and the result is compared with the hand-written fil
   back Passive after the away time with its count reset.
 - The ship ramming a Zurd counts as a swat.
 - A launched object hitting a Zurd stuns it without counting, and the Zurd then eats it.
-- A launch burst from the ship's launcher raises the anger.
+- Launching from the ship's launcher under the limit holds the anger, then it falls.
 
 The `tests/README.md` rule "don't pin Zurd behaviour" ends: this behaviour is designed.
 
@@ -205,7 +202,7 @@ The `tests/README.md` rule "don't pin Zurd behaviour" ends: this behaviour is de
 - Does 15 loose objects feel fair to a new player still learning the controls?
 - Do players notice that scattering objects is what turns the Zurds Hostile?
 - Is 15 parts the right size for a "large" sculpture?
-- Does the launch burst feel like a fair trigger, not a punishment for normal play?
+- Does holding the anger while launching feel right (the Zurds don't calm down mid-build)?
 - How fast should anger rise and fall?
 - Do stun, stun and drive-off feel good with mouse swats? Is the health bar readable?
 - Do players discover "hit it with an object, then swat it"?
@@ -224,6 +221,83 @@ The `tests/README.md` rule "don't pin Zurd behaviour" ends: this behaviour is de
 7. **Delete** the old spawner, the old target component and the hand-placed Zurd.
 8. *(Added while building)* **Passive Zurds nibble only loose objects,** so small sculptures stay
    safe, as the design doc's goal 2 asks.
+
+## Iteration 1.1: Zurds, the terrain and each other
+
+*Draft 2026-11-12, from the first playtest: "the Zurds get stuck on terrain", "Zurds overlap
+one another often; only one Zurd should go at a target at a time", and "it should be loose object
+count + mass count that contribute to the Zurds' anger". Waiting for approval.*
+
+### The mess counts sculptures too
+
+0. **Mess = loose objects + sculptures.** A launch adds anger when loose objects plus sculptures
+   (each sculpture counts one; clouds don't) are over `tolerated_mess`. Scattering many small
+   sculptures is then mess too, which pushes players toward one sculpture. The director passes
+   that count to `ZurdAnger.on_launch`; the testing HUD shows it as "mess N / 15 (loose L,
+   sculptures S)". A test checks that sculptures count toward the limit.
+
+### What's wrong (measured)
+
+A headless minute with 8 Zurds over the real terrain:
+
+- **Half the wander destinations are at or below the ground** (488 of 960 samples). Wander legs go
+  up to 40% up or down from the Zurd, with no check against the terrain, and the Zurds start near
+  the ship's height, which hovers 4 m above the ground.
+- So Zurds fly into hillsides and **grind along them**: 17% to 96% of the minute within 4 m of the
+  ground (one Zurd pressed against it the whole time). They don't stop; they slide.
+- The obstacle check is **one 5 m ray straight ahead**: 0.17 s of warning at 30 m/s.
+
+### Fix
+
+The terrain is a height field (no caves or overhangs), so the Zurds need terrain awareness, not a
+navigation mesh:
+
+1. **Destinations above the ground:** every wander destination is lifted to at least
+   `ground_clearance` (*proposed:* 8 m) above the terrain under it (a downward ray).
+2. **Terrain following:** while flying, a Zurd checks the ground under it (a downward ray every
+   few frames). Below `ground_clearance` it climbs, like the ship's own ground clearance.
+3. **Looking ahead by speed:** the forward ray reaches `look_ahead_time` (*proposed:* 1 s) ahead at
+   the current speed, at least `avoidance_distance`. When it hits the ground, the Zurd steers
+   **up** over it rather than only sideways.
+4. **Food on the ground still works:** hunting aims at the target itself, so a Zurd may come down
+   to an object lying on a hill; terrain following then applies only between targets, not in the
+   last few metres (*proposed:* within `arrival_radius` of the target).
+
+All three settings are exports on the movement component, for tuning.
+
+### One Zurd per target, and personal space
+
+Two causes, two fixes:
+
+5. **Targets are claimed.** The director keeps who's going after what. A Zurd choosing a target
+   skips objects another Zurd has claimed (and, for a sculpture, the pieces claimed by others,
+   so two Zurds can work on one sculpture from different pieces). A claim is released when the
+   Zurd eats the object, drops it (swat, stun, calming down) or is freed. A launched object that
+   stuns a Zurd is claimed by that Zurd. If everything in reach is claimed, a Hostile Zurd takes
+   the next nearest unclaimed mess, or wanders.
+6. **Zurds keep apart.** Zurds don't collide with each other today (they don't check the enemy
+   layer), so they fly through one another. Rather than making them collide (which jams Zurds
+   against each other), each Zurd steers away from other Zurds within `personal_space`
+   (*proposed:* 8 m), more strongly the closer they are. A pair spawned together drifts a little
+   apart and stays near each other.
+
+### Tests
+
+- A scene test with the terrain: 8 Zurds wander for a minute; less than a set share of the time
+  (*proposed:* 5%) within 2 m of the ground, and no wander destination below the ground.
+- Two Hostile Zurds and one loose object: only one goes after it; the other takes another
+  object or wanders. With a sculpture, they go after different pieces.
+- A claim is released when the object is eaten, or the Zurd is swatted or calms down; the other
+  Zurd can then take it.
+- Zurds placed on top of each other drift apart to at least most of `personal_space` within a
+  few seconds.
+- Existing Zurd tests still pass (they run without terrain).
+
+### Files
+
+`scenes/characters/enemy/zurd_movement_component.gd` (destinations, ground check, look-ahead,
+keeping apart), `zurd_director.gd` (claims), `zurd_sight_component.gd` (skipping claimed targets),
+`zurd.gd` (claiming and releasing), `tests/scene/test_zurds.gd`. No scene edits.
 
 ## Later iterations (from the idea bank, when playtests ask for them)
 

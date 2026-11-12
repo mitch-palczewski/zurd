@@ -28,14 +28,9 @@ extends Node
 @export var tolerated_sculpture_size: int = 15
 ## Added per part a sculpture gains beyond the limit.
 @export var sculpture_anger: float = 0.03
-## Launches allowed within the rush window before each further one adds anger.
-@export var rush_launches: int = 5
-@export var rush_window: float = 10.0
-## Added per launch past the rush limit.
-@export var rush_anger: float = 0.1
 ## Added per swat, ram or launched-object hit on a Zurd.
 @export var attack_anger: float = 0.1
-## Seconds without provocation before anger starts to fall.
+## Seconds without a launch or a provocation before anger starts to fall.
 @export var calm_delay: float = 3.0
 ## How fast anger falls, per second.
 @export var decay_rate: float = 0.05
@@ -129,9 +124,6 @@ func _apply_settings() -> void:
 	anger.mess_anger = mess_anger
 	anger.tolerated_sculpture_size = tolerated_sculpture_size
 	anger.sculpture_anger = sculpture_anger
-	anger.rush_launches = rush_launches
-	anger.rush_window = rush_window
-	anger.rush_anger = rush_anger
 	anger.attack_anger = attack_anger
 	anger.calm_delay = calm_delay
 	anger.decay_rate = decay_rate

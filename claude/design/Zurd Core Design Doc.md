@@ -21,7 +21,9 @@ The Zurds exist to shape how players play. Each rule below serves one of these g
 4. **Objectives drive progress.** Players work through objectives that grow in difficulty, size
    and shape. The first one (a cloud of 5 objects) can be finished without any trouble from the
    Zurds.
-5. **Build methodically, not in a rush.** Many launches in quick succession anger the Zurds.
+5. **Build methodically, not in a rush.** Launching doesn't anger the Zurds by itself, but while
+   players keep launching the Zurds don't calm down either, and launching fast soon scatters more
+   objects than they tolerate.
 6. **Some mess is fine.** New players arrive often in a gallery and need time to learn the
    controls, so a reasonable number of loose objects is tolerated. A player clearly launching
    objects everywhere gets noticed.
@@ -34,7 +36,7 @@ There is no lose state. The Zurds create pressure, not failure.
 | --- | --- |
 | Loose object | A launched object that isn't part of a sculpture (mass). |
 | Sculpture | A sculpture mass (Sculpture-Mass Design Doc). Its size is its object count. |
-| Mess | How many loose objects are in the world, beyond what's tolerated. |
+| Mess | Loose objects plus sculptures: each loose object counts one, and each sculpture counts one (clouds don't count). Decided 2026-11-12, so scattering many small sculptures is mess too. |
 | Anger | One value for the whole world, from 0 to 1, that all Zurds share. It rises with mess, large sculptures and rapid launching, and falls over time. |
 | Passive / Hostile | The two states a Zurd can be in. |
 | Sight | The space a Zurd sees, where it finds things to eat. |
@@ -48,18 +50,19 @@ value, worked out once for the world (by a single "Zurd director").
 
 **Anger rises when the players provoke the Zurds** (decided 2026-11-12):
 
-- **Adding mess:** each object launched while the loose objects are over the **tolerated mess**
-  (*proposed:* 15) adds anger.
+- **Adding mess:** each object launched while the mess (loose objects plus sculptures) is over
+  the **tolerated mess** (*proposed:* 15) adds anger.
 - **Growing a large sculpture:** each object added to a sculpture beyond the **tolerated
   sculpture size** (*proposed:* 15 objects, a hard cut-off) adds anger. Smaller sculptures add
   nothing.
-- **Rushing:** each launch past *proposed* 5 within 10 seconds adds anger.
 - **Attacking Zurds:** each swat, ram, or launched object that hits a Zurd adds anger.
 
-**Anger falls** once the players stop provoking the Zurds: when no objects are added past the
+**Launching under the limits holds the anger** (decided 2026-11-12): it neither raises nor lowers
+it. Rapid launching on its own no longer angers the Zurds (the earlier rush rule was dropped).
+
+**Anger falls** once the players stop: when nothing is launched, no objects are added past the
 limits and the Zurds are left alone for a few seconds (*proposed:* 3 s), it falls steadily. A mess
-that just sits there doesn't keep angering them; adding to it does. A calm, methodical player
-brings the Zurds back down.
+that just sits there doesn't keep angering them; adding to it does.
 
 **The ramp:** the tolerated amounts are generous at the start and tighten as objectives are
 completed (section 7). During the first objective the Zurds stay Passive whatever happens.
@@ -148,10 +151,8 @@ All *proposed*, tuned in playtests.
 | Mess anger | Anger added per object launched while over the mess limit | 0.05 |
 | Tolerated sculpture size | Objects in a sculpture before it angers the Zurds (hard cut-off) | 15 |
 | Sculpture anger | Anger added per object added beyond the sculpture size limit | 0.03 |
-| Rush | Launches in the window before each launch adds anger | 5 in 10 s |
-| Rush anger | Anger added per launch past the rush limit | 0.1 |
 | Attack anger | Anger added per swat, ram or object hit on a Zurd | 0.1 |
-| Calm delay | Time without provocation before anger starts to fall | 3 s |
+| Calm delay | Time without a launch or a provocation before anger starts to fall | 3 s |
 | Anger decay | How fast anger falls once it does | 0.05 per second |
 | Hostile cooldown | Least time a Zurd stays Hostile | 10 s |
 | Nibble distance | How close a Passive Zurd must drift to an object to nibble it | 3 m |

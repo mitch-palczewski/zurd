@@ -48,7 +48,6 @@ func test_passive_zurd_nibbles_only_what_it_drifts_into() -> void:
 
 func test_mess_turns_the_nearest_zurd_hostile() -> void:
 	await _setup()
-	director.anger.rush_launches = 1000
 	director.anger.mess_anger = 0.3
 	var near := _spawn_still_zurd(AREA)
 	var far := _spawn_still_zurd(AREA + Vector3(0.0, 0.0, 250.0))
@@ -190,15 +189,18 @@ func test_launched_object_stuns_then_gets_eaten() -> void:
 	check(ate and eaten.any(func(event: Array) -> bool: return event[0] == zurd), "after the stun, the Zurd eats that object")
 
 
-func test_a_launch_burst_angers_the_zurds() -> void:
+func test_launching_under_the_limit_holds_the_anger() -> void:
 	await _setup()
 	var pilot: LaunchStation = ship.get_node(^"Stations/PilotLaunch")
-	for i in director.anger.rush_launches:
+	director.anger.value = 0.5
+	# Launch for longer than the calm delay, as fast as the button allows.
+	for i in ceili(director.anger.calm_delay * 2.0 / pilot.cooldown_time):
 		await tap(pilot.fire_action)
-		await wait_seconds(pilot.cooldown_time + 0.05)
-	check_equal(director.anger.value, 0.0, "launching up to the rush limit doesn't anger the Zurds")
-	await tap(pilot.fire_action)
-	check_near(director.anger.value, director.anger.rush_anger, 0.01, "the launch past it does")
+		await wait_seconds(pilot.cooldown_time)
+	check(director.get_loose_objects().size() <= director.anger.tolerated_mess, "set-up: still under the mess limit")
+	check_near(director.anger.value, 0.5, 0.001, "launching under the limit neither raises nor lowers the anger")
+	await wait_seconds(director.anger.calm_delay + 1.0)
+	check(director.anger.value < 0.5, "once the launches stop, it falls")
 
 
 ## Loads the world, with its starting Zurds when [param with_zurds], and keeps the ship hovering

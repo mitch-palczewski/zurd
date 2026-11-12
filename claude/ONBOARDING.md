@@ -176,8 +176,8 @@ builds the C# project (needs internet once). You need to install these applicati
 - **Zurds** (`scenes/characters/enemy/`, designed in `claude/design/Zurd Core Design Doc.md`):
   they push players to build sculptures instead of scattering objects. A `ZurdDirector` (in
   `GameSystems`) keeps one shared **anger**: it rises when objects are launched past a mess limit,
-  sculptures grow past a size limit, launches come in a rush, or Zurds are attacked, and falls
-  once the players calm down. The angrier, the more Zurds turn **Hostile** (nearest the mess
+  sculptures grow past a size limit, or Zurds are attacked; launching under the limits holds it;
+  it falls once the players stop. The angrier, the more Zurds turn **Hostile** (nearest the mess
   first) and hunt loose objects, then large sculptures; **Passive** Zurds wander near home and
   only nibble a loose object they drift into. Swats stun a Zurd, and the third drives it away
   for a while; ramming counts as a swat; a launched object only stuns it, then it eats that

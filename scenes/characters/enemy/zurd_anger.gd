@@ -2,9 +2,10 @@ class_name ZurdAnger
 extends RefCounted
 
 ## The Zurds' shared anger, from 0 to 1 (Zurd Core Design Doc §3). It rises when the players add
-## objects past what the Zurds tolerate, rush their launches, or attack Zurds, and falls once they
-## stop. A mess that just sits there doesn't keep raising it. Plain rules with no scene, driven by
-## the [ZurdDirector], so they're unit-tested on their own.
+## objects past what the Zurds tolerate or attack Zurds. Launching under the limits neither raises
+## nor lowers it: it holds. It falls once the players stop launching and leave the Zurds alone. A
+## mess that just sits there doesn't keep raising it. Plain rules with no scene, driven by the
+## [ZurdDirector], so they're unit-tested on their own.
 
 ## Loose objects in the world before launches add anger.
 var tolerated_mess: int = 15
@@ -14,15 +15,9 @@ var mess_anger: float = 0.05
 var tolerated_sculpture_size: int = 15
 ## Added per part a sculpture gains beyond [member tolerated_sculpture_size].
 var sculpture_anger: float = 0.03
-## Launches allowed within [member rush_window] before each further one adds anger.
-var rush_launches: int = 5
-## Seconds over which launches count as a rush.
-var rush_window: float = 10.0
-## Added per launch past [member rush_launches].
-var rush_anger: float = 0.1
 ## Added per swat, ram or launched-object hit on a Zurd.
 var attack_anger: float = 0.1
-## Seconds without anything adding anger before it starts to fall.
+## Seconds without a launch or anything adding anger before it starts to fall.
 var calm_delay: float = 3.0
 ## How fast anger falls, per second, once it does.
 var decay_rate: float = 0.05
@@ -30,31 +25,23 @@ var decay_rate: float = 0.05
 ## The anger now, from 0 to 1.
 var value: float = 0.0
 
-## Game time ([method update] adds up its deltas), so rushes are measured in game time.
-var _time: float = 0.0
-var _launch_times: Array[float] = []
 var _calm_time: float = 0.0
 
 
-## Advances [param delta] seconds. Anger falls once nothing has added to it for [member calm_delay].
+## Advances [param delta] seconds. Anger falls once nothing has held or raised it for
+## [member calm_delay].
 func update(delta: float) -> void:
-	_time += delta
 	_calm_time += delta
 	if _calm_time >= calm_delay:
 		value = maxf(value - decay_rate * delta, 0.0)
 
 
 ## The ship launched an object; [param loose_count] loose objects are in the world now, counting it.
+## Over the mess limit it adds anger; under it, it only holds the anger where it is.
 func on_launch(loose_count: int) -> void:
-	_launch_times.append(_time)
-	while not _launch_times.is_empty() and _launch_times[0] <= _time - rush_window:
-		_launch_times.pop_front()
-	var added := 0.0
+	_calm_time = 0.0
 	if loose_count > tolerated_mess:
-		added += mess_anger
-	if _launch_times.size() > rush_launches:
-		added += rush_anger
-	_add(added)
+		_add(mess_anger)
 
 
 ## A sculpture gained [param parts_added] parts and now has [param size]. Only the parts beyond
