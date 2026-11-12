@@ -110,4 +110,4 @@ Headless import check (only if a Godot binary is on PATH): `godot --headless --p
 - **Lidar touches don't reach gameplay yet.** Only `MouseSwatInput` emits `EventBus.swat_requested` / `pointer_moved`. The bridge (`LidarManager`, step 4 of the lidar plan) waits until a lidar is set up against a screen or projection.
 - **Zurds are temporary** (see Enemy above). Known issues for the overhaul: swatting has no minimum scale, so a Zurd can shrink to zero; scale tweens aren't stopped before a new one starts.
 - **Model files aren't snake_case** (`Arch_01.glb`), and the importer copies those names into every generated scene, mesh and material. Rename them in the editor, renaming their generated files too (steps in `assets/models/README.md`).
-- **Nothing despawns:** loose objects float forever and clouds never leave. There is no object budget or session reset yet.
+- **Nothing despawns:** loose objects float forever and clouds never leave. There is no object budget yet (hardening step 3). The world deliberately never resets between groups (decided 2026-11-11).

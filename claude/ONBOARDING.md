@@ -248,7 +248,7 @@ New contributors hit these — they are known and not yet fixed:
 2. **Zurds are temporary.** Expect odd behaviour, such as a Zurd swatted many times shrinking
    to nothing; the overhaul will replace these scripts.
 3. **Nothing despawns.** Long sessions pile up loose objects and clouds; there's no object
-   budget or session reset yet.
+   budget yet (hardening step 3). The world never resets between groups, by design.
 4. **The tests skip a few areas on purpose:** Zurd behaviour (temporary), visuals, the lidar C#
    code and the GLB importer (see the tests README for the manual importer check).
 

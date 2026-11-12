@@ -224,7 +224,7 @@ The first build changes only the ship's controls and effects.
 1. **Final button layout:** how many launch stations, where they stand, and which buttons the pilot has.
 2. **Boost:** none for now. If playtests show the ship is too slow, try a hold-forward cruise speed before adding a button.
 3. **Sidestep:** whether to add it, and on which control (5.2).
-4. **Reset between groups:** whether the world resets when every station has been empty for a while.
+4. ~~**Reset between groups**~~ Decided 2026-11-11: the world does **not** reset between groups. It keeps running; an object budget keeps a long day bounded (hardening plan step 3).
 
 ## 11. Hardware
 

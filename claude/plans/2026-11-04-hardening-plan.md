@@ -1,4 +1,4 @@
-# Plan: Hardening (tests, world split, object budget and session reset, object catalog, terrain, sandbox)
+# Plan: Hardening (tests, world split, object budget, object catalog, terrain, sandbox)
 
 ## Context
 
@@ -21,7 +21,8 @@ hand-written scenes, unused files removed.
   sculpture system's side of eating (`EventBus.eat_requested` → `MassManager`).
 - One hand-placed Zurd while the sculpture system is tested; the spawner stays out.
 - The session layer (HUD, attract mode) comes later. Build so it fits: one session node owns
-  resets and the budget, and the HUD will listen to the EventBus only.
+  the budget, and the HUD will listen to the EventBus only. No automatic world reset (decided
+  2026-11-11): the world keeps running between groups.
 
 ### Measured (2026-11-04, headless, Godot 4.7.2)
 
@@ -43,7 +44,7 @@ Baked sizes, compressed binary: mesh 751 KB, collision shape 710 KB. The raw hei
 2. **Split `base_world.tscn`.** Moved ahead of the budget (third on the original list) so the
    session node and the actor containers are built once, in their final place. The tests from
    step 1 guard the scene surgery.
-3. **Object budget and session reset.**
+3. **Object budget** (the session reset was dropped 2026-11-11).
 4. **Object catalog.**
 5. **Terrain bake.**
 6. **Sandbox removal**, when the 1000 × 1000 map idea is done. Independent of the rest.
@@ -199,8 +200,8 @@ profile choice, learned layout or reset). The lidar config is C# and not tested 
 | `test_ship_flight.gd` | Port the ship-controls build's checks (`archive/2026-11-01-ship-controls-plan.md`, Verification): top speed, coast to hover, turn rate, hover drift bounds, ground clearance, lowest altitude and ceiling |
 | `test_launch_station.gd` | Steps and wraps through the catalog in list order; preview shows on the first press and hides `preview_hide_delay` after the last, with `launch_selection_changed` sending the scene then null; Launch fires the selected object while shown, random ones after; cooldown; side offset; launch speeds; each launched object carries `catalog_group`, is registered with `ObjectTracker` and loses its player collision exception once clear; `station_activity_changed` goes active on input and empty after `idle_timeout` |
 
-Step 2 adds a world-layout test (each spawned kind in its container); step 3 adds budget and
-reset tests.
+Step 2 adds a world-layout test (each spawned kind in its container); step 3 adds budget
+tests.
 
 **Left out:** Zurd behaviour (temporary), the lidar C# code (needs a build; has its own scratch
 approach), the importer (editor only; manual check in `tests/README.md`), shaders and effects
@@ -273,13 +274,17 @@ too. Flattening it into one world scene is a choice for step 6.
   container, and that the sculpture test scene's overrides still apply.
 - `zurd_world.tscn` and `sandbox/test_sculpture_mass.tscn` play as before.
 
-## 3. Object budget and session reset
+## 3. Object budget
+
+*Changed 2026-11-11:* **no session reset.** Mitch decided against reloading the world after a few
+minutes without input. The world keeps running between groups; the budget keeps a long day
+bounded. (Zurds calming down when nobody plays is a Zurd design question, not a world reset.)
 
 ### Design
 
 `GameSession` (`scenes/world/game_session.gd`, `class_name GameSession`, a Node in
-`game_systems.tscn`) owns both. Nothing else frees objects for budget or reset reasons, so the
-HUD and attract mode can hook in later through its signals.
+`game_systems.tscn`) owns the budget. Nothing else frees objects for budget reasons, so the HUD
+can hook in later through the EventBus.
 
 **Budget**
 - **Loose objects:** `max_loose_objects`, starting at 150 (tune on the exhibit PC). GameSession
@@ -296,27 +301,11 @@ HUD and attract mode can hook in later through its signals.
   alone doesn't stop a Zurd that already has it as its target). `MassManager._is_loose()` and
   `_is_fuse_partner()` reject it too, because a fuse queued in the same frame could still use it.
 
-**Reset**
-- GameSession tracks which stations are active from `EventBus.station_activity_changed`.
-  Stations start empty.
-- When no station is active, a `reset_after_idle` timer starts: 90 s, after StationActivity's
-  own 30 s `idle_timeout`, so about 2 minutes without input. Any station going active cancels it.
-- On timeout it resets only if something happened this session (an object was launched or a
-  station was used), so an untouched world isn't reloaded over and over.
-- A reset reloads the current world: `SceneChanger.change_scene_async(get_tree().current_scene.scene_file_path)`.
-  A reload is guaranteed clean, with no per-system reset code to keep in step with the Zurd
-  overhaul or new systems. It costs one loading screen: about 0.4 s today, less after step 5.
-- New EventBus signals for the HUD and attract mode: `session_started` (GameSession is ready) and
-  `session_resetting` (just before the reload), documented like the others.
-
 ### Done when (tests, with short times and `--fixed-fps`)
 
 - 160 launches leave 150 loose objects, the oldest gone first; fused objects are untouched.
 - A despawning object never fuses or combines, and a Zurd targeting it lets go.
 - The 9th cloud fades out the 1st.
-- A reset fires only after every station has been empty for the full time; activity cancels
-  it; an untouched world isn't reset; after a reset, `ObjectTracker` is empty and the world is
-  fresh.
 
 ## 4. Object catalog
 
@@ -529,7 +518,6 @@ references.
 | `scenes/world/base_world.tscn`, `scenes/world/base_world.gd` | 2 | Composition of sub-scenes, actor containers, spawn routing |
 | `sandbox/test_sculpture_mass.tscn` | 2 | Editable children, overrides set again |
 | `scenes/world/game_session.gd` | 3 | New |
-| `scripts/autoload/event_bus.gd` | 3 | `session_started`, `session_resetting` |
 | `scripts/autoload/object_tracker.gd`, `scenes/sculpture/mass_manager.gd` | 3 | Reject despawning objects |
 | `scenes/sculpture/sculpture_mass.gd` | 3 | `fade_out(time)` |
 | `scripts/objects/object_catalog.gd`, `scripts/objects/object_catalog_entry.gd`, `data/object_catalog.tres` | 4 | New |
@@ -544,9 +532,9 @@ references.
 
 Defaults are in place, so building can start before these are answered.
 
-1. **Budget numbers:** 150 loose objects, 8 clouds, reset after about 2 minutes without input.
+1. **Budget numbers:** 150 loose objects, 8 clouds.
    They'll be tuned on the exhibit PC with the frame rate logged.
-2. **What guests see during a reset:** the loading screen (default) or a fade to black?
+2. ~~**What guests see during a reset**~~ Answered 2026-11-11: there is no automatic reset.
 3. **Should masses have a cap too?** Default: no. Each mass leaves as a cloud at the threshold.
 4. ~~**Catalog names and icons:** fill them in now, or with the launch station display?~~
    Answered 2026-11-10: neither. The preview shows the model itself; entries hold a scene and a
