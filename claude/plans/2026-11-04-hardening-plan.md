@@ -50,17 +50,67 @@ Baked sizes, compressed binary: mesh 751 KB, collision shape 710 KB. The raw hei
 
 Each step is its own commit (or a few) and leaves the game playable.
 
+**Status (2026-11-11):** step 4 was built first and is done (commit `e3ed361`; root-model
+cleanup in `a5c7b6d`); only an Inspector check in the editor is left for Mitch. Step 1 is revised
+and approved (2026-11-11). Steps 2, 3 and 5 are not started; step 6 waits on its trigger. The
+object-colliders experiment (`2026-11-11-object-colliders-plan.md`) runs after step 1.
+
 ## 1. Tests
 
-### Design
+*Revised and approved 2026-11-11* for the object catalog, convex-hull colliders and Controllers,
+with Mitch's answers (Decisions below).
 
-`tests/` at the project root (delete the empty, untracked `test/` folder):
+### Why, and what it costs
+
+The sculpture system has many rules that depend on each other (fuse, combine, merge, grow and
+knock off, bite, break off, cloud), and every build so far was checked by a scratch harness
+that was thrown away afterwards: the catalog build alone ran 63 checks that no longer exist.
+Committed tests keep those checks, so a later change (step 2's scene surgery, step 3's
+despawning, the Zurd overhaul, a new model) that breaks an old rule fails a command instead of
+surfacing in a playtest.
+
+Mitch doesn't want to maintain tests. So they're built to need little upkeep, and Claude does
+the upkeep:
+
+- **Tests check behaviour, not tuning.** Expected values are read from the nodes' exports
+  (`max_speed`, `preview_hide_delay`, `hits_to_fuse`, ...), so changing a number in the
+  Inspector never breaks a test. A test fails only when a rule from a design doc changes.
+- **Nothing temporary or visual is tested:** no Zurd behaviour, no shaders or effects, no
+  screenshots, no exact frame timings (physics checks use tolerances).
+- **Claude runs the suite before every code commit**, and when a change alters a tested rule on
+  purpose, updates the test in the same change. A new feature's plan lists its new checks, which
+  replace the throwaway harness. This goes in `CLAUDE.md` (Workflow).
+- **A flaky test gets fixed or deleted**, never re-run until it passes.
+
+### Decisions (2026-11-11)
+
+- Include every test that guards a rule worth keeping (list below), leaving out what is
+  temporary, visual, editor-only or C#.
+- `test_box_overlap.gd` becomes `test_piece_geometry.gd`. Reviewing the code: growth
+  break-off isn't box *or* hull. `get_shape_bounds` turns a box or a hull into a box in the
+  shape's space, `get_boxes` places those boxes at a size in global space, and
+  `get_overlap` / `get_box_overlap` measure the deepest pair. All three run on every growth, so
+  all three are tested; the hull path is the one every real object takes now.
+- Ship checks split in two: flight (physics, tolerances) and launch station (catalog stepping,
+  preview timing, launching). They set up differently and fail for different reasons.
+- Controllers get tests: the per-device binding and the saved config are easy to break and
+  hard to notice without the controllers plugged in.
+- Under 2 minutes for the whole run.
+- **No test may touch Mitch's `user://` files** (below).
+- No CI for now. The suite runs locally before each commit; GitHub Actions would need Godot
+  and the .NET SDK downloaded on every run and its own upkeep. Worth it only once several people
+  commit.
+- Delete `scenes/world/toroidal_world.tscn` (unused; only archived plans name it, and they stay
+  unedited) and the empty, untracked `test/` folder in this step.
+
+### Design
 
 ```
 tests/
   run_tests.gd    extends SceneTree. Names no project classes: those would compile before the
-                  autoloads exist and stay broken for the run. Finds every tests/**/test_*.gd,
-                  runs each, prints PASS/FAIL per check and a summary, exits 1 on any failure.
+                  autoloads exist and stay broken for the run. Guards the user files (below),
+                  finds every tests/**/test_*.gd, runs each, prints PASS/FAIL per check and a
+                  summary, exits 1 on any failure.
   test_case.gd    extends Node. check(cond, what), check_near(a, b, tolerance, what),
                   wait_frames(n), wait_physics(n), load_world() (instances zurd_world.tscn).
   unit/           tests that need no world
@@ -75,35 +125,77 @@ tests/
   An optional filter after `--` runs one folder or file (`-- unit`, `-- test_object_parts`).
   `--fixed-fps 60` makes simulated minutes run in seconds; `--quit-after` stops a hung run.
   Write the output to a file rather than piping it, or it arrives only at exit.
-- Add `tests/*` to both export presets' `exclude_filter`.
+- Each scene test loads its own fresh world and frees it after, so tests don't leak into each
+  other.
+- Add `tests/*` to both export presets' `exclude_filter` (`sandbox/*,tests/*`).
 
-### First tests
+### Keeping `user://` untouched
+
+The only game code that writes `user://` is `Controllers` (`controller_config.json`, on every
+profile choice, learned layout or reset). The lidar config is C# and not tested here.
+
+- `Controllers` gets `set_config_path(path)`: it switches the file and reloads from it, starting
+  from the built-in profiles. `CONFIG_PATH` stays the default, so the game is unchanged.
+- First thing in a run, the runner points `Controllers` at a file in the OS temp folder (empty),
+  so every test, including the main menu's controller list, saves there and starts from the
+  built-in profiles whatever this PC has saved. The temp file is deleted at the end.
+- **Guard:** at start and end the runner records whether `user://controller_config.json` and
+  `user://lidar_config.json` exist and their contents' hash, plus `data/object_catalog.tres`.
+  Any change fails the run with a loud message. Godot still writes its own logs to
+  `user://logs/`, as on every play.
+- Catalog sync saves the catalog file. Tests sync only catalogs made in memory, which never save
+  (sync saves only a catalog loaded from `res://`).
+
+### Tests
+
+**unit/**
 
 | File | Checks |
 | --- | --- |
-| `unit/test_object_parts.gd` | Sizes in both modes (3 and 4 make ≈ 4.5 or 7), absorb order, `remove_last` restores the exact size, `is_bigger_than`, `of()` builds a record from the shape's scale |
-| `unit/test_box_overlap.gd` | `MassPiece.get_box_overlap`: apart is negative, overlapping gives the depth, rotated boxes, touching ≈ 0 |
-| `unit/test_scene_changer.gd` | A missing path and a non-scene file both fire `load_failed`, close the loading screen and re-enable the menu; a real async load switches scene |
-| `unit/test_main_menu.gd` | The controls label comes from the input map; entries whose scene is missing are skipped |
-| `scene/test_sculpture.gd` | Port the combining build's checks (`archive/2026-11-04-combining-objects-plan.md`, Verification): fusing, combining (loose, fused, after a merge), growth break-off, bites (loose, fused, through `eat_requested`), break-off keeps parts, cloud counting by parts, same-batch follow |
-| `scene/test_ship.gd` | Port the ship-controls build's checks (`archive/2026-11-01-ship-controls-plan.md`, Verification): top speed, coast to hover, turn rate, hover drift bounds, launch speeds, ground clearance |
+| `test_object_parts.gd` | Sizes in both modes (3 and 4 make ≈ 4.5 or 7), absorb order, `remove_last` restores the exact size, `is_bigger_than`, `of()` builds a record from the shape's scale |
+| `test_piece_geometry.gd` | `get_shape_bounds`: a box, a hull's bounding box, other shapes empty. `get_boxes`: scales around the piece's origin, hull by its bounds, skips shapes with no volume. `get_box_overlap`: apart is negative, overlap gives the depth, rotated boxes, touching ≈ 0, parallel edges. `get_overlap`: the deepest pair |
+| `test_object_catalog.gd` | Even picks over 10,000 draws, null entries never picked, `size` / `get_entry` over usable entries only, `find_entry` / `get_group` / `group_of`, empty catalog. Sync on an in-memory catalog reports a planted null entry, duplicate, unknown group and a scene that breaks the collider contract. **The real catalog:** `check()` finds no problems and every scene in `scenes/objects/rigid/` is listed (catches a model imported but not synced, or an import that breaks the collider contract) |
+| `test_object_tracker.gd` | Register, unregister, freed objects drop out, `is_trackable`, closest and random picks |
+| `test_controller_profile.gd` | `to_dict` / `load_dict` round trip; the standard gamepad binds every ship action |
+| `test_controllers.gd` | Fake controllers each get a profile, bound to their own device only (two at once); Off unbinds; the choice and a learned layout survive save and reload; reset restores the built-in layout; a broken config file warns and falls back; controller events in Project Settings are dropped |
+| `test_scene_changer.gd` | A missing path and a non-scene file both fire `load_failed`, close the loading screen and re-enable the menu; a real async load switches scene |
+| `test_main_menu.gd` | The controls label comes from the input map; entries whose scene is missing are skipped; a fake controller shows in the controller list and picking a profile applies it |
+| `test_project_files.gd` | Every `.tscn` and `.tres` under `scenes/` and `data/` loads with no missing dependency (C# lidar scenes skipped); the input actions the code reads exist |
 
-The checks used to verify the review passes on 2026-11-04 (controls label, both load-failure
-paths, UIDs, loading screen layer, menu skipping) are the starting point for the unit tests.
+**scene/**
+
+| File | Checks |
+| --- | --- |
+| `test_sculpture.gd` | Port the combining build's checks (`archive/2026-11-04-combining-objects-plan.md`, Verification): fusing, combining (loose, fused, after a merge), growth break-off, bites (loose, fused, through `eat_requested`), break-off keeps parts, cloud counting by parts, same-batch follow. Plus: `catalog_group` on the piece while fused and on the new body after break-off |
+| `test_ship_flight.gd` | Port the ship-controls build's checks (`archive/2026-11-01-ship-controls-plan.md`, Verification): top speed, coast to hover, turn rate, hover drift bounds, ground clearance, lowest altitude and ceiling |
+| `test_launch_station.gd` | Steps and wraps through the catalog in list order; preview shows on the first press and hides `preview_hide_delay` after the last, with `launch_selection_changed` sending the scene then null; Launch fires the selected object while shown, random ones after; cooldown; side offset; launch speeds; each launched object carries `catalog_group`, is registered with `ObjectTracker` and loses its player collision exception once clear; `station_activity_changed` goes active on input and empty after `idle_timeout` |
+
+Step 2 adds a world-layout test (each spawned kind in its container); step 3 adds budget and
+reset tests.
+
+**Left out:** Zurd behaviour (temporary), the lidar C# code (needs a build; has its own scratch
+approach), the importer (editor only; manual check in `tests/README.md`), shaders and effects
+(placeholders), the Controller Setup screen's UI (`test_controllers.gd` covers what it saves).
 
 ### Done when
 
 - One command runs every test in under 2 minutes and exits non-zero on any failure.
-- `CLAUDE.md` "How to run" documents it, replacing "There is no CLI build or test loop".
+- It passes on the current code, and a check broken on purpose makes it fail (then restored).
+- The `user://` guard passes, and a planted write to the real config path trips it (then
+  removed).
+- `CLAUDE.md`: "How to run" documents the command, replacing "There is no CLI build or test
+  loop"; the Workflow section says to run it before code commits and keep tests in step; the
+  "No committed tests" known gap goes. `ONBOARDING.md` likewise.
+- `toroidal_world.tscn` and `test/` are gone; nothing references them outside the archive.
 
 ### Edge cases
 
-- Leave C# out of the first tests: they would need the C# project built first.
-- Physics checks use tolerances; `--fixed-fps 60` keeps runs repeatable enough.
 - The importer only runs in the editor, so it can't be tested in game mode. `tests/README.md`
   describes the manual check used on 2026-11-04: copy the project to a scratch folder, add test
   models in each `assets/models/` folder, run `--headless --import` there, inspect the output.
-- Later, optionally: CI on GitHub Actions. It needs the .NET SDK and a C# build before Godot runs.
+- A new `class_name` script isn't known in game mode until the editor rescans (on window focus).
+  With the editor closed, run `--headless --import` once first.
+- Physics checks use tolerances; `--fixed-fps 60` keeps runs repeatable enough.
 
 ## 2. Split `base_world.tscn`
 
@@ -402,6 +494,8 @@ references.
 | --- | --- | --- |
 | `tests/run_tests.gd`, `tests/test_case.gd`, `tests/README.md`, `tests/unit/*`, `tests/scene/*` | 1 | New |
 | `export_presets.cfg` | 1 | Exclude `tests/*` |
+| `scripts/autoload/controllers.gd` | 1 | `set_config_path(path)`, so tests never write the real config |
+| `scenes/world/toroidal_world.tscn`, `test/` | 1 | Delete (unused) |
 | `scenes/world/environment.tscn`, `scenes/world/game_systems.tscn`, `scenes/input/input.tscn` | 2 | New, saved from branches of `base_world.tscn` |
 | `scenes/world/base_world.tscn`, `scenes/world/base_world.gd` | 2 | Composition of sub-scenes, actor containers, spawn routing |
 | `sandbox/test_sculpture_mass.tscn` | 2 | Editable children, overrides set again |
