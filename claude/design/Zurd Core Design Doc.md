@@ -75,6 +75,17 @@ completed (section 7). During the first objective the Zurds stay Passive whateve
 - Sight decides **what a Zurd goes after**, not whether it's angry (that's the shared anger).
 - A Hostile Zurd prefers, in order: loose objects it can see, then the largest sculpture it can
   see (only if that sculpture is above the tolerated size).
+- **One Zurd per target** (decided 2026-11-12): a Zurd claims what it goes after, and other Zurds
+  leave it alone. Several Zurds can work on one sculpture, each on a different object of it. A
+  claim ends when the object is eaten, or the Zurd is swatted, stunned or calms down.
+
+## 4b. Getting Around
+
+- **Personal space:** Zurds keep apart; one closer than *proposed* 8 m is pushed away, more
+  strongly the closer it is. A pair stays near each other without overlapping.
+- **The terrain:** between targets, Zurds keep at least *proposed* 8 m above the ground and look
+  about a second ahead, climbing over hills rather than grinding along them. In the last few
+  metres to a target they may come down, so food lying on a hill can still be eaten.
 
 ## 5. The Two States
 
@@ -163,6 +174,9 @@ All *proposed*, tuned in playtests.
 | Hit cooldown | Least time between two hits that count | 0.4 s |
 | Away time | How long a driven-off Zurd stays away | 20 s |
 | Retreat distance | How far from the ship a driven-off Zurd goes | *proposed:* 300 m |
+| Personal space | Distance Zurds keep from each other | 8 m |
+| Ground clearance | Least height above the ground between targets | 8 m |
+| Look-ahead | How far ahead a Zurd looks for obstacles, in time at its speed | 1 s |
 | Difficulty step | How much the tolerances tighten per completed objective | *playtest* |
 
 ## 9. Signals (EventBus)

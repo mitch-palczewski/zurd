@@ -19,15 +19,16 @@ func can_see(from: Vector3, point: Vector3) -> bool:
 
 ## A Hostile Zurd's target: the nearest loose object in sight; else the nearest object of the
 ## largest sculpture in sight with more than [param min_sculpture_size] parts; else the nearest of
-## those anywhere, because all Zurds know the world. Null when there's nothing to go after.
-func find_hostile_target(from: Vector3, min_sculpture_size: int) -> Node3D:
+## those anywhere, because all Zurds know the world. Only objects [param is_free] accepts count (it
+## skips those another Zurd has claimed). Null when there's nothing to go after.
+func find_hostile_target(from: Vector3, min_sculpture_size: int, is_free := Callable()) -> Node3D:
 	var loose_in_sight: Node3D = null
 	var loose_in_sight_distance := INF
 	var loose_anywhere: Node3D = null
 	var loose_anywhere_distance := INF
 	var large_sculptures: Dictionary[SculptureMass, Array] = {}
 	for obj in ObjectTracker.active_objects:
-		if not ObjectTracker.is_trackable(obj):
+		if not ObjectTracker.is_trackable(obj) or (is_free.is_valid() and not is_free.call(obj)):
 			continue
 		var piece := obj as MassPiece
 		if piece:
@@ -60,12 +61,15 @@ func find_hostile_target(from: Vector3, min_sculpture_size: int) -> Node3D:
 
 
 ## The nearest loose object within [param reach] of [param mouth] (measured to its colliders), for a
-## Passive Zurd to nibble. Sculptures are left alone. Null when there's none.
-func find_nibble_target(mouth: Vector3, reach: float) -> Node3D:
+## Passive Zurd to nibble, among those [param is_free] accepts. Sculptures are left alone. Null when
+## there's none.
+func find_nibble_target(mouth: Vector3, reach: float, is_free := Callable()) -> Node3D:
 	var nearest: Node3D = null
 	var nearest_gap := INF
 	for obj in ObjectTracker.active_objects:
 		if not ObjectTracker.is_trackable(obj) or not obj is RigidBody3D or obj is SculptureMass:
+			continue
+		if is_free.is_valid() and not is_free.call(obj):
 			continue
 		var gap := get_gap(mouth, obj as RigidBody3D)
 		if gap <= reach and gap < nearest_gap:

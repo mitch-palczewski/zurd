@@ -3,7 +3,8 @@ extends Node
 
 ## Moves a Zurd (Zurd Core Design Doc §5, §6): wandering around its home, hunting a target, holding
 ## its mouth on what it eats, hovering while it nibbles, the knock-back of a stun, and retreating
-## from the ship. It steers around the environment and knocks around the objects it bumps into.
+## from the ship. Between targets it keeps clear of the terrain (a height field, so climbing is
+## enough) and of other Zurds, and it knocks around the objects it bumps into.
 
 @export_group("Avoidance")
 @export var avoidance_distance: float = 5.0
@@ -29,6 +30,23 @@ extends Node
 @export var wander_timeout: float = 8.0
 ## How much of a wander leg may go up or down (0 = level only, 1 = any direction).
 @export_range(0.0, 1.0) var wander_vertical: float = 0.4
+
+@export_group("Terrain")
+## Least height a Zurd keeps above the ground (the avoidance layers) while flying between targets;
+## its wander destinations are kept at least this high too. Off in the last approach to a target,
+## so it can still reach food lying on a hill.
+@export var ground_clearance: float = 8.0
+## How far ahead a Zurd looks for obstacles, in seconds at its speed (at least avoidance_distance).
+## When what's ahead is ground, it steers up over it.
+@export var look_ahead_time: float = 1.0
+## Seconds between checks of the ground under the Zurd.
+@export var ground_check_interval: float = 0.1
+
+@export_group("Personal Space")
+## Other Zurds closer than this push the Zurd away, more strongly the closer they are.
+@export var personal_space: float = 8.0
+## Speed of that push when another Zurd is right on top of it.
+@export var separation_speed: float = 6.0
 
 @export_group("Retreat")
 ## Speed of a Zurd flying away after being driven off.
@@ -65,6 +83,9 @@ var _bob_time: float = 0.0
 var _visual_base_position: Vector3
 var _visual_base_rotation: Vector3
 
+var _ground_check_timer: float = 0.0
+var _ground_height: float = -INF
+
 
 func _ready() -> void:
 	if visual_root:
@@ -96,7 +117,8 @@ func process_hunt(actor: CharacterBody3D, target: Node3D, delta: float, speed: f
 	if _get_forward_direction(actor).dot(direction) < 0.5:
 		factor = min_arrival_speed
 	var top_speed := hunting_speed if speed < 0.0 else speed
-	_steer_and_move(actor, direction, top_speed * factor, hunting_turn_speed, delta)
+	# Within the arrival radius it may come down to the target, even on a hillside.
+	_steer_and_move(actor, direction, top_speed * factor, hunting_turn_speed, delta, distance > arrival_radius)
 	_process_bobbing(actor, delta)
 
 
@@ -158,21 +180,71 @@ func _pick_wander_target(actor: CharacterBody3D, home: Vector3, home_radius: flo
 		# Head back toward home, to a spot near it.
 		var near_home := Vector3(randf_range(-1.0, 1.0), randf_range(-1.0, 1.0) * wander_vertical, randf_range(-1.0, 1.0))
 		_wander_target = home + near_home * home_radius * 0.3
-		return
-	var direction := Vector3(randf_range(-1.0, 1.0), randf_range(-1.0, 1.0) * wander_vertical, randf_range(-1.0, 1.0))
-	if direction.is_zero_approx():
-		direction = Vector3.FORWARD
-	var target := actor.global_position + direction.normalized() * randf_range(min_wander_distance, max_wander_distance)
-	_wander_target = home + (target - home).limit_length(home_radius)
+	else:
+		var direction := Vector3(randf_range(-1.0, 1.0), randf_range(-1.0, 1.0) * wander_vertical, randf_range(-1.0, 1.0))
+		if direction.is_zero_approx():
+			direction = Vector3.FORWARD
+		var target := actor.global_position + direction.normalized() * randf_range(min_wander_distance, max_wander_distance)
+		_wander_target = home + (target - home).limit_length(home_radius)
+	# Never into the ground: lift the destination clear of the terrain under it.
+	_wander_target.y = maxf(_wander_target.y, _get_ground_height(actor, _wander_target) + ground_clearance)
 
 
-func _steer_and_move(actor: CharacterBody3D, desired_dir: Vector3, move_speed: float, turn_rate: float, delta: float) -> void:
-	var final_dir := _get_avoidance_direction(actor, desired_dir)
-	_turn_towards(actor, final_dir.normalized(), turn_rate, delta)
+## Turns toward [param desired_dir] and moves forward at [param move_speed]. With
+## [param keep_clear] it also climbs to keep its ground clearance and steers around what's ahead.
+## Other Zurds nearby always push it away.
+func _steer_and_move(actor: CharacterBody3D, desired_dir: Vector3, move_speed: float, turn_rate: float, delta: float, keep_clear: bool = true) -> void:
+	var direction := desired_dir
+	if keep_clear:
+		direction = _get_avoidance_direction(actor, _keep_ground_clearance(actor, direction, delta))
+	_turn_towards(actor, direction.normalized(), turn_rate, delta)
 	_level_roll(actor, delta)
-	var target_velocity := _get_forward_direction(actor) * move_speed
+	var target_velocity := _get_forward_direction(actor) * move_speed + _get_separation(actor)
 	actor.velocity = actor.velocity.lerp(target_velocity, _get_exp_decay_weight(10.0, delta))
 	_move(actor, delta)
+
+
+## [param direction], tipped upward when the Zurd is below its ground clearance: the lower it is, the
+## steeper it climbs.
+func _keep_ground_clearance(actor: CharacterBody3D, direction: Vector3, delta: float) -> Vector3:
+	_ground_check_timer -= delta
+	if _ground_check_timer <= 0.0:
+		_ground_check_timer = ground_check_interval
+		_ground_height = _get_ground_height(actor, actor.global_position)
+	var height := actor.global_position.y - _ground_height
+	if height >= ground_clearance:
+		return direction
+	var climbing := direction
+	climbing.y = maxf(climbing.y, clampf(1.0 - height / ground_clearance, 0.0, 1.0))
+	return climbing.normalized()
+
+
+## The height of the ground (the avoidance layers) under [param point], or -INF where there's none.
+func _get_ground_height(actor: CharacterBody3D, point: Vector3) -> float:
+	var from := Vector3(point.x, point.y + 1000.0, point.z)
+	var query := PhysicsRayQueryParameters3D.create(from, from + Vector3.DOWN * 3000.0, avoid_obstacle_mask)
+	query.exclude = [actor.get_rid()]
+	var hit := actor.get_world_3d().direct_space_state.intersect_ray(query)
+	return hit["position"].y if not hit.is_empty() else -INF
+
+
+## A push away from other Zurds inside the personal space: up to [member separation_speed], stronger
+## the closer they are.
+func _get_separation(actor: CharacterBody3D) -> Vector3:
+	if personal_space <= 0.0:
+		return Vector3.ZERO
+	var push := Vector3.ZERO
+	for node in actor.get_tree().get_nodes_in_group(Zurd.GROUP):
+		var other := node as Node3D
+		if other == null or other == actor:
+			continue
+		var offset := actor.global_position - other.global_position
+		var distance := offset.length()
+		if distance >= personal_space:
+			continue
+		var away := offset / distance if distance > 0.01 else Vector3(randf_range(-1.0, 1.0), 0.0, randf_range(-1.0, 1.0)).normalized()
+		push += away * (1.0 - distance / personal_space)
+	return push.limit_length(1.0) * separation_speed
 
 
 func _move(actor: CharacterBody3D, delta: float) -> void:
@@ -231,19 +303,24 @@ func _level_roll(actor: Node3D, delta: float) -> void:
 	_set_rotation_keep_scale(actor, leveled)
 
 
+## [param desired_dir], turned away from an obstacle ahead: the ray reaches [member look_ahead_time]
+## ahead at the current speed. Ground-like obstacles (facing up) are climbed over.
 func _get_avoidance_direction(actor: CharacterBody3D, desired_dir: Vector3) -> Vector3:
 	var space_state := actor.get_world_3d().direct_space_state
 	var forward := _get_forward_direction(actor)
 	var ray_origin := actor.global_position
 	var scale_factor := actor.global_basis.get_scale().x
-	var ray_end := ray_origin + (forward * avoidance_distance * scale_factor)
-	var query := PhysicsRayQueryParameters3D.create(ray_origin, ray_end, avoid_obstacle_mask)
+	var reach := maxf(avoidance_distance * scale_factor, actor.velocity.length() * look_ahead_time)
+	var query := PhysicsRayQueryParameters3D.create(ray_origin, ray_origin + forward * reach, avoid_obstacle_mask)
 	query.exclude = [actor.get_rid()]
 	var result := space_state.intersect_ray(query)
 	if result.is_empty():
 		return desired_dir
 	var collision_normal: Vector3 = result.normal
-	return (desired_dir + collision_normal * avoidance_strength).normalized()
+	var avoided := desired_dir + collision_normal * avoidance_strength
+	if collision_normal.y > 0.3:
+		avoided += Vector3.UP * avoidance_strength
+	return avoided.normalized()
 
 
 func _get_forward_direction(actor: Node3D) -> Vector3:

@@ -192,15 +192,99 @@ func test_launched_object_stuns_then_gets_eaten() -> void:
 func test_launching_under_the_limit_holds_the_anger() -> void:
 	await _setup()
 	var pilot: LaunchStation = ship.get_node(^"Stations/PilotLaunch")
+	# Only launching under the limits is tested here. The launched objects stop at the same spot and
+	# may pile into one sculpture, whose growth past the size limit would rightly add anger; keep
+	# both limits out of reach so the pile can't.
+	director.anger.tolerated_mess = 1000
+	director.anger.tolerated_sculpture_size = 1000
 	director.anger.value = 0.5
 	# Launch for longer than the calm delay, as fast as the button allows.
 	for i in ceili(director.anger.calm_delay * 2.0 / pilot.cooldown_time):
 		await tap(pilot.fire_action)
 		await wait_seconds(pilot.cooldown_time)
-	check(director.get_loose_objects().size() <= director.anger.tolerated_mess, "set-up: still under the mess limit")
+	check(director.get_mess_count() <= director.anger.tolerated_mess, "set-up: still under the mess limit")
 	check_near(director.anger.value, 0.5, 0.001, "launching under the limit neither raises nor lowers the anger")
 	await wait_seconds(director.anger.calm_delay + 1.0)
 	check(director.anger.value < 0.5, "once the launches stop, it falls")
+
+
+func test_sculptures_count_as_mess() -> void:
+	await _setup()
+	director.anger.tolerated_mess = 1
+	director.anger.mess_anger = 0.3
+	var first := spawn_object(OTHER, AREA + Vector3(0.0, 0.0, 60.0))
+	EventBus.object_launched.emit(first)
+	check_equal(director.anger.value, 0.0, "set-up: one loose object is within a mess limit of 1")
+	first.queue_free()
+	await wait_physics(2)
+	await _make_sculpture(AREA, 2)
+	await _make_sculpture(AREA + Vector3(0.0, 0.0, -40.0), 2)
+	EventBus.object_launched.emit(spawn_object(OTHER, AREA + Vector3(0.0, 0.0, 60.0)))
+	check_near(director.anger.value, 0.3, 0.0001, "one loose object plus two sculptures is over the limit: each sculpture counts as mess")
+
+
+func test_one_zurd_per_target() -> void:
+	await _setup()
+	var first := _spawn_still_zurd(AREA)
+	var second := _spawn_still_zurd(AREA + Vector3(40.0, 0.0, 0.0))
+	var food := spawn_object(OTHER, AREA + Vector3(10.0, 0.0, 0.0))
+	director.anger.decay_rate = 0.0
+	director.anger.value = 1.0
+	await wait_physics(3)
+	check(first.get_target() == food, "the nearer Zurd goes after the object")
+	check(second.get_target() != food, "the other leaves it alone (it's claimed)")
+	first.take_swat(Vector3.RIGHT * 10.0)
+	var taken_over := await wait_until(func() -> bool: return second.get_target() == food, 1.0)
+	check(taken_over, "when the first Zurd is swatted off it, the other may take it")
+
+
+func test_zurds_share_a_sculpture_by_pieces() -> void:
+	await _setup()
+	director.anger.tolerated_sculpture_size = 2
+	var sculpture := await _make_sculpture(AREA + Vector3(0.0, 0.0, -40.0), 3)
+	var first := _spawn_still_zurd(AREA)
+	var second := _spawn_still_zurd(AREA + Vector3(20.0, 0.0, 0.0))
+	director.anger.decay_rate = 0.0
+	director.anger.value = 1.0
+	await wait_physics(3)
+	var a := first.get_target() as MassPiece
+	var b := second.get_target() as MassPiece
+	check(a != null and b != null and a.mass == sculpture and b.mass == sculpture, "both Zurds go after the large sculpture")
+	check(a != b, "but after different pieces of it")
+
+
+func test_zurds_keep_their_personal_space() -> void:
+	await _setup()
+	var first := _spawn_still_zurd(AREA)
+	var second := _spawn_still_zurd(AREA + Vector3(1.0, 0.0, 0.0))
+	var space := first.movement_component.personal_space
+	var apart := await wait_until(func() -> bool: return first.global_position.distance_to(second.global_position) >= space * 0.75, 3.0)
+	check(apart, "two Zurds on top of each other drift apart to most of their personal space")
+
+
+func test_wandering_zurds_keep_clear_of_the_terrain() -> void:
+	world = await load_world(true)
+	director = get_zurd_director(world)
+	ship = get_ship(world)
+	var zurds: Array[Zurd] = []
+	for i in 8:
+		var angle := TAU * i / 8.0
+		var at := Vector3(cos(angle), 0.0, sin(angle)) * 120.0
+		at.y = _ground_height(at) + 8.0
+		zurds.append(director.spawn_zurd(at))
+	var clearance := zurds[0].movement_component.ground_clearance
+	var samples := 0
+	var scraping := 0
+	for frame in 60 * Engine.physics_ticks_per_second:
+		await get_tree().physics_frame
+		if frame % 10 != 0:
+			continue
+		for zurd in zurds:
+			samples += 1
+			if zurd.global_position.y - _ground_height(zurd.global_position) < 2.0:
+				scraping += 1
+	var share := float(scraping) / samples
+	check(share < 0.05, "wandering Zurds stay clear of the terrain: within 2 m of the ground %.1f%% of the time (ground clearance %.0f m)" % [share * 100.0, clearance])
 
 
 ## Loads the world, with its starting Zurds when [param with_zurds], and keeps the ship hovering
@@ -253,6 +337,13 @@ func _add_to_sculpture(mass: SculptureMass, path: String) -> void:
 func _hit(body: RigidBody3D, other: Node) -> void:
 	for i in get_mass_manager(world).hits_to_fuse:
 		body.body_entered.emit(other)
+
+
+func _ground_height(at: Vector3) -> float:
+	var from := Vector3(at.x, 2000.0, at.z)
+	var query := PhysicsRayQueryParameters3D.create(from, from + Vector3.DOWN * 4000.0, 1)
+	var hit := ship.get_world_3d().direct_space_state.intersect_ray(query)
+	return hit["position"].y if not hit.is_empty() else -1000.0
 
 
 func _ground_distance(a: Node3D, b: Node3D) -> float:

@@ -2,8 +2,9 @@ class_name ZurdDirector
 extends Node
 
 ## Runs the Zurds as a group (Zurd Core Design Doc): the shared anger ([ZurdAnger]), which Zurds are
-## Hostile, and the Zurds the world starts with. One per world, in GameSystems. Every Zurd in the
-## [constant Zurd.GROUP] group is directed, whoever spawned it.
+## Hostile, who is going after what (one Zurd per target), and the Zurds the world starts with. One
+## per world, in GameSystems. Every Zurd in the [constant Zurd.GROUP] group is directed, whoever
+## spawned it.
 
 @export var zurd_scene: PackedScene
 
@@ -20,7 +21,7 @@ extends Node
 @export var spawn_ground_clearance: float = 10.0
 
 @export_group("Anger")
-## Loose objects in the world before launches add anger.
+## Mess (loose objects plus sculptures, each sculpture counting one) before launches add anger.
 @export var tolerated_mess: int = 15
 ## Added per launch while the loose objects are over the limit.
 @export var mess_anger: float = 0.05
@@ -49,6 +50,9 @@ var anger := ZurdAnger.new()
 
 ## Each sculpture's part count when last seen, so growth is counted once.
 var _mass_sizes: Dictionary[SculptureMass, int] = {}
+## Who is going after what: target (a loose object or a sculpture's piece) -> the Zurd that claimed
+## it. Untyped, because a target may have been freed.
+var _claims: Dictionary = {}
 var _reported_anger: float = 0.0
 
 
@@ -65,6 +69,7 @@ func _ready() -> void:
 
 func _physics_process(delta: float) -> void:
 	anger.update(delta)
+	_drop_stale_claims()
 	_check_sculpture_growth()
 	_update_hostility()
 	if absf(anger.value - _reported_anger) >= 0.01 or (anger.value == 0.0 and _reported_anger != 0.0):
@@ -109,6 +114,34 @@ func get_loose_objects() -> Array[RigidBody3D]:
 	return loose
 
 
+## The mess the Zurds care about: loose objects plus sculptures, each sculpture counting one.
+func get_mess_count() -> int:
+	return get_loose_objects().size() + get_sculptures().size()
+
+
+## Claims [param target] for [param zurd], so other Zurds leave it alone, and drops its other
+## claims. Returns false when another Zurd already has it, unless [param take_over].
+func claim(zurd: Zurd, target: Node3D, take_over := false) -> bool:
+	if not take_over and is_claimed_by_other(target, zurd):
+		return false
+	release(zurd)
+	_claims[target] = zurd
+	return true
+
+
+## Drops every claim of [param zurd].
+func release(zurd: Zurd) -> void:
+	for target in _claims.keys():
+		if _claims[target] == zurd:
+			_claims.erase(target)
+
+
+## True when a Zurd other than [param zurd] is going after [param target].
+func is_claimed_by_other(target: Node3D, zurd: Zurd) -> bool:
+	var holder: Variant = _claims.get(target)
+	return holder != null and holder != zurd and _still_holds(holder, target)
+
+
 ## Sculptures that aren't clouds, from the objects fused into them.
 func get_sculptures() -> Array[SculptureMass]:
 	var masses: Array[SculptureMass] = []
@@ -130,7 +163,19 @@ func _apply_settings() -> void:
 
 
 func _on_object_launched(_obj: RigidBody3D) -> void:
-	anger.on_launch(get_loose_objects().size())
+	anger.on_launch(get_mess_count())
+
+
+## A claim counts while its Zurd is alive and still going after that target.
+func _still_holds(holder: Variant, target: Variant) -> bool:
+	return (is_instance_valid(holder) and not holder.is_queued_for_deletion()
+			and is_instance_valid(target) and holder.get_target() == target)
+
+
+func _drop_stale_claims() -> void:
+	for target in _claims.keys():
+		if not _still_holds(_claims[target], target):
+			_claims.erase(target)
 
 
 func _on_zurd_attacked(_zurd: Node3D) -> void:

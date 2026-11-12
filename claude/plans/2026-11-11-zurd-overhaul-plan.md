@@ -224,9 +224,18 @@ The `tests/README.md` rule "don't pin Zurd behaviour" ends: this behaviour is de
 
 ## Iteration 1.1: Zurds, the terrain and each other
 
-*Draft 2026-11-12, from the first playtest: "the Zurds get stuck on terrain", "Zurds overlap
-one another often; only one Zurd should go at a target at a time", and "it should be loose object
-count + mass count that contribute to the Zurds' anger". Waiting for approval.*
+*From the first playtest (2026-11-12): "the Zurds get stuck on terrain", "Zurds overlap one
+another often; only one Zurd should go at a target at a time", and "it should be loose object
+count + mass count that contribute to the Zurds' anger". Approved and built 2026-11-12.*
+
+### Status (2026-11-12): built
+
+All parts built as below; 102 tests pass. Measured over a minute with 8 Zurds wandering the real
+terrain: within 2 m of the ground **0%** of the time with the fix, **14%** with the clearance and
+look-ahead switched off (the new test's limit is 5%, so it catches the old behaviour). Building it
+turned up a flaky test of mine: "launching holds the anger" launched 12 objects that pile into one
+sculpture, and with the sculpture limit tuned to 10 the pile sometimes grew past it and rightly
+added anger. The test now keeps both limits out of reach, since it's only about launching.
 
 ### The mess counts sculptures too
 
@@ -298,6 +307,33 @@ Two causes, two fixes:
 `scenes/characters/enemy/zurd_movement_component.gd` (destinations, ground check, look-ahead,
 keeping apart), `zurd_director.gd` (claims), `zurd_sight_component.gd` (skipping claimed targets),
 `zurd.gd` (claiming and releasing), `tests/scene/test_zurds.gd`. No scene edits.
+
+## Iteration 1.2: finishing the meal, slow Passive feeding, a quieter health bar
+
+*Draft 2026-11-12, from playtesting: "if the Zurd has a target and its hostility is reduced it
+should still try to eat the target and only after stop being hostile"; "make the hit UI on the
+Zurd smaller and more transparent"; "if there is an object in the Zurd's vision even when passive
+it should navigate to it and eat it, very slowly". Waiting for approval.*
+
+1. **Finish the meal before calming.** When the director calms a Hostile Zurd that has a target,
+   the Zurd keeps that one target (it doesn't pick new ones) and turns Passive once it's eaten or
+   gone. The director counts such a Zurd as already calmed, so it doesn't calm extra Zurds while
+   it finishes. If the anger rises again first, the Zurd simply stays Hostile.
+2. **Passive Zurds feed slowly on what they see.** A Passive Zurd goes after the nearest loose
+   object in sight (claimed, one Zurd per object) at `passive_speed` (*proposed:* 3 m/s, against
+   10 for wandering and 30 for hunting) and eats it at `nibble_speed` (×0.33: 4.5 s a bite).
+   Sculptures stay safe from Passive Zurds. This replaces "nibble only within 3 m", so
+   `nibble_distance` goes. Effect: stray objects slowly disappear even when the Zurds are calm.
+3. **A quieter health bar:** the `Label3D` swat bar becomes smaller (font 40 → 24) and
+   half-transparent (alpha 0.5, thinner outline).
+
+Tests: a Hostile Zurd told to calm while it has a target eats it before turning Passive, and the
+director doesn't calm a second Zurd meanwhile; a Passive Zurd goes after a loose object in sight,
+no faster than `passive_speed`, eats it slower than a Hostile Zurd would, and leaves sculptures
+alone (replacing the nibble test).
+
+Files: `zurd.gd`, `zurd_director.gd`, `zurd_sight_component.gd`, `zurd.tscn` (the label; with the
+editor closed), `tests/scene/test_zurds.gd`, the design doc.
 
 ## Later iterations (from the idea bank, when playtests ask for them)
 

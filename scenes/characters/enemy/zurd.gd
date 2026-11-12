@@ -184,18 +184,30 @@ func take_object_hit(obj: RigidBody3D) -> void:
 	_hit_cooldown_left = hit_cooldown
 	_drop_target()
 	_caught = obj
+	if director:
+		director.claim(self, obj, true)
 	_stun(obj.linear_velocity)
 	EventBus.zurd_stunned.emit(self)
 
 
+## The target to go after now, claimed so no other Zurd goes after it too.
 func _choose_target() -> Node3D:
 	if ObjectTracker.is_trackable(_caught):
 		return _caught
 	_caught = null
+	var is_free := func(obj: Node3D) -> bool: return director == null or not director.is_claimed_by_other(obj, self)
+	var target: Node3D
 	if is_hostile:
 		var tolerated: int = director.anger.tolerated_sculpture_size if director else 15
-		return sight_component.find_hostile_target(global_position, tolerated)
-	return sight_component.find_nibble_target(mouth_component.get_mouth_position(), nibble_distance)
+		target = sight_component.find_hostile_target(global_position, tolerated, is_free)
+	else:
+		target = sight_component.find_nibble_target(mouth_component.get_mouth_position(), nibble_distance, is_free)
+	if director:
+		if target:
+			director.claim(self, target)
+		else:
+			director.release(self)
+	return target
 
 
 func _stun(push: Vector3) -> void:
@@ -207,6 +219,8 @@ func _stun(push: Vector3) -> void:
 func _drop_target() -> void:
 	_target = null
 	_look_timer = 0.0
+	if director:
+		director.release(self)
 	mouth_component.cancel_eating()
 	mouth_component.set_target(null)
 
