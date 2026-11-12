@@ -91,11 +91,13 @@ completed (section 7). During the first objective the Zurds stay Passive whateve
 
 ### 5.1 Passive
 
-- Wanders around a loose home area, alone or in pairs.
-- Ignores the ship and the players' objects. It doesn't go looking for food.
-- **Nibbles** only a loose object it happens to drift really close to (*proposed:* within 3 m),
-  and slowly (*proposed:* a third of the Hostile eating speed). Moving the object away, or a swat,
-  stops it. It leaves sculptures alone, so small sculptures really are safe.
+- Wanders around a loose home area, alone or in pairs. Ignores the ship.
+- **Feeds on loose objects it sees** (changed 2026-11-12): it goes to the nearest one in sight at
+  an easy pace (*proposed:* its wander speed, 10 m/s) and eats it slowly (*proposed:* 4 s a bite,
+  against 3 s for a Hostile Zurd). So stray objects disappear even while the Zurds are calm.
+- **Watches sculptures it sees,** from nearby (*proposed:* 25 m): it stops to look, then moves to
+  another spot around it. It never eats a sculpture while Passive, so building one sculpture is
+  always the safe play.
 
 ### 5.2 Hostile
 
@@ -110,7 +112,9 @@ completed (section 7). During the first objective the Zurds stay Passive whateve
 - **How many Zurds are Hostile follows the anger:** at anger 0 none are, at anger 1 all are
   (*proposed*). As anger rises, the Zurds nearest to the mess turn Hostile first.
 - **Calming down:** when anger drops, Hostile Zurds return to Passive, but only after staying
-  Hostile for at least the **hostile cooldown** (*proposed:* 10 s), so they don't flicker.
+  Hostile for at least the **hostile cooldown** (*proposed:* 10 s), so they don't flicker. A Zurd
+  that has a target when it's told to calm finishes eating that target first, then turns Passive
+  (decided 2026-11-12).
 - A Zurd that's been **driven off** (section 6) is Passive while it's away.
 
 ## 6. Swatting
@@ -133,8 +137,8 @@ to hold it in place while someone gets close enough to swat it.
 - **No killing** at this stage. (Killing, and Zurds that won't be driven off, are in the idea
   bank.)
 
-**A health bar (placeholder):** a small bar over each Zurd shows how close it is to being driven
-off, so the third swat doesn't seem random. It's a placeholder for playtests; the final look
+**A health bar (placeholder):** a small, half-transparent bar over each Zurd shows how close it is
+to being driven off, so the third swat doesn't seem random. It's a placeholder for playtests; the final look
 (a bar, or a change on the Zurd itself, such as getting dizzier) is decided after playtesting.
 
 ## 7. Objectives (requirements on the Zurds)
@@ -166,8 +170,11 @@ All *proposed*, tuned in playtests.
 | Calm delay | Time without a launch or a provocation before anger starts to fall | 3 s |
 | Anger decay | How fast anger falls once it does | 0.05 per second |
 | Hostile cooldown | Least time a Zurd stays Hostile | 10 s |
-| Nibble distance | How close a Passive Zurd must drift to an object to nibble it | 3 m |
-| Nibble speed | Passive eating speed, compared with Hostile | ×0.33 |
+| Hostile bite | Time a Hostile Zurd takes to eat a bite | 3 s |
+| Passive bite | Time a Passive Zurd takes to eat a bite | 4 s |
+| Feeding speed | Speed a Passive Zurd goes to food at | 10 m/s |
+| Watch distance | How far from a sculpture a Passive Zurd watches it from | 25 m |
+| Watch pause | How long it stops to look before moving around it | 3 s |
 | Stun swats | Swats that stun | 2 |
 | Stun time | Length of a stun | 1.5 s |
 | Drive-off swat | The swat that drives a Zurd off (ramming counts; launched objects only stun) | 3rd |

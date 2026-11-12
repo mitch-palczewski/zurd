@@ -31,6 +31,14 @@ extends Node
 ## How much of a wander leg may go up or down (0 = level only, 1 = any direction).
 @export_range(0.0, 1.0) var wander_vertical: float = 0.4
 
+@export_group("Feeding and Watching")
+## Speed a Passive Zurd goes to food at.
+@export var feeding_speed: float = 10.0
+## How far from a sculpture a Passive Zurd watches it from.
+@export var watch_distance: float = 25.0
+## How long it stops to look at the sculpture before moving to another spot around it.
+@export var watch_pause: float = 3.0
+
 @export_group("Terrain")
 ## Least height a Zurd keeps above the ground (the avoidance layers) while flying between targets;
 ## its wander destinations are kept at least this high too. Off in the last approach to a target,
@@ -86,6 +94,11 @@ var _visual_base_rotation: Vector3
 var _ground_check_timer: float = 0.0
 var _ground_height: float = -INF
 
+var _watch_spot: Vector3
+var _has_watch_spot: bool = false
+var _watch_timer: float = 0.0
+var _watch_pause_left: float = 0.0
+
 
 func _ready() -> void:
 	if visual_root:
@@ -103,6 +116,34 @@ func process_wander(actor: CharacterBody3D, home: Vector3, home_radius: float, d
 		_pick_wander_target(actor, home, home_radius)
 	var direction := actor.global_position.direction_to(_wander_target)
 	_steer_and_move(actor, direction, wander_speed, wander_turn_speed, delta)
+	_process_bobbing(actor, delta)
+
+
+## Watches the sculpture at [param center]: flies to a spot [member watch_distance] from it, stops
+## there facing it for [member watch_pause], then moves to another spot around it.
+func process_watch(actor: CharacterBody3D, center: Vector3, delta: float) -> void:
+	_has_wander_target = false
+	if _watch_pause_left > 0.0:
+		_watch_pause_left -= delta
+		_turn_towards(actor, actor.global_position.direction_to(center), wander_turn_speed, delta)
+		_level_roll(actor, delta)
+		actor.velocity = actor.velocity.lerp(_get_separation(actor), _get_exp_decay_weight(10.0, delta))
+		_move(actor, delta)
+		_process_bobbing(actor, delta)
+		if _watch_pause_left <= 0.0:
+			_has_watch_spot = false
+		return
+	_watch_timer += delta
+	if not _has_watch_spot or _watch_spot.distance_to(center) > watch_distance * 1.5:
+		var angle := randf() * TAU
+		_watch_spot = center + Vector3(cos(angle), randf_range(-0.3, 0.3), sin(angle)) * watch_distance
+		_watch_spot.y = maxf(_watch_spot.y, _get_ground_height(actor, _watch_spot) + ground_clearance)
+		_has_watch_spot = true
+		_watch_timer = 0.0
+	if actor.global_position.distance_to(_watch_spot) <= maxf(arrival_distance, watch_distance * 0.2) or _watch_timer >= wander_timeout:
+		_watch_pause_left = watch_pause
+		return
+	_steer_and_move(actor, actor.global_position.direction_to(_watch_spot), wander_speed, wander_turn_speed, delta)
 	_process_bobbing(actor, delta)
 
 
@@ -129,14 +170,6 @@ func process_eating(actor: CharacterBody3D, target: Node3D, mouth_position: Vect
 	_level_roll(actor, delta)
 	var hold_velocity := _get_target_velocity(target) + (target.global_position - mouth_position) * hold_strength
 	actor.velocity = actor.velocity.lerp(hold_velocity, _get_exp_decay_weight(10.0, delta))
-	_move(actor, delta)
-	_process_bobbing(actor, delta)
-
-
-## Slows to a stop and stays put (a Passive Zurd nibbling: it doesn't follow its food).
-func process_hover(actor: CharacterBody3D, delta: float) -> void:
-	_level_roll(actor, delta)
-	actor.velocity = actor.velocity.lerp(Vector3.ZERO, _get_exp_decay_weight(10.0, delta))
 	_move(actor, delta)
 	_process_bobbing(actor, delta)
 

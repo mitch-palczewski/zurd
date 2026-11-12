@@ -2,10 +2,10 @@
 
 [ext_resource type="Script" uid="uid://bgxbr7s8ac1k0" path="res://scenes/characters/enemy/zurd.gd" id="1_amhp2"]
 [ext_resource type="ArrayMesh" uid="uid://dcufgdrmyxyoi" path="res://assets/meshes/Zurd_01.res" id="2_554ls"]
-[ext_resource type="Material" uid="uid://2ns0mab6gk6l" path="res://assets/materials/objects/Zurd_01_mat.res" id="3_kn0us"]
 [ext_resource type="Script" uid="uid://cqd8fa1ql4y8m" path="res://scenes/characters/enemy/zurd_mouth_component.gd" id="2_frfjf"]
-[ext_resource type="Script" uid="uid://17jgc0iwgbjq" path="res://scenes/characters/enemy/zurd_sight_component.gd" id="5_sight"]
+[ext_resource type="Material" uid="uid://2ns0mab6gk6l" path="res://assets/materials/objects/Zurd_01_mat.res" id="3_kn0us"]
 [ext_resource type="Script" uid="uid://wfds7lbabu6q" path="res://scenes/characters/enemy/zurd_movement_component.gd" id="4_554ls"]
+[ext_resource type="Script" uid="uid://17jgc0iwgbjq" path="res://scenes/characters/enemy/zurd_sight_component.gd" id="5_sight"]
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_vadmx"]
 radius = 1.6277677
@@ -17,6 +17,7 @@ radius = 1.3654847
 radius = 3.5
 
 [node name="Zurd" type="CharacterBody3D" unique_id=1857394916 node_paths=PackedStringArray("sight_component", "movement_component", "mouth_component", "hit_area", "health_label", "body_mesh")]
+transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0)
 collision_layer = 8
 collision_mask = 7
 motion_mode = 1
@@ -29,7 +30,7 @@ health_label = NodePath("HealthLabel")
 body_mesh = NodePath("ZurdMesh")
 
 [node name="ZurdMesh" type="MeshInstance3D" parent="." unique_id=12317764]
-transform = Transform3D(-3, 0, -2.6226832e-07, 0, 3, 0, 2.6226832e-07, 0, -3, 0, 0, 0)
+transform = Transform3D(-5, 0, -7.54979e-07, 0, 5, 0, 7.54979e-07, 0, -5, 0, 0, 0)
 mesh = ExtResource("2_554ls")
 surface_material_override/0 = ExtResource("3_kn0us")
 
@@ -59,10 +60,11 @@ pixel_size = 0.001
 billboard = 1
 no_depth_test = true
 fixed_size = true
-modulate = Color(1, 0.85, 0.3, 1)
+modulate = Color(1, 0.85, 0.3, 0.5)
+outline_modulate = Color(0, 0, 0, 0.5)
 text = "□□□"
-font_size = 40
-outline_size = 10
+font_size = 24
+outline_size = 6
 
 [node name="SightComponent" type="Node" parent="." unique_id=958955015]
 script = ExtResource("5_sight")

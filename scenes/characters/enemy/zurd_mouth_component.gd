@@ -11,8 +11,9 @@ extends Area3D
 ## same as [signal EventBus.object_eaten], which fires after.
 signal bite_taken(obj: Node3D)
 
-## Seconds a target must stay in the mouth to be eaten (Sculpture-Mass Design Doc "Eat duration").
-@export var eat_duration: float = 1.5
+## Seconds a target must stay in the mouth to be eaten at normal speed: a Hostile Zurd's bite
+## (Sculpture-Mass Design Doc "Eat duration").
+@export var eat_duration: float = 3.0
 @export var owner_body: CharacterBody3D
 
 var active_target: Node3D = null

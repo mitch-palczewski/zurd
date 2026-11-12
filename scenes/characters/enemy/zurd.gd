@@ -1,10 +1,12 @@
 class_name Zurd
 extends CharacterBody3D
 
-## A Zurd (Zurd Core Design Doc §5, §6). Passive, it wanders around its home and only nibbles a loose
-## object it drifts into. Hostile, it hunts loose objects, then large sculptures. The [ZurdDirector]
-## decides which Zurds are Hostile. Its first swats stun it; the last drives it away from the ship
-## for a while. A launched object flying into it only stuns it, and it eats that object afterwards.
+## A Zurd (Zurd Core Design Doc §5, §6). Passive, it goes after loose objects it sees at an easy
+## pace and eats them slowly, watches sculptures it sees from nearby, and otherwise wanders around
+## its home. Hostile, it hunts loose objects, then large sculptures. The [ZurdDirector] decides which
+## Zurds are Hostile; one told to calm down finishes the target it has first. Its first swats stun
+## it; the last drives it away from the ship for a while. A launched object flying into it only
+## stuns it, and it eats that object afterwards.
 
 const GROUP := &"zurds"
 
@@ -23,10 +25,8 @@ const GROUP := &"zurds"
 @export_group("Wandering")
 ## How far from its home a Passive Zurd wanders. Loose: hunting can take it far away.
 @export var home_radius: float = 100.0
-## How close a loose object must be to the mouth for a Passive Zurd to nibble it.
-@export var nibble_distance: float = 3.0
-## Passive eating speed, compared with Hostile eating.
-@export var nibble_speed: float = 0.33
+## Seconds a Passive Zurd takes to eat a bite (a Hostile one takes the mouth's eat_duration).
+@export var passive_eat_time: float = 4.0
 
 @export_group("Hits")
 ## The swat that drives the Zurd off; the swats before it stun it.
@@ -55,6 +55,8 @@ var home: Vector3
 ## Set by the [ZurdDirector] that directs this Zurd.
 var director: ZurdDirector
 var is_hostile: bool = false
+## True while a Hostile Zurd told to calm down finishes the target it has; then it turns Passive.
+var is_calming: bool = false
 ## Seconds since the Zurd turned Hostile.
 var hostile_time: float = 0.0
 ## Swats since it last came back from being driven off.
@@ -114,16 +116,18 @@ func _physics_process(delta: float) -> void:
 		_target = _choose_target()
 
 	var chasing := is_hostile or (_target != null and _target == _caught)
-	mouth_component.set_target(_target, 1.0 if chasing else nibble_speed)
+	var passive_eat_speed := mouth_component.eat_duration / maxf(passive_eat_time, 0.01)
+	mouth_component.set_target(_target, 1.0 if chasing else passive_eat_speed)
 	if _target and mouth_component.is_eating():
-		if chasing:
-			movement_component.process_eating(self, _target, mouth_component.get_mouth_position(), delta)
-		else:
-			movement_component.process_hover(self, delta)
+		movement_component.process_eating(self, _target, mouth_component.get_mouth_position(), delta)
 	elif _target:
-		movement_component.process_hunt(self, _target, delta, -1.0 if chasing else movement_component.wander_speed)
+		movement_component.process_hunt(self, _target, delta, -1.0 if chasing else movement_component.feeding_speed)
 	else:
-		movement_component.process_wander(self, home, home_radius, delta)
+		var watched := sight_component.find_sculpture_to_watch(global_position)
+		if watched:
+			movement_component.process_watch(self, watched.get_global_center_of_mass(), delta)
+		else:
+			movement_component.process_wander(self, home, home_radius, delta)
 
 
 ## Sets where the Zurd wanders while Passive.
@@ -132,16 +136,18 @@ func set_home(at: Vector3) -> void:
 	_home_set = true
 
 
-## Called by the [ZurdDirector]. A driven-off Zurd can't turn Hostile until it's back.
+## Called by the [ZurdDirector]. A driven-off Zurd can't turn Hostile until it's back. A Hostile
+## Zurd told to calm down while it has a target finishes it first ([member is_calming]).
 func set_hostile(hostile: bool) -> void:
-	if hostile == is_hostile or (hostile and is_driven_off()):
-		return
-	is_hostile = hostile
-	hostile_time = 0.0
-	_look_timer = 0.0
-	if body_mesh:
-		body_mesh.material_overlay = _hostile_material if hostile else null
-	EventBus.zurd_state_changed.emit(self, hostile)
+	if hostile:
+		is_calming = false
+		if not is_hostile and not is_driven_off():
+			_set_state(true)
+	elif is_hostile:
+		if ObjectTracker.is_trackable(_target):
+			is_calming = true
+		else:
+			_set_state(false)
 
 
 func is_stunned() -> bool:
@@ -190,18 +196,23 @@ func take_object_hit(obj: RigidBody3D) -> void:
 	EventBus.zurd_stunned.emit(self)
 
 
-## The target to go after now, claimed so no other Zurd goes after it too.
+## The target to go after now, claimed so no other Zurd goes after it too. A calming Zurd keeps its
+## target until it's eaten or gone, then turns Passive.
 func _choose_target() -> Node3D:
 	if ObjectTracker.is_trackable(_caught):
 		return _caught
 	_caught = null
+	if is_calming:
+		if ObjectTracker.is_trackable(_target):
+			return _target
+		_set_state(false)
 	var is_free := func(obj: Node3D) -> bool: return director == null or not director.is_claimed_by_other(obj, self)
 	var target: Node3D
 	if is_hostile:
 		var tolerated: int = director.anger.tolerated_sculpture_size if director else 15
 		target = sight_component.find_hostile_target(global_position, tolerated, is_free)
 	else:
-		target = sight_component.find_nibble_target(mouth_component.get_mouth_position(), nibble_distance, is_free)
+		target = sight_component.find_loose_target(global_position, is_free)
 	if director:
 		if target:
 			director.claim(self, target)
@@ -225,8 +236,20 @@ func _drop_target() -> void:
 	mouth_component.set_target(null)
 
 
+func _set_state(hostile: bool) -> void:
+	is_calming = false
+	if hostile == is_hostile:
+		return
+	is_hostile = hostile
+	hostile_time = 0.0
+	_look_timer = 0.0
+	if body_mesh:
+		body_mesh.material_overlay = _hostile_material if hostile else null
+	EventBus.zurd_state_changed.emit(self, hostile)
+
+
 func _drive_off() -> void:
-	set_hostile(false)
+	_set_state(false)
 	_stun_left = 0.0
 	_caught = null
 	_retreating = true

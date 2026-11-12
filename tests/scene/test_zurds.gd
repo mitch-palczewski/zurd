@@ -30,20 +30,62 @@ func test_starting_zurds_spawn_around_the_ship() -> void:
 				"each starts spawn_distance from the ship (%.0f m)" % distance)
 
 
-func test_passive_zurd_nibbles_only_what_it_drifts_into() -> void:
+func test_passive_zurd_feeds_on_loose_objects_it_sees() -> void:
 	await _setup()
 	var zurd := _spawn_still_zurd(AREA)
-	var far := spawn_object(SLAB, zurd.mouth_component.get_mouth_position() + Vector3(0.0, 0.0, -20.0), SMALL)
-	await wait_seconds(2.0)
-	check(is_instance_valid(far) and zurd.get_target() == null, "a Passive Zurd leaves an object out of reach alone")
+	var food := spawn_object(OTHER, AREA + Vector3(30.0, 0.0, 0.0))
+	var out_of_sight := spawn_object(OTHER, AREA + Vector3(0.0, 0.0, zurd.sight_component.sight_radius + 50.0))
+	var food_ref: WeakRef = weakref(food)
+	var fastest := 0.0
+	var time := 0.0
+	var eating_from := -1.0
+	while food_ref.get_ref() != null and time < 30.0:
+		await get_tree().physics_frame
+		time += 1.0 / Engine.physics_ticks_per_second
+		fastest = maxf(fastest, zurd.velocity.length())
+		if eating_from < 0.0 and zurd.mouth_component.is_eating():
+			eating_from = time
+	check(food_ref.get_ref() == null, "a Passive Zurd goes after a loose object it sees and eats it")
+	check(not zurd.is_hostile, "while staying Passive")
+	check(fastest <= zurd.movement_component.feeding_speed + 0.5, "no faster than feeding_speed (%.1f m/s)" % fastest)
+	check_near(time - eating_from, zurd.passive_eat_time, 1.0, "it eats a bite in passive_eat_time")
+	check(is_instance_valid(out_of_sight), "it leaves an object out of sight alone")
 
-	var near := spawn_object(SLAB, _in_mouth(zurd), SMALL)
-	var eat_time := zurd.mouth_component.eat_duration
-	await wait_seconds(eat_time + 0.3)
-	check(is_instance_valid(near), "it nibbles slower than a Hostile Zurd eats")
-	var nibbled := await wait_until_freed(near, eat_time / zurd.nibble_speed + 2.0)
-	check(nibbled, "but it eats an object in its mouth")
-	check(is_instance_valid(far), "and still leaves the far one alone")
+
+func test_passive_zurd_watches_sculptures_without_eating_them() -> void:
+	await _setup()
+	var sculpture := await _make_sculpture(AREA + Vector3(0.0, 0.0, -60.0), 2)
+	var parts := sculpture.get_part_count()
+	var zurd := director.spawn_zurd(AREA)
+	var watch_distance := zurd.movement_component.watch_distance
+	var closest := INF
+	var ever_targeted := false
+	for frame in 15 * Engine.physics_ticks_per_second:
+		await get_tree().physics_frame
+		closest = minf(closest, zurd.global_position.distance_to(sculpture.get_global_center_of_mass()))
+		ever_targeted = ever_targeted or zurd.get_target() != null
+	check(closest <= watch_distance * 1.6, "a Passive Zurd that sees a sculpture comes to watch it (%.0f m away at closest)" % closest)
+	check(not ever_targeted, "it never goes after the sculpture")
+	check_equal(sculpture.get_part_count(), parts, "and eats none of it")
+
+
+func test_calming_zurd_finishes_its_target_first() -> void:
+	await _setup()
+	director.hostile_cooldown = 0.0
+	var zurd := _spawn_still_zurd(AREA)
+	var food := spawn_object(OTHER, AREA + Vector3(40.0, 0.0, 0.0))
+	director.anger.decay_rate = 0.0
+	director.anger.value = 1.0
+	await wait_physics(3)
+	check(zurd.is_hostile and zurd.get_target() == food, "set-up: a Hostile Zurd going after an object")
+	director.anger.value = 0.0
+	await wait_physics(3)
+	check(zurd.is_hostile and zurd.is_calming, "told to calm down, it stays Hostile while it finishes its target")
+	check(zurd.get_target() == food, "and keeps going after it")
+	var ate := await wait_until_freed(food, 10.0)
+	check(ate, "it eats its target")
+	await wait_physics(30)
+	check(not zurd.is_hostile and not zurd.is_calming, "then turns Passive")
 
 
 func test_mess_turns_the_nearest_zurd_hostile() -> void:

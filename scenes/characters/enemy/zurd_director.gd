@@ -204,13 +204,14 @@ func _update_hostility() -> void:
 		if not zurd.is_driven_off():
 			available.append(zurd)
 	var wanted := anger.get_hostile_count(available.size())
-	var hostile := available.filter(func(zurd: Zurd) -> bool: return zurd.is_hostile)
+	# A Zurd finishing its target before calming down counts as calmed already.
+	var hostile := available.filter(func(zurd: Zurd) -> bool: return zurd.is_hostile and not zurd.is_calming)
 	if hostile.size() == wanted:
 		return
 	var mess := _get_mess_positions()
 	var by_distance := func(a: Zurd, b: Zurd) -> bool: return _distance_to_mess(a, mess) < _distance_to_mess(b, mess)
 	if hostile.size() < wanted:
-		var calm := available.filter(func(zurd: Zurd) -> bool: return not zurd.is_hostile)
+		var calm := available.filter(func(zurd: Zurd) -> bool: return not zurd.is_hostile or zurd.is_calming)
 		calm.sort_custom(by_distance)
 		for i in mini(wanted - hostile.size(), calm.size()):
 			calm[i].set_hostile(true)

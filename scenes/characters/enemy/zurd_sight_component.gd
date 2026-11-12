@@ -60,36 +60,36 @@ func find_hostile_target(from: Vector3, min_sculpture_size: int, is_free := Call
 	return _nearest_piece(from, all_pieces)
 
 
-## The nearest loose object within [param reach] of [param mouth] (measured to its colliders), for a
-## Passive Zurd to nibble, among those [param is_free] accepts. Sculptures are left alone. Null when
-## there's none.
-func find_nibble_target(mouth: Vector3, reach: float, is_free := Callable()) -> Node3D:
+## The nearest loose object in sight that [param is_free] accepts, for a Passive Zurd to eat.
+## Sculptures are left alone. Null when there's none.
+func find_loose_target(from: Vector3, is_free := Callable()) -> Node3D:
 	var nearest: Node3D = null
-	var nearest_gap := INF
+	var nearest_distance := INF
 	for obj in ObjectTracker.active_objects:
 		if not ObjectTracker.is_trackable(obj) or not obj is RigidBody3D or obj is SculptureMass:
 			continue
-		if is_free.is_valid() and not is_free.call(obj):
+		if not can_see(from, obj.global_position) or (is_free.is_valid() and not is_free.call(obj)):
 			continue
-		var gap := get_gap(mouth, obj as RigidBody3D)
-		if gap <= reach and gap < nearest_gap:
+		var distance := from.distance_squared_to(obj.global_position)
+		if distance < nearest_distance:
 			nearest = obj
-			nearest_gap = gap
+			nearest_distance = distance
 	return nearest
 
 
-## Distance from [param point] to the box around [param body]'s colliders; 0 inside it.
-static func get_gap(point: Vector3, body: RigidBody3D) -> float:
-	var bounds := AABB()
-	var first := true
-	for child in body.get_children():
-		var shape := child as CollisionShape3D
-		if shape and shape.shape:
-			var box := shape.transform * MassPiece.get_shape_bounds(shape.shape)
-			bounds = box if first else bounds.merge(box)
-			first = false
-	var local := body.global_transform.affine_inverse() * point
-	return local.distance_to(local.clamp(bounds.position, bounds.end))
+## The nearest sculpture (not a cloud) in sight, for a Passive Zurd to watch. Null when there's none.
+func find_sculpture_to_watch(from: Vector3) -> SculptureMass:
+	var nearest: SculptureMass = null
+	var nearest_distance := INF
+	for obj in ObjectTracker.active_objects:
+		var piece := obj as MassPiece
+		if piece == null or not ObjectTracker.is_trackable(piece) or not can_see(from, piece.get_center()):
+			continue
+		var distance := from.distance_squared_to(piece.get_center())
+		if distance < nearest_distance:
+			nearest = piece.mass
+			nearest_distance = distance
+	return nearest
 
 
 func _nearest_piece(from: Vector3, pieces: Array) -> Node3D:

@@ -313,24 +313,36 @@ keeping apart), `zurd_director.gd` (claims), `zurd_sight_component.gd` (skipping
 *Draft 2026-11-12, from playtesting: "if the Zurd has a target and its hostility is reduced it
 should still try to eat the target and only after stop being hostile"; "make the hit UI on the
 Zurd smaller and more transparent"; "if there is an object in the Zurd's vision even when passive
-it should navigate to it and eat it, very slowly". Waiting for approval.*
+it should navigate to it and eat it, very slowly". Approved 2026-11-12 with these answers: Passive
+Zurds move to food at wander speed (10 m/s) and only the eating is slow; they eat loose objects
+only; and "Zurds should be interested in sculptures and watch them nearby" (part 4). Built 2026-11-12.*
+
+**Status (2026-11-12): built.** All four parts, plus, from the same review: a Hostile Zurd takes
+3 s a bite (the mouth's `eat_duration`, was 1.5 s) and a Passive one 4 s (`passive_eat_time`,
+which replaces the `nibble_speed` multiplier). Mitch's playtest tuning of the Zurd (2× scale, a
+5× mesh) is kept. 104 tests pass, including new ones for Passive feeding, watching sculptures and
+finishing a target before calming.
 
 1. **Finish the meal before calming.** When the director calms a Hostile Zurd that has a target,
    the Zurd keeps that one target (it doesn't pick new ones) and turns Passive once it's eaten or
    gone. The director counts such a Zurd as already calmed, so it doesn't calm extra Zurds while
    it finishes. If the anger rises again first, the Zurd simply stays Hostile.
-2. **Passive Zurds feed slowly on what they see.** A Passive Zurd goes after the nearest loose
-   object in sight (claimed, one Zurd per object) at `passive_speed` (*proposed:* 3 m/s, against
-   10 for wandering and 30 for hunting) and eats it at `nibble_speed` (×0.33: 4.5 s a bite).
-   Sculptures stay safe from Passive Zurds. This replaces "nibble only within 3 m", so
-   `nibble_distance` goes. Effect: stray objects slowly disappear even when the Zurds are calm.
+2. **Passive Zurds feed on what they see.** A Passive Zurd goes after the nearest loose object in
+   sight (claimed, one Zurd per object) at `feeding_speed` (10 m/s, wander speed) and eats it at
+   `nibble_speed` (×0.33: 4.5 s a bite). Sculptures stay safe from Passive Zurds. This replaces
+   "nibble only within 3 m", so `nibble_distance` goes. Effect: stray objects disappear even when
+   the Zurds are calm.
 3. **A quieter health bar:** the `Label3D` swat bar becomes smaller (font 40 → 24) and
    half-transparent (alpha 0.5, thinner outline).
+4. **Passive Zurds watch sculptures.** With no loose object in sight, a Passive Zurd that sees a
+   sculpture goes to watch it: it flies to a spot `watch_distance` (*proposed:* 25 m) from it,
+   stops for `watch_pause` (*proposed:* 3 s) facing it, then moves to another spot around it. It
+   never eats it while Passive.
 
-Tests: a Hostile Zurd told to calm while it has a target eats it before turning Passive, and the
-director doesn't calm a second Zurd meanwhile; a Passive Zurd goes after a loose object in sight,
-no faster than `passive_speed`, eats it slower than a Hostile Zurd would, and leaves sculptures
-alone (replacing the nibble test).
+Tests: a Hostile Zurd told to calm while it has a target eats it before turning Passive; a
+Passive Zurd goes after a loose object in sight no faster than `feeding_speed` and eats it at
+`nibble_speed` (replacing the nibble test); a Passive Zurd with a sculpture in sight and no loose
+objects watches it from about `watch_distance` and never targets it.
 
 Files: `zurd.gd`, `zurd_director.gd`, `zurd_sight_component.gd`, `zurd.tscn` (the label; with the
 editor closed), `tests/scene/test_zurds.gd`, the design doc.
