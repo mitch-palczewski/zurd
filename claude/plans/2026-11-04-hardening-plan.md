@@ -44,7 +44,7 @@ Baked sizes, compressed binary: mesh 751 KB, collision shape 710 KB. The raw hei
 2. **Split `base_world.tscn`.** Moved ahead of the budget (third on the original list) so the
    session node and the actor containers are built once, in their final place. The tests from
    step 1 guard the scene surgery.
-3. **Object budget** (the session reset was dropped 2026-11-11).
+3. ~~**Object budget**~~ **Dropped 2026-11-12** (see step 3).
 4. **Object catalog.**
 5. **Terrain bake.**
 6. **Sandbox removal**, when the 1000 × 1000 map idea is done. Independent of the rest.
@@ -53,8 +53,9 @@ Each step is its own commit (or a few) and leaves the game playable.
 
 **Status (2026-11-11):** step 4 was built first and is done (commit `e3ed361`; root-model
 cleanup in `a5c7b6d`); only an Inspector check in the editor is left for Mitch. Step 1 is built
-(2026-11-11, below). Steps 2, 3 and 5 are not started; step 6 waits on its trigger. The
-object-colliders experiment (`2026-11-11-object-colliders-plan.md`) is next.
+(2026-11-11, below). Step 3 was dropped (2026-11-12). Steps 2 and 5 are not started; step 6 waits
+on its trigger. Step 2 is next, as groundwork for the Zurd overhaul
+(`2026-11-11-zurd-overhaul-plan.md`).
 
 ## 1. Tests
 
@@ -234,7 +235,7 @@ approach), the importer (editor only; manual check in `tests/README.md`), shader
 ```
 BaseWorld (Node3D, base_world.gd)          ← still the template zurd_world.tscn inherits
 ├─ Environment    environment.tscn          WorldEnvironment (sky), DirectionalLight3D
-├─ GameSystems    game_systems.tscn         MassManager, SculptureFx (GameSession, step 3)
+├─ GameSystems    game_systems.tscn         MassManager, SculptureFx (ZurdDirector, later)
 ├─ Input          scenes/input/input.tscn   MouseSwatInput (LidarManager later)
 └─ Actors (Node3D)
    ├─ Ship         PlayerShip
@@ -274,7 +275,11 @@ too. Flattening it into one world scene is a choice for step 6.
   container, and that the sculpture test scene's overrides still apply.
 - `zurd_world.tscn` and `sandbox/test_sculpture_mass.tscn` play as before.
 
-## 3. Object budget
+## 3. Object budget (dropped)
+
+**Dropped 2026-11-12.** Mitch: the Zurds will help limit the number of objects (they eat the
+mess), and whether there are too many clouds is for later. The design below is kept in case it's
+needed; nothing here is to be built.
 
 *Changed 2026-11-11:* **no session reset.** Mitch decided against reloading the world after a few
 minutes without input. The world keeps running between groups; the budget keeps a long day

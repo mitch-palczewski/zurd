@@ -2,6 +2,8 @@
 
 Zurd game · Godot (GDScript) · Five-stage behavioral model, adapted from the Zurd AI Five-Stage Behavioral Model v2. Values marked *proposed* are starting points for tuning; items marked *playtest* are decided by playing.
 
+**Idea bank (2026-11-12):** the Zurds are now built from the **Zurd Core Design Doc**, which starts with two states and adds to them as playtests call for it. This spec keeps the fuller ideas; features move from here into the core doc when they're needed.
+
 **Review status (2026-11-11):** first design review done (decisions below). The Zurds will be built **iteratively**: a small part at a time, playtested, then the next part (build plan: `claude/plans/2026-11-11-zurd-overhaul-plan.md`). This spec is the target; playtests may simplify it.
 
 ## 0. Decisions From the 2026-11-11 Review
