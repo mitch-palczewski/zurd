@@ -209,6 +209,21 @@ question.
 - Population growing with pressure; difficulty scaling with how many are playing.
 - Following a new cloud up into the sky.
 
+## 10b. Review of the Implementation (2026-11-12)
+
+Decisions from reviewing iterations 1 to 1.2:
+
+- **Passive feeding stays:** it's what Zurds naturally do. Players can still spam past the mess
+  limit. To keep it from clearing every stray, each Zurd **chooses** whether to eat an object it
+  sees: about half the time it leaves it (*proposed*), and reconsiders after a while; the chance
+  rises as the Zurds get angrier. Hostile Zurds eat whatever they go after.
+- **Roaming:** with nothing to eat or watch, a Passive Zurd wanders, staying loosely near the ship
+  so the Zurds stay part of the scene.
+- **Homes are dropped** for now: with feeding and watching, Passive Zurds rarely used them.
+- **The Zurd's size** is set per part (mesh, colliders, mouth, hit area), not by scaling its
+  body, as Godot advises. The larger hit area is wanted.
+- **Later:** spawning more Zurds as objects pile up, or as a sculpture progresses.
+
 ## 11. Open Questions
 
 Answered 2026-11-12: tolerated sculpture size 15 (hard cut-off); cloud sizes per objective
@@ -221,3 +236,12 @@ Still open:
 1. **Anger feedback for players:** how players learn that mess angers the Zurds (out of scope for
    the first build; the testing HUD stands in).
 2. **The numbers** in section 8 marked *playtest*.
+3. **Attacks and anger** (from the 2026-11-12 review; Mitch is still deciding): every swat adds
+   anger, so defending makes more Zurds Hostile, which raises the question of why to swat at all.
+   Options: only attacks on Passive Zurds anger them; a lower attack anger; driving a Zurd off
+   calms the others a little.
+4. **Throwing objects at Zurds** (same review, open): a throw stuns the Zurd, adds anger as an
+   attack, and feeds it, so "pin it with an object, then swat it" mostly hands it food.
+5. **The sculpture limit and the cloud size** (to settle with objectives): every sculpture passes
+   the anger limit (10) on its way to a cloud (20), so finishing a cloud always angers the Zurds.
+6. **Spawning:** more Zurds as objects pile up, or as a sculpture grows.

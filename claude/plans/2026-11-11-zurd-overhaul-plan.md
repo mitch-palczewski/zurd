@@ -347,6 +347,35 @@ objects watches it from about `watch_distance` and never targets it.
 Files: `zurd.gd`, `zurd_director.gd`, `zurd_sight_component.gd`, `zurd.tscn` (the label; with the
 editor closed), `tests/scene/test_zurds.gd`, the design doc.
 
+## Iteration 1.3: appetite, no homes, a Zurd sized by its parts
+
+*Draft 2026-11-12, from the implementation review (design doc §10b). Approved 2026-11-12 with
+each Zurd deciding for itself and roaming near the ship.*
+
+1. **Appetite, decided by each Zurd.** When a Passive Zurd first considers a loose object it sees,
+   it decides whether to eat it, with chance `appetite` = `calm_appetite` (*proposed:* 0.5, on the
+   director) at anger 0, rising to 1 at anger 1. It keeps that decision for `appetite_recheck`
+   (*proposed:* 20 s, on the Zurd), then decides again with the anger at that time. Each Zurd
+   decides for itself, so an object one Zurd passed over may still tempt another. Hostile Zurds
+   don't decide: they eat everything they go after. The testing HUD shows the current appetite.
+2. **No homes.** `home`, `set_home` and `home_radius` go. A Passive Zurd with nothing to eat or
+   watch wanders where it is, loosely staying within `roam_radius` (*proposed:* 200 m) of the
+   ship, so the Zurds stay part of the scene. Driven-off Zurds still wait where they retreated to.
+3. **Sized by its parts.** The Zurd's body goes back to scale 1, and each part is sized instead,
+   keeping today's look and sizes from Mitch's 2× tuning: the mesh ×10 (was 5 inside a 2× body),
+   the body collider radius 3.26 m, the mouth radius 2.73 m at 2.06 m ahead, the hit area radius
+   7 m, the health bar at 6.4 m, and `avoidance_distance` 10 m (it used to be multiplied by the
+   body's scale).
+
+Tests: at anger 0, a Zurd decides to eat about half of many objects (within 0.4–0.6); at anger
+1, all of them; a Passive Zurd leaves an object it declined alone until the recheck, while a
+Hostile one eats it; a
+Passive Zurd with nothing to do stays within `roam_radius` of the ship over a minute; the Zurd's
+body is unscaled.
+
+Files: `zurd_director.gd`, `zurd.gd`, `zurd_movement_component.gd`, `zurd_testing_hud.gd`,
+`zurd.tscn` (with the editor closed), `tests/scene/test_zurds.gd`, docs.
+
 ## Later iterations (from the idea bank, when playtests ask for them)
 
 Order to be decided from playtests:
