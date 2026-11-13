@@ -8,16 +8,15 @@
 [ext_resource type="Script" uid="uid://17jgc0iwgbjq" path="res://scenes/characters/enemy/zurd_sight_component.gd" id="5_sight"]
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_vadmx"]
-radius = 1.6277677
+radius = 3.2555354
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_rmgw8"]
-radius = 1.3654847
+radius = 2.7309694
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_hit"]
-radius = 3.5
+radius = 7.0
 
 [node name="Zurd" type="CharacterBody3D" unique_id=1857394916 node_paths=PackedStringArray("sight_component", "movement_component", "mouth_component", "hit_area", "health_label", "body_mesh")]
-transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0)
 collision_layer = 8
 collision_mask = 7
 motion_mode = 1
@@ -30,12 +29,12 @@ health_label = NodePath("HealthLabel")
 body_mesh = NodePath("ZurdMesh")
 
 [node name="ZurdMesh" type="MeshInstance3D" parent="." unique_id=12317764]
-transform = Transform3D(-5, 0, -7.54979e-07, 0, 5, 0, 7.54979e-07, 0, -5, 0, 0, 0)
+transform = Transform3D(-10, 0, -1.509958e-06, 0, 10, 0, 1.509958e-06, 0, -10, 0, 0, 0)
 mesh = ExtResource("2_554ls")
 surface_material_override/0 = ExtResource("3_kn0us")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=856739639]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.1503696e-05, 0.03200817, -0.19594675)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.3007393e-05, 0.06401634, -0.3918935)
 shape = SubResource("SphereShape3D_vadmx")
 
 [node name="MouthArea" type="Area3D" parent="." unique_id=463051619]
@@ -44,7 +43,7 @@ collision_mask = 4
 script = ExtResource("2_frfjf")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="MouthArea" unique_id=1302982195]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1.0296011)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -2.0592022)
 shape = SubResource("SphereShape3D_rmgw8")
 
 [node name="HitArea" type="Area3D" parent="." unique_id=1187594903]
@@ -55,7 +54,7 @@ collision_mask = 4
 shape = SubResource("SphereShape3D_hit")
 
 [node name="HealthLabel" type="Label3D" parent="." unique_id=1123538547]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.2, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 6.4, 0)
 pixel_size = 0.001
 billboard = 1
 no_depth_test = true
@@ -71,8 +70,9 @@ script = ExtResource("5_sight")
 
 [node name="MovementComponent" type="Node" parent="." unique_id=999820958 node_paths=PackedStringArray("visual_root")]
 script = ExtResource("4_554ls")
+avoidance_distance = 10.0
 max_wander_distance = 40.0
 min_wander_distance = 10.0
 visual_root = NodePath("../ZurdMesh")
-bob_height = 0.3
+bob_height = 0.6
 sway_degrees = 5.0

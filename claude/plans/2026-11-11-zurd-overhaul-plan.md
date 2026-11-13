@@ -350,7 +350,13 @@ editor closed), `tests/scene/test_zurds.gd`, the design doc.
 ## Iteration 1.3: appetite, no homes, a Zurd sized by its parts
 
 *Draft 2026-11-12, from the implementation review (design doc §10b). Approved 2026-11-12 with
-each Zurd deciding for itself and roaming near the ship.*
+each Zurd deciding for itself and roaming near the ship. Built 2026-11-12.*
+
+**Status (2026-11-12): built.** All three parts; 108 tests pass (twice in a row). The Zurd scene
+now has an unscaled body with each part sized to match Mitch's 2× tuning, and it matches the
+engine's own save. Found while building: a Zurd only learned its director on its first physics
+frame, so a decision made before then had no appetite to go on; the director now sets it at
+spawn.
 
 1. **Appetite, decided by each Zurd.** When a Passive Zurd first considers a loose object it sees,
    it decides whether to eat it, with chance `appetite` = `calm_appetite` (*proposed:* 0.5, on the

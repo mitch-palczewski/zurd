@@ -1,7 +1,7 @@
 class_name ZurdMovementComponent
 extends Node
 
-## Moves a Zurd (Zurd Core Design Doc §5, §6): wandering around its home, hunting a target, holding
+## Moves a Zurd (Zurd Core Design Doc §5, §6): wandering around a point, hunting a target, holding
 ## its mouth on what it eats, hovering while it nibbles, the knock-back of a stun, and retreating
 ## from the ship. Between targets it keeps clear of the terrain (a height field, so climbing is
 ## enough) and of other Zurds, and it knocks around the objects it bumps into.
@@ -106,14 +106,14 @@ func _ready() -> void:
 		_visual_base_rotation = visual_root.rotation
 
 
-## Wanders around [param home]: random legs that stay within [param home_radius] of it, and a leg
-## straight back when the Zurd is outside that radius (after hunting, or when it was driven off).
-func process_wander(actor: CharacterBody3D, home: Vector3, home_radius: float, delta: float) -> void:
+## Wanders around [param center] (the ship, or where a driven-off Zurd waits): random legs that stay
+## within [param radius] of it, and a leg straight back when the Zurd is outside that radius.
+func process_wander(actor: CharacterBody3D, center: Vector3, radius: float, delta: float) -> void:
 	_wander_timer += delta
 	if (not _has_wander_target
 			or _wander_timer >= wander_timeout
 			or actor.global_position.distance_to(_wander_target) <= arrival_distance):
-		_pick_wander_target(actor, home, home_radius)
+		_pick_wander_target(actor, center, radius)
 	var direction := actor.global_position.direction_to(_wander_target)
 	_steer_and_move(actor, direction, wander_speed, wander_turn_speed, delta)
 	_process_bobbing(actor, delta)
@@ -206,19 +206,19 @@ func _process_bobbing(actor: CharacterBody3D, delta: float) -> void:
 	visual_root.rotation = _visual_base_rotation + Vector3(0.0, 0.0, sway)
 
 
-func _pick_wander_target(actor: CharacterBody3D, home: Vector3, home_radius: float) -> void:
+func _pick_wander_target(actor: CharacterBody3D, center: Vector3, radius: float) -> void:
 	_has_wander_target = true
 	_wander_timer = 0.0
-	if actor.global_position.distance_to(home) > home_radius:
-		# Head back toward home, to a spot near it.
-		var near_home := Vector3(randf_range(-1.0, 1.0), randf_range(-1.0, 1.0) * wander_vertical, randf_range(-1.0, 1.0))
-		_wander_target = home + near_home * home_radius * 0.3
+	if actor.global_position.distance_to(center) > radius:
+		# Head back toward the center, to a spot near it.
+		var near_center := Vector3(randf_range(-1.0, 1.0), randf_range(-1.0, 1.0) * wander_vertical, randf_range(-1.0, 1.0))
+		_wander_target = center + near_center * radius * 0.3
 	else:
 		var direction := Vector3(randf_range(-1.0, 1.0), randf_range(-1.0, 1.0) * wander_vertical, randf_range(-1.0, 1.0))
 		if direction.is_zero_approx():
 			direction = Vector3.FORWARD
 		var target := actor.global_position + direction.normalized() * randf_range(min_wander_distance, max_wander_distance)
-		_wander_target = home + (target - home).limit_length(home_radius)
+		_wander_target = center + (target - center).limit_length(radius)
 	# Never into the ground: lift the destination clear of the terrain under it.
 	_wander_target.y = maxf(_wander_target.y, _get_ground_height(actor, _wander_target) + ground_clearance)
 

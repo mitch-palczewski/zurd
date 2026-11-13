@@ -91,10 +91,13 @@ completed (section 7). During the first objective the Zurds stay Passive whateve
 
 ### 5.1 Passive
 
-- Wanders around a loose home area, alone or in pairs. Ignores the ship.
-- **Feeds on loose objects it sees** (changed 2026-11-12): it goes to the nearest one in sight at
-  an easy pace (*proposed:* its wander speed, 10 m/s) and eats it slowly (*proposed:* 4 s a bite,
-  against 3 s for a Hostile Zurd). So stray objects disappear even while the Zurds are calm.
+- With nothing to eat or watch, it roams, staying loosely near the ship (*proposed:* within
+  200 m). Ignores the ship otherwise. (Homes were dropped 2026-11-12.)
+- **Feeds on loose objects it sees, by choice** (changed 2026-11-12): for each object it sees it
+  decides whether to eat it, about half the time when the Zurds are calm and always at full anger,
+  and decides again after a while (*proposed:* 20 s). It goes to the ones it wants at an easy pace
+  (*proposed:* its wander speed, 10 m/s) and eats them slowly (*proposed:* 4 s a bite, against 3 s
+  for a Hostile Zurd). So strays thin out even while the Zurds are calm, but don't vanish.
 - **Watches sculptures it sees,** from nearby (*proposed:* 25 m): it stops to look, then moves to
   another spot around it. It never eats a sculpture while Passive, so building one sculpture is
   always the safe play.
@@ -175,6 +178,10 @@ All *proposed*, tuned in playtests.
 | Feeding speed | Speed a Passive Zurd goes to food at | 10 m/s |
 | Watch distance | How far from a sculpture a Passive Zurd watches it from | 25 m |
 | Watch pause | How long it stops to look before moving around it | 3 s |
+| Calm appetite | Chance a Passive Zurd decides to eat an object it sees, at anger 0 (rising to 1 at full anger) | 0.5 |
+| Appetite recheck | How long a Zurd keeps its decision about an object | 20 s |
+| Roam radius | How far from the ship an idle Passive Zurd roams | 200 m |
+| Hit area | Radius in which a thrown object stuns the Zurd | 7 m |
 | Stun swats | Swats that stun | 2 |
 | Stun time | Length of a stun | 1.5 s |
 | Drive-off swat | The swat that drives a Zurd off (ramming counts; launched objects only stun) | 3rd |

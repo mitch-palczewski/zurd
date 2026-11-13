@@ -40,6 +40,11 @@ extends Node
 ## Least time a Zurd stays Hostile before it can calm down.
 @export var hostile_cooldown: float = 10.0
 
+@export_group("Appetite")
+## The chance a Passive Zurd decides to eat a loose object it sees, when the Zurds are calm. It
+## rises to 1 at full anger (see [method get_appetite]).
+@export_range(0.0, 1.0) var calm_appetite: float = 0.5
+
 @export_group("Testing")
 ## Shows the testing HUD (anger, Zurds, mess) for playtests.
 @export var show_testing_hud: bool = true
@@ -77,7 +82,7 @@ func _physics_process(delta: float) -> void:
 		EventBus.zurd_anger_changed.emit(anger.value)
 
 
-## Spawns a Zurd at [param at], with its home there.
+## Spawns a Zurd at [param at].
 func spawn_zurd(at: Vector3) -> Zurd:
 	if zurd_scene == null:
 		push_error("ZurdDirector: No zurd_scene assigned.")
@@ -86,13 +91,13 @@ func spawn_zurd(at: Vector3) -> Zurd:
 	if zurd == null:
 		push_error("ZurdDirector: zurd_scene's root must be a Zurd.")
 		return null
+	zurd.director = self
 	EventBus.spawn_requested.emit(zurd)
 	if not zurd.is_inside_tree():
 		push_warning("ZurdDirector: No world picked up the spawn request.")
 		zurd.free()
 		return null
 	zurd.global_position = at
-	zurd.set_home(at)
 	return zurd
 
 
@@ -112,6 +117,12 @@ func get_loose_objects() -> Array[RigidBody3D]:
 		if ObjectTracker.is_trackable(obj) and obj is RigidBody3D and not obj is SculptureMass:
 			loose.append(obj)
 	return loose
+
+
+## The chance a Passive Zurd decides to eat a loose object it sees: [member calm_appetite] when the
+## Zurds are calm, rising to 1 with the anger.
+func get_appetite() -> float:
+	return lerpf(calm_appetite, 1.0, anger.value)
 
 
 ## The mess the Zurds care about: loose objects plus sculptures, each sculpture counting one.

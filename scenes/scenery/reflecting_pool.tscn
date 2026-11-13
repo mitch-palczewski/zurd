@@ -1,0 +1,22 @@
+[gd_scene format=3 uid="uid://dv2jbnpol7244"]
+
+[ext_resource type="PackedScene" uid="uid://bd5xjboyai057" path="res://assets/models/scenery/reflecting_pool_01.glb" id="1_2aw30"]
+[ext_resource type="Shader" uid="uid://di2u040n23tor" path="res://assets/shaders/reflecting_pool_water.gdshader" id="2_qcgyi"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_t3g22"]
+render_priority = 0
+shader = ExtResource("2_qcgyi")
+shader_parameter/water_color = Color(0.02, 0.05, 0.06, 1)
+shader_parameter/roughness = 0.02
+shader_parameter/ripple_size = 20.0
+shader_parameter/ripple_strength = 0.1
+shader_parameter/ripple_speed = 0.02
+
+[node name="ReflectingPool" type="Node3D" unique_id=467949867]
+
+[node name="reflecting_pool_01" parent="." unique_id=1987963124 instance=ExtResource("1_2aw30")]
+
+[node name="water" parent="reflecting_pool_01" index="1" unique_id=1982028077]
+surface_material_override/0 = SubResource("ShaderMaterial_t3g22")
+
+[editable path="reflecting_pool_01"]

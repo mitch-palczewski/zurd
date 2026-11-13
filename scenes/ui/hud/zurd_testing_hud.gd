@@ -30,6 +30,7 @@ func _process(_delta: float) -> void:
 		"ZURDS (testing)",
 		"anger  %s %.2f" % ["█".repeat(filled) + "░".repeat(BAR_LENGTH - filled), anger.value],
 		"hostile  %d of %d   (driven off: %d)" % [hostile, zurds.size(), away],
+		"appetite  %.0f%%" % (_director.get_appetite() * 100.0),
 		"mess  %d / %d   (loose %d, sculptures %d)" % [_director.get_mess_count(), anger.tolerated_mess, _director.get_loose_objects().size(), _director.get_sculptures().size()],
 		"largest sculpture  %d / %d" % [largest, anger.tolerated_sculpture_size],
 	]))

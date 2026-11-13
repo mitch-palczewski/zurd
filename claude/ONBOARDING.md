@@ -178,7 +178,7 @@ builds the C# project (needs internet once). You need to install these applicati
   `GameSystems`) keeps one shared **anger**: it rises when objects are launched past a mess limit,
   sculptures grow past a size limit, or Zurds are attacked; launching under the limits holds it;
   it falls once the players stop. The angrier, the more Zurds turn **Hostile** (nearest the mess
-  first) and hunt loose objects, then large sculptures; **Passive** Zurds wander near home and
+  first) and hunt loose objects, then large sculptures; **Passive** Zurds roam near the ship and
   only nibble a loose object they drift into. Swats stun a Zurd, and the third drives it away
   for a while; ramming counts as a swat; a launched object only stuns it, then it eats that
   object. `Zurd` (`class_name Zurd`, a `CharacterBody3D`) delegates to components:

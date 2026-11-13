@@ -24,14 +24,18 @@ func test_starting_zurds_spawn_around_the_ship() -> void:
 	check_equal(zurds.size(), director.starting_zurds, "the world starts with starting_zurds Zurds")
 	for zurd in zurds:
 		check(zurd.get_parent() == world.get_node(^"Actors/Zurds"), "each is in Actors/Zurds")
+		check(zurd.global_basis.get_scale().is_equal_approx(Vector3.ONE), "its body isn't scaled (Godot advises against scaling physics bodies)")
 		check(not zurd.is_hostile, "each starts Passive")
 		var distance := _ground_distance(zurd, ship)
-		check(distance >= director.spawn_distance.x - director.pair_spacing and distance <= director.spawn_distance.y + director.pair_spacing,
+		# A pair's second Zurd starts up to pair_spacing off, and they've moved a little since.
+		var margin := director.pair_spacing + 5.0
+		check(distance >= director.spawn_distance.x - margin and distance <= director.spawn_distance.y + margin,
 				"each starts spawn_distance from the ship (%.0f m)" % distance)
 
 
 func test_passive_zurd_feeds_on_loose_objects_it_sees() -> void:
 	await _setup()
+	director.calm_appetite = 1.0
 	var zurd := _spawn_still_zurd(AREA)
 	var food := spawn_object(OTHER, AREA + Vector3(30.0, 0.0, 0.0))
 	var out_of_sight := spawn_object(OTHER, AREA + Vector3(0.0, 0.0, zurd.sight_component.sight_radius + 50.0))
@@ -50,6 +54,67 @@ func test_passive_zurd_feeds_on_loose_objects_it_sees() -> void:
 	check(fastest <= zurd.movement_component.feeding_speed + 0.5, "no faster than feeding_speed (%.1f m/s)" % fastest)
 	check_near(time - eating_from, zurd.passive_eat_time, 1.0, "it eats a bite in passive_eat_time")
 	check(is_instance_valid(out_of_sight), "it leaves an object out of sight alone")
+
+
+func test_appetite_rises_with_anger() -> void:
+	await _setup()
+	var zurd := _spawn_still_zurd(AREA)
+	# Decisions last appetite_recheck; 0 makes each one due again on the next frame.
+	zurd.appetite_recheck = 0.0
+	director.anger.decay_rate = 0.0
+	var objects: Array[Node3D] = []
+	for i in 400:
+		objects.append(Node3D.new())
+	var eaten := objects.filter(func(obj: Node3D) -> bool: return zurd.wants_to_eat(obj)).size()
+	var share := float(eaten) / objects.size()
+	check(share >= director.calm_appetite - 0.1 and share <= director.calm_appetite + 0.1,
+			"calm, a Zurd decides to eat about calm_appetite of the objects it sees (%.0f%%)" % (share * 100.0))
+	await wait_physics(1)
+	director.anger.value = 1.0
+	check(objects.all(func(obj: Node3D) -> bool: return zurd.wants_to_eat(obj)), "at full anger it wants to eat them all")
+	for obj in objects:
+		obj.free()
+
+
+func test_declined_objects_wait_for_a_second_look() -> void:
+	await _setup()
+	director.calm_appetite = 0.0
+	director.anger.decay_rate = 0.0
+	var zurd := _spawn_still_zurd(AREA)
+	zurd.appetite_recheck = 3.0
+	var food := spawn_object(OTHER, AREA + Vector3(30.0, 0.0, 0.0))
+	await wait_seconds(1.0)
+	check(zurd.get_target() == null and is_instance_valid(food), "a Passive Zurd that decided against an object leaves it alone")
+	director.calm_appetite = 1.0
+	var reconsidered := await wait_until(func() -> bool: return zurd.get_target() == food, zurd.appetite_recheck + 1.0)
+	check(reconsidered, "after appetite_recheck it decides again (and now wants it)")
+
+
+func test_hostile_zurds_eat_what_they_declined() -> void:
+	await _setup()
+	director.calm_appetite = 0.0
+	director.anger.decay_rate = 0.0
+	var zurd := _spawn_still_zurd(AREA)
+	zurd.appetite_recheck = 1000.0
+	var spurned := spawn_object(OTHER, AREA + Vector3(30.0, 0.0, 0.0))
+	await wait_seconds(1.0)
+	check(zurd.get_target() == null, "set-up: the Passive Zurd decided against the object")
+	director.anger.value = 1.0
+	var hunted := await wait_until(func() -> bool: return zurd.is_hostile and zurd.get_target() == spurned, 2.0)
+	check(hunted, "once Hostile, it goes after the object anyway")
+
+
+func test_idle_passive_zurds_roam_near_the_ship() -> void:
+	await _setup()
+	var zurd := director.spawn_zurd(ship.global_position + Vector3(350.0, 0.0, 0.0))
+	var radius := zurd.roam_radius
+	var came_back := await wait_until(func() -> bool: return _ground_distance(zurd, ship) <= radius, 60.0)
+	check(came_back, "a Passive Zurd far from the ship roams back near it")
+	var furthest := 0.0
+	for frame in 30 * Engine.physics_ticks_per_second:
+		await get_tree().physics_frame
+		furthest = maxf(furthest, _ground_distance(zurd, ship))
+	check(furthest <= radius * 1.25, "and stays near it (%.0f m at most, roam_radius %.0f m)" % [furthest, radius])
 
 
 func test_passive_zurd_watches_sculptures_without_eating_them() -> void:
@@ -166,6 +231,7 @@ func test_hostile_zurds_calm_down_after_the_cooldown() -> void:
 
 func test_swats_stun_then_drive_off() -> void:
 	await _setup()
+	director.calm_appetite = 1.0
 	var zurd := _spawn_still_zurd(AREA)
 	zurd.away_time = 2.0
 	var stunned := watch(EventBus.zurd_stunned)

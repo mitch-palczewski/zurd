@@ -1,9 +1,10 @@
 class_name Zurd
 extends CharacterBody3D
 
-## A Zurd (Zurd Core Design Doc §5, §6). Passive, it goes after loose objects it sees at an easy
-## pace and eats them slowly, watches sculptures it sees from nearby, and otherwise wanders around
-## its home. Hostile, it hunts loose objects, then large sculptures. The [ZurdDirector] decides which
+## A Zurd (Zurd Core Design Doc §5, §6). Passive, it decides object by object whether to eat the
+## loose objects it sees (more often the angrier the Zurds are), goes after those at an easy pace
+## and eats them slowly, watches sculptures it sees from nearby, and otherwise roams near the ship.
+## Hostile, it hunts loose objects, then large sculptures. The [ZurdDirector] decides which
 ## Zurds are Hostile; one told to calm down finishes the target it has first. Its first swats stun
 ## it; the last drives it away from the ship for a while. A launched object flying into it only
 ## stuns it, and it eats that object afterwards.
@@ -22,11 +23,14 @@ const GROUP := &"zurds"
 ## Gets the placeholder Hostile tint.
 @export var body_mesh: MeshInstance3D
 
-@export_group("Wandering")
-## How far from its home a Passive Zurd wanders. Loose: hunting can take it far away.
-@export var home_radius: float = 100.0
+@export_group("Passive")
+## How far from the ship a Passive Zurd with nothing to eat or watch roams. Loose: food and
+## sculptures can draw it further.
+@export var roam_radius: float = 200.0
 ## Seconds a Passive Zurd takes to eat a bite (a Hostile one takes the mouth's eat_duration).
 @export var passive_eat_time: float = 4.0
+## How long a Passive Zurd keeps its decision to eat an object or leave it, before deciding again.
+@export var appetite_recheck: float = 20.0
 
 @export_group("Hits")
 ## The swat that drives the Zurd off; the swats before it stun it.
@@ -43,15 +47,13 @@ const GROUP := &"zurds"
 @export_group("Driven Off")
 ## How far from the ship (on the ground plane) a driven-off Zurd flies before it stops.
 @export var retreat_distance: float = 300.0
-## How long it stays away before heading home.
+## How long it stays away before it comes back.
 @export var away_time: float = 20.0
 
 @export_group("Look")
 ## Placeholder tint while Hostile.
 @export var hostile_color: Color = Color(1.0, 0.1, 0.1, 0.45)
 
-## Where the Zurd wanders while Passive. Whoever spawns it sets it; otherwise where it starts.
-var home: Vector3
 ## Set by the [ZurdDirector] that directs this Zurd.
 var director: ZurdDirector
 var is_hostile: bool = false
@@ -62,13 +64,19 @@ var hostile_time: float = 0.0
 ## Swats since it last came back from being driven off.
 var swats: int = 0
 
-var _home_set: bool = false
 var _target: Node3D = null
+## Game time, for appetite decisions.
+var _time: float = 0.0
+## A Passive Zurd's decisions about objects it has seen: object -> [eat it?, decided until]. Untyped
+## keys, because an object may have been freed.
+var _appetite: Dictionary = {}
 var _look_timer: float = 0.0
 var _stun_left: float = 0.0
 var _retreating: bool = false
 var _away_left: float = 0.0
 var _away_spot: Vector3
+## Where the Zurd was driven off, for retreating when there's no ship to flee from.
+var _retreat_origin: Vector3
 ## The launched object that stunned the Zurd; it eats it after the stun.
 var _caught: Node3D = null
 var _hostile_material: StandardMaterial3D
@@ -78,8 +86,6 @@ var _hit_cooldown_left: float = 0.0
 
 func _ready() -> void:
 	add_to_group(GROUP)
-	if not _home_set:
-		home = global_position
 	_hostile_material = StandardMaterial3D.new()
 	_hostile_material.albedo_color = hostile_color
 	_hostile_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
@@ -92,6 +98,7 @@ func _ready() -> void:
 func _physics_process(delta: float) -> void:
 	if not sight_component or not movement_component or not mouth_component:
 		return
+	_time += delta
 	if is_hostile:
 		hostile_time += delta
 	_hit_cooldown_left -= delta
@@ -107,7 +114,8 @@ func _physics_process(delta: float) -> void:
 		_away_left -= delta
 		if _away_left <= 0.0:
 			_come_back()
-		movement_component.process_wander(self, _away_spot, home_radius, delta)
+		# It stays around where it retreated to until it comes back.
+		movement_component.process_wander(self, _away_spot, retreat_distance * 0.2, delta)
 		return
 
 	_look_timer -= delta
@@ -127,13 +135,22 @@ func _physics_process(delta: float) -> void:
 		if watched:
 			movement_component.process_watch(self, watched.get_global_center_of_mass(), delta)
 		else:
-			movement_component.process_wander(self, home, home_radius, delta)
+			var ship := get_tree().get_first_node_in_group(PlayerShip.GROUP) as Node3D
+			movement_component.process_wander(self, ship.global_position if ship else global_position, roam_radius, delta)
 
 
-## Sets where the Zurd wanders while Passive.
-func set_home(at: Vector3) -> void:
-	home = at
-	_home_set = true
+## Whether this Zurd, while Passive, wants to eat [param obj]: decided with the director's appetite
+## the first time it considers the object, and again once the decision is
+## [member appetite_recheck] old.
+func wants_to_eat(obj: Node3D) -> bool:
+	var decision: Array = _appetite.get(obj, [])
+	if decision.is_empty() or _time >= decision[1]:
+		var appetite := director.get_appetite() if director else 1.0
+		decision = [randf() < appetite, _time + appetite_recheck]
+		_appetite[obj] = decision
+		if _appetite.size() > 64:
+			_forget_freed_objects()
+	return decision[0]
 
 
 ## Called by the [ZurdDirector]. A driven-off Zurd can't turn Hostile until it's back. A Hostile
@@ -212,7 +229,8 @@ func _choose_target() -> Node3D:
 		var tolerated: int = director.anger.tolerated_sculpture_size if director else 15
 		target = sight_component.find_hostile_target(global_position, tolerated, is_free)
 	else:
-		target = sight_component.find_loose_target(global_position, is_free)
+		var appealing := func(obj: Node3D) -> bool: return is_free.call(obj) and wants_to_eat(obj)
+		target = sight_component.find_loose_target(global_position, appealing)
 	if director:
 		if target:
 			director.claim(self, target)
@@ -250,6 +268,7 @@ func _set_state(hostile: bool) -> void:
 
 func _drive_off() -> void:
 	_set_state(false)
+	_retreat_origin = global_position
 	_stun_left = 0.0
 	_caught = null
 	_retreating = true
@@ -257,7 +276,7 @@ func _drive_off() -> void:
 
 func _process_retreat(delta: float) -> void:
 	var ship := get_tree().get_first_node_in_group(PlayerShip.GROUP) as Node3D
-	var away_from := ship.global_position if ship else home
+	var away_from := ship.global_position if ship else _retreat_origin
 	var offset := global_position - away_from
 	if Vector2(offset.x, offset.z).length() >= retreat_distance:
 		_retreating = false
@@ -265,6 +284,12 @@ func _process_retreat(delta: float) -> void:
 		_away_spot = global_position
 		return
 	movement_component.process_retreat(self, away_from, delta)
+
+
+func _forget_freed_objects() -> void:
+	for obj in _appetite.keys():
+		if not is_instance_valid(obj):
+			_appetite.erase(obj)
 
 
 func _come_back() -> void:
