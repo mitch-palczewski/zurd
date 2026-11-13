@@ -1,22 +1,27 @@
 [gd_scene format=3 uid="uid://dv2jbnpol7244"]
 
+[ext_resource type="Script" path="res://scenes/scenery/reflecting_pool.gd" id="1_pool"]
 [ext_resource type="PackedScene" uid="uid://bd5xjboyai057" path="res://assets/models/scenery/reflecting_pool_01.glb" id="1_2aw30"]
-[ext_resource type="Shader" uid="uid://di2u040n23tor" path="res://assets/shaders/reflecting_pool_water.gdshader" id="2_qcgyi"]
+[ext_resource type="Material" path="res://assets/materials/reflecting_pool_basin.tres" id="2_basin"]
+[ext_resource type="Material" path="res://assets/materials/reflecting_pool_water.tres" id="3_water"]
+[ext_resource type="Script" path="res://scenes/scenery/planar_reflection.gd" id="4_reflection"]
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_t3g22"]
-render_priority = 0
-shader = ExtResource("2_qcgyi")
-shader_parameter/water_color = Color(0.02, 0.05, 0.06, 1)
-shader_parameter/roughness = 0.02
-shader_parameter/ripple_size = 20.0
-shader_parameter/ripple_strength = 0.1
-shader_parameter/ripple_speed = 0.02
-
-[node name="ReflectingPool" type="Node3D" unique_id=467949867]
+[node name="ReflectingPool" type="Node3D" unique_id=467949867 node_paths=PackedStringArray("basin_mesh")]
+script = ExtResource("1_pool")
+basin_mesh = NodePath("reflecting_pool_01/basin")
 
 [node name="reflecting_pool_01" parent="." unique_id=1987963124 instance=ExtResource("1_2aw30")]
 
+[node name="basin" parent="reflecting_pool_01" index="0" unique_id=171899158]
+layers = 524288
+surface_material_override/0 = ExtResource("2_basin")
+
 [node name="water" parent="reflecting_pool_01" index="1" unique_id=1982028077]
-surface_material_override/0 = SubResource("ShaderMaterial_t3g22")
+layers = 524288
+surface_material_override/0 = ExtResource("3_water")
+
+[node name="PlanarReflection" type="Node" parent="." unique_id=1340217754 node_paths=PackedStringArray("water_mesh")]
+script = ExtResource("4_reflection")
+water_mesh = NodePath("../reflecting_pool_01/water")
 
 [editable path="reflecting_pool_01"]

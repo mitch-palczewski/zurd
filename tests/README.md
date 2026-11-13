@@ -38,7 +38,7 @@ file as it was before is kept in the OS temp folder under `zurd_tests_backup/`.
 
 | Folder | Runs | Covers |
 | --- | --- | --- |
-| `unit/` | without the game world | object parts and sizes, break-off geometry, the object catalog (and that every rigid scene is in it and keeps the collider contract), the object tracker, controller profiles and the Controllers autoload, scene loading, the main menu, and that every scene and resource loads |
+| `unit/` | without the game world | object parts and sizes, break-off geometry, the object catalog (and that every rigid scene is in it and keeps the collider contract), the object tracker, controller profiles and the Controllers autoload, scene loading, the main menu, the reflecting pool's mirror camera and outline edges, and that every scene and resource loads |
 | `scene/` | in `zurd_world.tscn` | sculpture masses (fuse, combine, merge, growth break-off, bites, break-off, clouds), the ship's flight, launching and the launch station, the world's layout (its parts, where spawned things go, the worlds built on it), and the Zurds (starting Zurds, nibbling, anger and the mess count, who turns Hostile and what they hunt, one Zurd per target, personal space, keeping clear of the terrain, calming down, swats, ramming, object hits) |
 
 Not covered, on purpose:

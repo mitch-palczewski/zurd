@@ -1,0 +1,26 @@
+[gd_resource type="ShaderMaterial" format=3 uid="uid://joexhwiycjt4"]
+
+[ext_resource type="Shader" uid="uid://di2u040n23tor" path="res://assets/shaders/reflecting_pool_water.gdshader" id="1_water"]
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_ripple"]
+frequency = 0.02
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_ripple"]
+noise = SubResource("FastNoiseLite_ripple")
+seamless = true
+as_normal_map = true
+bump_strength = 4.0
+
+[resource]
+render_priority = 0
+shader = ExtResource("1_water")
+shader_parameter/water_color = Color(0.09667211, 0.20949543, 0.26805374, 1)
+shader_parameter/roughness = 0.030000001425
+shader_parameter/ripple_normal = SubResource("NoiseTexture2D_ripple")
+shader_parameter/ripple_size = 50.0
+shader_parameter/ripple_strength = 0.46000002185
+shader_parameter/ripple_speed = 0.03
+shader_parameter/distortion = 0.01
+shader_parameter/mirror_straight_down = 0.170000008075
+shader_parameter/reflection_strength = 0.73600003496
+shader_parameter/reflection_active = false
