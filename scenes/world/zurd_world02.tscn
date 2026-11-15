@@ -6,4 +6,4 @@
 [node name="BaseWorld" unique_id=1406931788 instance=ExtResource("1_28esl")]
 
 [node name="Terrain02" parent="." index="4" unique_id=432275119 instance=ExtResource("2_y5tpc")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -76.014694, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -332.1801, 0)

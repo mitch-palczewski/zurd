@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://c32y6isjt01i"]
+
+[ext_resource type="Script" path="res://scenes/scenery/sky_canopy.gd" id="1_canopy"]
+[ext_resource type="Material" path="res://assets/materials/sky_canopy.tres" id="2_canopy"]
+
+[node name="SkyCanopy" type="Node3D" unique_id=1873402219]
+script = ExtResource("1_canopy")
+canopy_material = ExtResource("2_canopy")

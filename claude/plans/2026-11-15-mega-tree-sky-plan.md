@@ -1,6 +1,7 @@
 # Mega trees fading into the sky — plan
 
-Status: **draft, waiting for review** (open questions at the end).
+Status: **approved 2026-11-15** (answers at the end; the canopy footprint follows the trees,
+answer 8).
 
 ## Goal
 
@@ -92,3 +93,45 @@ New include file `assets/shaders/sky_match.gdshaderinc` with `sky_color(world_di
 9. **Trunk base colour:** keep plain white/grey for now, or a colour you have in mind?
 10. **World:** only `terrain02` / `zurd_world02` (the only one with mega trees)? Which world is the main one now that `zurd_world.tscn` is deleted?
 11. **Uncommitted changes:** the tree has many (new worlds, terrain, mega tree, reflecting pool moves). Commit them first before I build (recommended), build on top, or stop?
+
+## Answers (2026-11-15)
+
+1. The sky behind them. 2. Yes, adjustable. 3. Yes, subtle. 4. Yes. 5. Start with a stand-in and
+leave the slot to swap. 6. A very subtle gold. 7. Slowly, to be refined. 8. Continuous where the
+trees stand close: left to Claude, who chose soft patches around each tree that merge (below).
+9. Grey-pink. 10. `zurd_world02` / `terrain02` only. 11. Committed by the user before the build.
+
+## As built (changes from the approach above)
+
+- **The trunk fades with transparency, not by painting the sky colour.** Painting the sky colour
+  worked against the open sky, but where the far side of the canopy is behind a trunk on screen
+  the faded trunk showed sky blue in front of the canopy. The trunk material
+  (`sky_fade.gdshader`) now sets `ALPHA`, with `depth_prepass_alpha` so the solid lower trunk still
+  writes depth, and `render_priority = -1` so trunks draw before the canopy and other transparent
+  things. It vanishes into whatever is behind it. `sky_match.gdshaderinc` is used by the canopy
+  only. (Godot draws the background sky from a 256-pixel cubemap, so a surface painted with the
+  panorama is slightly sharper than the sky; raising the sky's radiance size to 2048 to match
+  crashed the GPU driver on the dev machine, so the environment is unchanged.)
+- **The footprint follows the trees.** `SkyCanopy` (`scenes/scenery/sky_canopy.gd`, `@tool`) finds
+  every node in group `mega_trees` (added to `mega_tree.tscn`), builds one grid mesh over them
+  (margin 1.6 × `tree_radius`, raised `dome_height` in the middle), and bakes into each vertex's
+  colour how much canopy belongs there: a sum of soft falloffs around each tree, so close trees
+  share one canopy. The shells are built in the editor and the game and aren't saved; *Refresh*
+  rebuilds them after trees move. The shared material stays live-tunable in the inspector.
+- Added `assets/shaders/noise.gdshaderinc` (3D value noise and fbm) for the fade line and the canopy.
+- Added `shape_contrast` to the canopy: without it the noise spans too little and the outline
+  followed the round footprint.
+- The canopy's colour starts from the sky's brightest channel (not its luminance, which went muddy
+  against blue sky), tinted toward `cloud_tint`. The paint slot holds a stand-in `NoiseTexture2D`
+  at strength 0.25, read as plain values (mid-grey = no change); clear it or swap in a painting.
+- Starting values: fade 250 → 800, wobble 40 m; canopy at Y 850, `tree_radius` 550, 4 shells
+  40 m apart.
+
+## Verification done
+
+- Screenshots of `zurd_world02` from four spots (windowed, scratch script). The trunks fade into
+  the sky and up into the canopy with no visible ends. The canopy sits over the grove with an
+  irregular outline. Two shots 5 s apart at 12× morph speed show the outline changing.
+- Test suite: all unit tests pass (including every scene and resource loading). Every scene test
+  fails before this change too: they load `res://scenes/world/zurd_world.tscn`, deleted in
+  b81ab58.

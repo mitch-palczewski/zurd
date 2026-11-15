@@ -1,0 +1,34 @@
+[gd_resource type="ShaderMaterial" format=3 uid="uid://dbufysbvl8tb0"]
+
+[ext_resource type="Shader" uid="uid://c5t5oda13greh" path="res://assets/shaders/sky_canopy.gdshader" id="1_canopy"]
+[ext_resource type="Texture2D" uid="uid://bqwcx5o4ofubv" path="res://assets/_misc/citrus_orchard_road.hdr" id="2_sky"]
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_paint"]
+frequency = 0.008
+fractal_octaves = 6
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_paint"]
+noise = SubResource("FastNoiseLite_paint")
+seamless = true
+
+[resource]
+render_priority = 0
+shader = ExtResource("1_canopy")
+shader_parameter/sky_panorama = ExtResource("2_sky")
+shader_parameter/sky_energy = 0.4
+shader_parameter/shape_size = 700.0
+shader_parameter/coverage = 0.65
+shader_parameter/edge_softness = 0.15
+shader_parameter/shape_contrast = 2.2
+shader_parameter/warp_strength = 1.3
+shader_parameter/morph_speed = 0.004
+shader_parameter/drift = Vector2(1, 0.4)
+shader_parameter/cloud_tint = Color(1, 0.9, 0.72, 1)
+shader_parameter/cloud_strength = 0.5
+shader_parameter/cloud_brightness = 1.4
+shader_parameter/thickness_shade = 0.15
+shader_parameter/opacity = 0.85
+shader_parameter/layer_fade = 0.15
+shader_parameter/canopy_texture = SubResource("NoiseTexture2D_paint")
+shader_parameter/texture_scale = 600.0
+shader_parameter/texture_strength = 0.25

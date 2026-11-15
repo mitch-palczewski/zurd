@@ -1,0 +1,16 @@
+[gd_resource type="ShaderMaterial" format=3 uid="uid://cv1nr0vxfl147"]
+
+[ext_resource type="Shader" uid="uid://b6n1uu4d74d16" path="res://assets/shaders/sky_fade.gdshader" id="1_fade"]
+
+[resource]
+render_priority = -1
+shader = ExtResource("1_fade")
+shader_parameter/base_color = Color(0.62, 0.53, 0.55, 1)
+shader_parameter/roughness = 0.9
+shader_parameter/foot_shade = 0.25
+shader_parameter/foot_shade_height = 300.0
+shader_parameter/fade_start = 250.0
+shader_parameter/fade_end = 1600.0
+shader_parameter/fade_wobble = 40.0
+shader_parameter/wobble_size = 120.0
+shader_parameter/wobble_speed = 0.01
