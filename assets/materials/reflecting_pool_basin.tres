@@ -5,7 +5,7 @@
 [resource]
 render_priority = 0
 shader = ExtResource("1_checker")
-shader_parameter/color_a = Color(0.10104514, 0.09953088, 0.34642485, 1)
+shader_parameter/color_a = Color(0.09795769, 0.11925774, 0.30227414, 1)
 shader_parameter/color_b = Color(0.4996786, 0.3553926, 0.1126788, 1)
 shader_parameter/square_size = 1.0
 shader_parameter/offset = Vector3(0, 0, 0)

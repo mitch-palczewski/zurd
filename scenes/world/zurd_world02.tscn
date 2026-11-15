@@ -1,0 +1,9 @@
+[gd_scene format=3 uid="uid://cosmow4dsimvy"]
+
+[ext_resource type="PackedScene" uid="uid://8u5j2653xk4d" path="res://scenes/world/base_world.tscn" id="1_28esl"]
+[ext_resource type="PackedScene" uid="uid://bpdnbcc6nbmxt" path="res://scenes/world/terrain02.tscn" id="2_y5tpc"]
+
+[node name="BaseWorld" unique_id=1406931788 instance=ExtResource("1_28esl")]
+
+[node name="Terrain02" parent="." index="4" unique_id=432275119 instance=ExtResource("2_y5tpc")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -76.014694, 0)

@@ -1,0 +1,12 @@
+[gd_resource type="ShaderMaterial" format=3 uid="uid://6oeukltnb3fd"]
+
+[ext_resource type="Shader" uid="uid://btvnrfv03n1xw" path="res://assets/shaders/checkerboard.gdshader" id="1_0ds33"]
+
+[resource]
+render_priority = 0
+shader = ExtResource("1_0ds33")
+shader_parameter/color_a = Color(0.072961785, 0.079069935, 0.13212958, 1)
+shader_parameter/color_b = Color(0.28796113, 0.25559455, 0.23940271, 1)
+shader_parameter/square_size = 50.0
+shader_parameter/offset = Vector3(0, 0, 0)
+shader_parameter/roughness = 0.6

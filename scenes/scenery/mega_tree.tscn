@@ -1,0 +1,5 @@
+[gd_scene format=3 uid="uid://ccbi2r1wqtjca"]
+
+[ext_resource type="PackedScene" uid="uid://bom54lrned14g" path="res://assets/models/terrain/mega_tree.glb" id="1_oqq6x"]
+
+[node name="mega_tree" unique_id=1328218593 instance=ExtResource("1_oqq6x")]

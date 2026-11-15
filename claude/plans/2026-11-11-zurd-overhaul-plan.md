@@ -382,6 +382,25 @@ body is unscaled.
 Files: `zurd_director.gd`, `zurd.gd`, `zurd_movement_component.gd`, `zurd_testing_hud.gd`,
 `zurd.tscn` (with the editor closed), `tests/scene/test_zurds.gd`, docs.
 
+## Playtest notes, not yet planned
+
+*Noted 2026-11-13 from playtesting, for the next iteration's plan.*
+
+- **Zurds follow the ship too closely.** They should want to be *nearby*, around the ship, not on
+  its tail.
+- **They bunch up and chase the ship as a pack.** Each should keep to its own patch around the
+  ship, not move with the others.
+
+A first look at the likely cause (not yet confirmed in play): a Passive Zurd with nothing to eat
+or watch roams within `roam_radius` of the ship. Once it is farther than that, it picks a spot
+within 30% of the radius of the ship (`ZurdMovementComponent._pick_wander_target`). When the ship
+flies off, every Zurd crosses that limit at about the same time and heads for the same small area
+around the ship. So they all turn together and arrive in a group close to the ship, and do it
+again each time the ship moves on. Ideas to weigh when planning: a minimum distance from the ship
+as well as a maximum; each Zurd keeping its own bearing or spot around the ship instead of one
+shared centre; a delay before a Zurd notices the ship has moved; and following the ship's past
+position instead of its current one.
+
 ## Later iterations (from the idea bank, when playtests ask for them)
 
 Order to be decided from playtests:

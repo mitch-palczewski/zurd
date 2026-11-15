@@ -1,22 +1,24 @@
 [gd_scene format=3 uid="uid://dv2jbnpol7244"]
 
-[ext_resource type="Script" path="res://scenes/scenery/reflecting_pool.gd" id="1_pool"]
-[ext_resource type="PackedScene" uid="uid://bd5xjboyai057" path="res://assets/models/scenery/reflecting_pool_01.glb" id="1_2aw30"]
-[ext_resource type="Material" path="res://assets/materials/reflecting_pool_basin.tres" id="2_basin"]
-[ext_resource type="Material" path="res://assets/materials/reflecting_pool_water.tres" id="3_water"]
-[ext_resource type="Script" path="res://scenes/scenery/planar_reflection.gd" id="4_reflection"]
+[ext_resource type="PackedScene" uid="uid://bd5xjboyai057" path="res://assets/models/terrain/reflecting_pool_01.glb" id="1_2aw30"]
+[ext_resource type="Script" uid="uid://ca6ue1mngoi87" path="res://scenes/scenery/reflecting_pool.gd" id="1_pool"]
+[ext_resource type="Material" uid="uid://n0ste2atbkji" path="res://assets/materials/reflecting_pool_basin.tres" id="2_basin"]
+[ext_resource type="Material" uid="uid://joexhwiycjt4" path="res://assets/materials/reflecting_pool_water.tres" id="3_water"]
+[ext_resource type="Script" uid="uid://c68nyunv4wagq" path="res://scenes/scenery/planar_reflection.gd" id="4_reflection"]
 
 [node name="ReflectingPool" type="Node3D" unique_id=467949867 node_paths=PackedStringArray("basin_mesh")]
 script = ExtResource("1_pool")
 basin_mesh = NodePath("reflecting_pool_01/basin")
+outline_color = Color(0.42617843, 0.43866366, 0.2762422, 1)
 
 [node name="reflecting_pool_01" parent="." unique_id=1987963124 instance=ExtResource("1_2aw30")]
+transform = Transform3D(10, 0, 0, 0, 10, 0, 0, 0, 10, 0, 0, 0)
 
-[node name="basin" parent="reflecting_pool_01" index="0" unique_id=171899158]
+[node name="basin" parent="reflecting_pool_01" index="0" unique_id=462502612]
 layers = 524288
 surface_material_override/0 = ExtResource("2_basin")
 
-[node name="water" parent="reflecting_pool_01" index="1" unique_id=1982028077]
+[node name="water" parent="reflecting_pool_01" index="1" unique_id=1891421247]
 layers = 524288
 surface_material_override/0 = ExtResource("3_water")
 

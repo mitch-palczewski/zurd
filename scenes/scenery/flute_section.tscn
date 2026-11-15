@@ -1,0 +1,23 @@
+[gd_scene format=3 uid="uid://4cnctimkmj1s"]
+
+[ext_resource type="PackedScene" uid="uid://j0omledhmyr6" path="res://assets/models/terrain/flute_section.glb" id="1_hlim1"]
+[ext_resource type="Material" uid="uid://joexhwiycjt4" path="res://assets/materials/reflecting_pool_water.tres" id="2_vrkb5"]
+[ext_resource type="Material" uid="uid://n0ste2atbkji" path="res://assets/materials/reflecting_pool_basin.tres" id="3_cke28"]
+
+[node name="flute_section" unique_id=2127518061 instance=ExtResource("1_hlim1")]
+
+[node name="section_waters" parent="." index="0" unique_id=1237985004]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.18048096, 2.1083663, -3.235064)
+surface_material_override/0 = ExtResource("2_vrkb5")
+surface_material_override/1 = ExtResource("2_vrkb5")
+surface_material_override/2 = ExtResource("2_vrkb5")
+surface_material_override/3 = ExtResource("2_vrkb5")
+surface_material_override/4 = ExtResource("2_vrkb5")
+surface_material_override/5 = ExtResource("2_vrkb5")
+surface_material_override/6 = ExtResource("2_vrkb5")
+surface_material_override/7 = ExtResource("2_vrkb5")
+surface_material_override/8 = ExtResource("2_vrkb5")
+
+[node name="section" parent="." index="1" unique_id=619877180]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, -1, 0.4128151, 1.6526088, -0.8762336)
+surface_material_override/0 = ExtResource("3_cke28")
