@@ -1,0 +1,12 @@
+[gd_resource type="ShaderMaterial" format=3 uid="uid://cq5jfvdpxh8hp"]
+
+[ext_resource type="Shader" uid="uid://btvnrfv03n1xw" path="res://assets/shaders/checkerboard.gdshader" id="1_kabiy"]
+
+[resource]
+render_priority = 0
+shader = ExtResource("1_kabiy")
+shader_parameter/color_a = Color(0.037841044, 0.049699575, 0.16192386, 1)
+shader_parameter/color_b = Color(0.81299746, 0.59861076, 0.23845136, 1)
+shader_parameter/square_size = 1.0
+shader_parameter/offset = Vector3(0, 0, 0)
+shader_parameter/roughness = 0.6

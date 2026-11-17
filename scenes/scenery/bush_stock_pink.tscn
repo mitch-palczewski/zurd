@@ -3,7 +3,7 @@
 [ext_resource type="PackedScene" uid="uid://cf11rkyt73j4s" path="res://assets/models/objects/Bush_Stock_01.glb" id="1_blsnb"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_hdy71"]
-albedo_color = Color(0.83057743, 0.50641644, 0.68115383, 1)
+albedo_color = Color(0.5064414, 0.3656281, 0.42232615, 1)
 
 [node name="Bush_Stock_01" unique_id=1254520205 instance=ExtResource("1_blsnb")]
 
