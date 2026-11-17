@@ -1,0 +1,6 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://sandbox/test_wall_rig.gd" id="1_rig"]
+
+[node name="TestWallRig" type="Node3D" unique_id=1590347201]
+script = ExtResource("1_rig")
