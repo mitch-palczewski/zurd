@@ -8,12 +8,20 @@ extends Node
 ## into one another and apart; a gentle push ([member push_speed]) makes sure they don't stay
 ## overlapped. Each cloud bobs, tumbles slowly and breathes.
 ## It also dresses each new cloud: puffs on its objects ([CloudPuffs]) and small puffs that come and
-## go around it ([CloudWisps]). Visual only: clouds don't collide.
+## go around it ([CloudWisps]), and subtle lines along its objects' ridges, so their shapes read
+## from far away. Every frame it also tells each cloud's material where the cloud is, for its
+## darker base (sculpture_cloud.gdshader). Visual only: clouds don't collide.
 ## [method step] moves the clouds. It works on bare [SkyCloud] states too, which is how the tests
 ## drive it.
 
 const Puffs := preload("res://scenes/sculpture/cloud_puffs.gd")
 const Wisps := preload("res://scenes/sculpture/cloud_wisps.gd")
+const Edges := preload("res://scripts/utils/edge_lines.gd")
+
+## Meta on an object's mesh holding its ridge line mesh, so each model's ridges are found once.
+const RIDGES_META := &"cloud_ridges_mesh"
+## Meta on an object's mesh holding its surface table for placing puffs (CloudPuffs).
+const PUFF_TABLE_META := &"cloud_puff_table"
 
 ## On the way up, the climb lags the glide outward by this power, so the path is an arc: out
 ## first, then up.
@@ -70,12 +78,44 @@ const AXIS_TURN_TUMBLES := 3.0
 @export var puff_size: Vector2 = Vector2(0.08, 0.16)
 ## How many small puffs come and go around each cloud (min, max; picked per cloud).
 @export var wisp_count: Vector2i = Vector2i(3, 8)
+## Material of the ridge lines (cloud_ridges.gdshader); none draws no ridges.
+@export var ridge_material: Material = preload("res://assets/materials/cloud_ridges.tres")
+## Edges where an object's faces meet at a sharper angle than this (degrees) get a ridge line, as
+## do open edges. Read when a model's ridges are first found.
+@export_range(1.0, 90.0, 1.0) var ridge_angle: float = 35.0
 
 ## Every cloud in the sky.
 var clouds: Array[SkyCloud] = []
 
 var _rng := RandomNumberGenerator.new()
 var _sphere: SphereMesh
+## Models whose ridges and puff tables are being worked out: { Mesh: ModelJob }.
+var _model_jobs: Dictionary = {}
+## Models waiting to have their triangles read, one per frame: reading them back from the GPU
+## takes several milliseconds per model.
+var _read_queue: Array[Mesh] = []
+
+
+## The once-per-model work a cloud's details need: its ridge lines and its puff surface table.
+## The triangles are read on the main thread (one model per frame); the rest runs on a worker
+## thread, so a cloud of new models doesn't stall the game as it forms. Until it's done, the
+## cloud's ridge and puff nodes wait (they appear during the cloud's white burst).
+class ModelJob:
+	const Lines := preload("res://scripts/utils/edge_lines.gd")
+	const PuffsScript := preload("res://scenes/sculpture/cloud_puffs.gd")
+	var surfaces: Array = []
+	var angle: float = 35.0
+	## Results, once [method run] is done.
+	var ridge_arrays: Array = []
+	var puff_table: Dictionary = {}
+	## -1 until the triangles have been read and the worker task started.
+	var task_id: int = -1
+	var waiting_ridges: Array[MeshInstance3D] = []
+	var waiting_puffs: Array[MultiMeshInstance3D] = []
+
+	func run() -> void:
+		ridge_arrays = Lines.build_outline_arrays(Lines.find_feature_edges_in(surfaces, angle))
+		puff_table = PuffsScript.make_surface_table(surfaces)
 
 
 ## One cloud's state.
@@ -114,6 +154,43 @@ func _ready() -> void:
 
 func _physics_process(delta: float) -> void:
 	step(delta)
+
+
+func _process(_delta: float) -> void:
+	# Read one waiting model's triangles and hand the rest of its work to a worker thread.
+	while not _read_queue.is_empty():
+		var mesh: Mesh = _read_queue.pop_front()
+		var job: ModelJob = _model_jobs.get(mesh)
+		if job == null:
+			continue
+		job.surfaces = Edges.get_surfaces(mesh)
+		job.angle = ridge_angle
+		job.task_id = WorkerThreadPool.add_task(job.run, false, "Cloud details")
+		break
+	for mesh: Mesh in _model_jobs.keys():
+		var job: ModelJob = _model_jobs[mesh]
+		if job.task_id < 0 or not WorkerThreadPool.is_task_completed(job.task_id):
+			continue
+		WorkerThreadPool.wait_for_task_completion(job.task_id)
+		_model_jobs.erase(mesh)
+		mesh.set_meta(RIDGES_META, Edges.mesh_from_arrays(job.ridge_arrays))
+		mesh.set_meta(PUFF_TABLE_META, job.puff_table)
+		for ridges in job.waiting_ridges:
+			if is_instance_valid(ridges):
+				ridges.mesh = mesh.get_meta(RIDGES_META)
+		for puffs in job.waiting_puffs:
+			if is_instance_valid(puffs):
+				_build_puffs(puffs as Puffs, job.puff_table)
+
+
+func _exit_tree() -> void:
+	# Every worker task must be waited for, even when the world closes mid-job.
+	for mesh: Mesh in _model_jobs.keys():
+		var job: ModelJob = _model_jobs[mesh]
+		if job.task_id >= 0:
+			WorkerThreadPool.wait_for_task_completion(job.task_id)
+	_model_jobs.clear()
+	_read_queue.clear()
 
 
 ## Starts a cloud whose middle was at [param start] (world) when it formed, with [param radius]
@@ -232,6 +309,7 @@ func _apply(cloud: SkyCloud) -> void:
 		return
 	body.basis = Basis(cloud.tumble).scaled(Vector3.ONE * cloud.size)
 	cloud.mass.global_position = cloud.center - cloud.mass.global_basis * body.position
+	cloud.mass.set_cloud_bounds(cloud.center.y, cloud.radius * cloud.size)
 	if is_instance_valid(cloud.wisps):
 		cloud.wisps.scale = Vector3.ONE * cloud.growth
 
@@ -245,24 +323,62 @@ func _on_cloud_formed(mass: SculptureMass) -> void:
 	_dress(cloud, body)
 
 
-## Puffs on each of the cloud's objects, and wisps around it.
+## Puffs and ridge lines on each of the cloud's object meshes, and wisps around it. Both hang under
+## the mesh; they fill in as soon as the model's details are known ([ModelJob]).
 func _dress(cloud: SkyCloud, body: Node3D) -> void:
-	if puff_material == null:
-		return
-	if puffs_per_object > 0:
-		for piece in cloud.mass.pieces:
-			var meshes := piece.get_meshes()
-			var puffs := Puffs.new()
-			puffs.name = "CloudPuffs"
-			piece.add_child(puffs)
-			puffs.build(meshes, puffs_per_object, puff_size, _get_sphere(), puff_material, _rng)
-	if wisp_count.y > 0:
+	for piece in cloud.mass.pieces:
+		# Before anything is added: the ridges are mesh instances too.
+		for mesh_instance in piece.get_meshes():
+			var mesh := mesh_instance.mesh
+			if mesh == null:
+				continue
+			var job: ModelJob = null
+			var known := mesh.has_meta(RIDGES_META) and mesh.has_meta(PUFF_TABLE_META)
+			if not known:
+				job = _model_jobs.get(mesh)
+				if job == null:
+					job = ModelJob.new()
+					_model_jobs[mesh] = job
+					_read_queue.append(mesh)
+			if puff_material and puffs_per_object > 0:
+				var puffs := Puffs.new()
+				puffs.name = "CloudPuffs"
+				mesh_instance.add_child(puffs)
+				if known:
+					_build_puffs(puffs, mesh.get_meta(PUFF_TABLE_META))
+				else:
+					job.waiting_puffs.append(puffs)
+			if ridge_material:
+				var ridges := MeshInstance3D.new()
+				ridges.name = "CloudRidges"
+				ridges.material_override = ridge_material
+				ridges.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+				# The lines are widened on screen, past the mesh's own box.
+				ridges.extra_cull_margin = 1.0
+				mesh_instance.add_child(ridges)
+				if known:
+					ridges.mesh = mesh.get_meta(RIDGES_META)
+				else:
+					job.waiting_ridges.append(ridges)
+	if puff_material and wisp_count.y > 0:
 		var wisps := Wisps.new()
 		wisps.name = "CloudWisps"
 		cloud.mass.add_child(wisps)
 		wisps.position = body.position
 		wisps.setup(_rng.randi_range(maxi(wisp_count.x, 0), wisp_count.y), cloud.radius, _get_sphere(), puff_material, _rng)
 		cloud.wisps = wisps
+
+
+func _build_puffs(puffs: Puffs, table: Dictionary) -> void:
+	puffs.build(table, puffs_per_object, puff_size, _get_sphere(), puff_material, _rng)
+
+
+## The ridge line mesh for an object's [param mesh] (EdgeLines), found right away (on this thread)
+## the first time it's asked for and kept on the mesh, so every cloud with that model shares it.
+func get_ridge_mesh(mesh: Mesh) -> ArrayMesh:
+	if not mesh.has_meta(RIDGES_META):
+		mesh.set_meta(RIDGES_META, Edges.build_outline_mesh(Edges.find_feature_edges(mesh, ridge_angle)))
+	return mesh.get_meta(RIDGES_META)
 
 
 ## Half the longest side of the box around the cloud's objects, in metres: roughly its radius.

@@ -58,11 +58,16 @@ starting points for playtests; every world uses the same ones.
     each a small cluster of puffs that appears just outside the cloud, drifts slowly away as it
     fades in, lasts 40–90 s, then thins and shrinks away. After a short wait the slot's next wisp
     appears somewhere else. They come and go rather than staying.
-- **Look, later (noted 2026-11-17):** clouds may need to read more clearly as shapes from far
-  away. How is open. One idea: make the **bottoms darker and more solid** (not completely) in
-  the cloud shader, like the flat grey bases of real cumulus. Since clouds tumble, "bottom" would
-  be measured in world height within the cloud: each cloud's material copy gets its middle and
-  size every frame, and the fragment darkens and becomes more opaque the lower it sits.
+- **A solid look (built 2026-11-17)**, so clouds read as shapes from far away:
+  - The body is about 90% opaque and shaded by the light like the puffs (white on the lit side, a
+    cool blue-grey in shadow), with only a little glow and a thin warm rim.
+  - **Darker, fully solid bottoms**, like the base of a real cumulus. "Bottom" is world height
+    within the cloud, so it stays at the bottom as the cloud tumbles: `CloudSky` gives each
+    cloud's material its middle and size every frame.
+  - **Ridges and outline:** thin, partly see-through lines in a darker cool tint along each
+    object's sharp edges (`cloud_ridges.gdshader`). Lines on edges only a few pixels long on screen
+    fade out, so a far-off cloud doesn't turn into a scribble. The body also darkens gently toward
+    its silhouette, so smooth curves get an outline too.
 
 ### 4.3 The cloud zone and the gyre
 
@@ -101,6 +106,9 @@ On the `CloudSky` node in `scenes/world/game_systems.tscn`.
 | Breath | Swell and period | ±3%, 15 s |
 | Puffs per object, puff size | Puffs on each object; radius as a share of the object's longest side | 8; 8–16% |
 | Wisp count | Wisps per cloud (min, max) | 3–8 |
+| Ridge angle | Faces meeting at a sharper angle get a ridge line | 35° |
+
+The look's own values (opacity, glow, shading, outline, base) are on `assets/materials/sculpture_cloud.tres` and `cloud_ridges.tres` (line colour, width, fade).
 
 ## 5. Questions to Answer
 

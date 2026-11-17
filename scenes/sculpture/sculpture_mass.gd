@@ -288,6 +288,14 @@ func _switch_to_cloud_look() -> void:
 			mesh_instance.material_override = _cloud_material
 
 
+## Tells the cloud material where the cloud is (world middle height and radius), for its darker
+## base. [CloudSky] calls it every frame.
+func set_cloud_bounds(middle_y: float, radius: float) -> void:
+	if _cloud_material:
+		_cloud_material.set_shader_parameter(&"cloud_middle_y", middle_y)
+		_cloud_material.set_shader_parameter(&"cloud_radius", radius)
+
+
 func _set_burst(amount: float) -> void:
 	if _cloud_material:
 		_cloud_material.set_shader_parameter(&"burst", amount)

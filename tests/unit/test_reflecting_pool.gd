@@ -4,7 +4,7 @@ extends "res://tests/test_case.gd"
 ## and the outline's edges. How it looks is checked by eye, not here.
 
 const Reflection := preload("res://scenes/scenery/planar_reflection.gd")
-const Pool := preload("res://scenes/scenery/reflecting_pool.gd")
+const Edges := preload("res://scripts/utils/edge_lines.gd")
 
 
 func _camera_poses() -> Array[Transform3D]:
@@ -48,7 +48,7 @@ func test_frustum_test_finds_boxes_on_screen() -> void:
 
 
 func test_outline_follows_a_box_edges() -> void:
-	var edges := Pool.find_feature_edges(BoxMesh.new(), 20.0)
+	var edges := Edges.find_feature_edges(BoxMesh.new(), 20.0)
 	check_equal(edges.size(), 24, "a box has 12 edges; the diagonals across its faces are left out")
 	for i in range(0, edges.size(), 2):
 		var along := (edges[i + 1] - edges[i]).abs()
@@ -56,7 +56,7 @@ func test_outline_follows_a_box_edges() -> void:
 
 
 func test_outline_keeps_open_edges() -> void:
-	var edges := Pool.find_feature_edges(PlaneMesh.new(), 20.0)
+	var edges := Edges.find_feature_edges(PlaneMesh.new(), 20.0)
 	check_equal(edges.size(), 8, "a flat plane has only its 4 open edges")
-	var mesh := Pool.build_outline_mesh(edges)
+	var mesh := Edges.build_outline_mesh(edges)
 	check_equal(mesh.surface_get_array_len(0), 16, "the outline mesh has one quad (4 corners) per edge")

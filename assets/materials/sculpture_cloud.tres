@@ -1,7 +1,28 @@
-[gd_resource type="ShaderMaterial" format=3]
+[gd_resource type="ShaderMaterial" format=3 uid="uid://54sraydmufoh"]
 
-[ext_resource type="Shader" path="res://assets/shaders/sculpture_cloud.gdshader" id="1_scloud"]
+[ext_resource type="Shader" uid="uid://dw1etby1ai6pq" path="res://assets/shaders/sculpture_cloud.gdshader" id="1_scloud"]
 
 [resource]
 render_priority = 0
 shader = ExtResource("1_scloud")
+shader_parameter/cloud_color = Color(1, 1, 1, 1)
+shader_parameter/shadow_color = Color(0.62, 0.7, 0.85, 1)
+shader_parameter/tint_keep = 0.12
+shader_parameter/cloud_alpha = 0.9
+shader_parameter/cloud_glow = 0.08
+shader_parameter/shade_threshold = 0.5
+shader_parameter/shade_softness = 0.6
+shader_parameter/rim_color = Color(1, 0.93, 0.8, 1)
+shader_parameter/rim_power = 3.0
+shader_parameter/rim_strength = 0.2
+shader_parameter/outline_color = Color(0.42, 0.47, 0.6, 1)
+shader_parameter/outline_shade = 0.25
+shader_parameter/outline_power = 4.0
+shader_parameter/base_color = Color(0.55, 0.58, 0.66, 1)
+shader_parameter/base_strength = 0.5
+shader_parameter/base_height = 0.45
+shader_parameter/cloud_middle_y = 0.0
+shader_parameter/cloud_radius = 0.0
+shader_parameter/burst = 0.0
+shader_parameter/burst_color = Color(1, 0.97, 0.9, 1)
+shader_parameter/burst_glow = 2.0

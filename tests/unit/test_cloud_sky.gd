@@ -7,6 +7,7 @@ extends "res://tests/test_case.gd"
 const SkyScript := preload("res://scenes/sculpture/cloud_sky.gd")
 const Puffs := preload("res://scenes/sculpture/cloud_puffs.gd")
 const Wisps := preload("res://scenes/sculpture/cloud_wisps.gd")
+const Edges := preload("res://scripts/utils/edge_lines.gd")
 ## Seconds per step when running the sky by hand.
 const STEP := 0.5
 
@@ -126,22 +127,20 @@ func test_the_tumble_is_a_slow_pure_rotation() -> void:
 
 
 func test_puffs_sit_on_their_object() -> void:
-	var piece := Node3D.new()
-	add_child(piece)
-	var box := MeshInstance3D.new()
 	var box_mesh := BoxMesh.new()
 	box_mesh.size = Vector3(4.0, 2.0, 6.0)
-	box.mesh = box_mesh
-	box.position = Vector3(1.0, 2.0, 3.0)
-	piece.add_child(box)
+	var table: Dictionary = Puffs.make_surface_table(Edges.get_surfaces(box_mesh))
+	check_near(table["total"], 2.0 * (4.0 * 2.0 + 4.0 * 6.0 + 2.0 * 6.0), 0.001, "the surface table holds the model's whole area")
+	check_near(table["longest"], 6.0, 0.001, "and its longest side")
+	var piece := Node3D.new()
+	add_child(piece)
 	var puffs: Node = Puffs.new()
 	piece.add_child(puffs)
-	var meshes: Array[MeshInstance3D] = [box]
-	puffs.build(meshes, 20, Vector2(0.1, 0.2), SphereMesh.new(), StandardMaterial3D.new(), RandomNumberGenerator.new())
+	puffs.build(table, 20, Vector2(0.1, 0.2), SphereMesh.new(), StandardMaterial3D.new(), RandomNumberGenerator.new())
 	if not check_equal(puffs.multimesh.instance_count, 20, "the asked-for number of puffs") or puffs.placements.size() != 20:
 		piece.queue_free()
 		return
-	var bounds := AABB(box.position - box_mesh.size * 0.5, box_mesh.size)
+	var bounds := AABB(-box_mesh.size * 0.5, box_mesh.size)
 	var placed := true
 	for i in 20:
 		var puff: Transform3D = puffs.placements[i]
@@ -151,6 +150,16 @@ func test_puffs_sit_on_their_object() -> void:
 		placed = placed and to_surface >= -0.001 and to_surface <= radius * Puffs.INSET + 0.001
 	check(placed, "every puff is half sunk into the object's surface, on the outside of it")
 	piece.queue_free()
+
+
+func test_ridges_are_found_once_per_model() -> void:
+	var sky: Node = SkyScript.new()
+	var box := BoxMesh.new()
+	var ridges: ArrayMesh = sky.get_ridge_mesh(box)
+	check(ridges.get_surface_count() == 1 and ridges.surface_get_array_len(0) == 12 * 4, "a box gets a line along each of its 12 edges")
+	check(sky.get_ridge_mesh(box) == ridges, "the same model's ridges are found once and shared")
+	check(sky.get_ridge_mesh(SphereMesh.new()) != ridges, "another model gets its own")
+	sky.free()
 
 
 func test_wisps_come_and_go() -> void:

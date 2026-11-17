@@ -268,11 +268,14 @@ func test_cloud_rises_into_the_sky_dressed_in_puffs() -> void:
 		return
 	var gathered := true
 	var dressed := true
+	var ridged := true
 	for piece in mass.pieces:
 		gathered = gathered and piece.get_parent() == body
-		dressed = dressed and piece.find_child("CloudPuffs", false, false) != null
+		dressed = dressed and piece.find_child("CloudPuffs", true, false) != null
+		ridged = ridged and piece.find_child("CloudRidges", true, false) != null
 	check(gathered, "its objects gather under the body")
 	check(dressed, "each object gets cloud puffs")
+	check(ridged, "and ridge lines")
 	check(mass.find_child("CloudWisps", false, false) != null, "and small puffs come and go around it")
 
 	await wait_seconds(sky.get(&"rise_delay") + sky.get(&"rise_time") + 0.3)
@@ -284,6 +287,14 @@ func test_cloud_rises_into_the_sky_dressed_in_puffs() -> void:
 	var ring := Vector2(middle.x, middle.z).distance_to(sky.get(&"gyre_center"))
 	check(ring >= radius_range.x - 0.01 and ring <= radius_range.y + 0.01, "onto the gyre around the play area")
 	check_near(body.scale.x / sky.get(&"scale_multiplier"), 1.0, sky.get(&"breath") + 0.001, "grown to scale_multiplier times its size")
+	var lined := true
+	for ridges in body.find_children("CloudRidges", "MeshInstance3D", true, false):
+		lined = lined and (ridges as MeshInstance3D).mesh != null
+	check(lined, "its ridge lines have arrived from the worker thread")
+	var puffed := true
+	for puffs in body.find_children("CloudPuffs", "MultiMeshInstance3D", true, false):
+		puffed = puffed and puffs.get(&"placements").size() == sky.get(&"puffs_per_object")
+	check(puffed, "and its puffs have been placed")
 
 
 func test_hits_in_the_same_frame_follow_what_objects_became() -> void:
