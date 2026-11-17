@@ -55,6 +55,8 @@ max_forward_speed = 55.0
 max_reverse_speed = 40.0
 acceleration = 23.0
 rise_speed = 40.0
+lowest_altitude = -10000.0
+altitude_ceiling = 10000.0
 
 [node name="LaunchMuzzle" type="Node3D" parent="." unique_id=112342162 node_paths=PackedStringArray("player_ship")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1.813218)
