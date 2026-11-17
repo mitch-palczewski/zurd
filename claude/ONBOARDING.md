@@ -145,8 +145,8 @@ builds the C# project (needs internet once). You need to install these applicati
   effects), `Input` (mouse swats; the lidar later) and `Actors`, with a container each for the
   `Ship`, `Zurds`, loose `Objects`, sculpture `Masses` and swat `Projectiles`. Its script
   (`base_world.gd`, `class_name BaseWorld`) listens for `EventBus.spawn_requested` and puts each
-  spawned node in its container. The playable world, `zurd_world.tscn`, is `base_world.tscn`
-  plus the procedural terrain. The world doesn't wrap: the toroidal world
+  spawned node in its container. The main playable world, `zurd_world01.tscn`, is `base_world.tscn`
+  plus the procedural terrain; `zurd_world02.tscn` is the next iteration in progress. The world doesn't wrap: the toroidal world
   was removed in November 2026, and teleportation may come later for a small part of the map.
 - **Player ship** (`scenes/characters/player/`, designed in
   `claude/design/Ship-Controls Design Doc.md`): `PlayerShip` (`class_name PlayerShip`, a
@@ -239,7 +239,7 @@ builds the C# project (needs internet once). You need to install these applicati
   and old terrain and map prototypes in `world/`). Not part of the shipped game: the export
   presets exclude it, and the main menu hides entries whose scene isn't in the build.
 - **`tests/`:** the automated tests ([../tests/README.md](../tests/README.md)). `unit/` tests
-  run without the game world; `scene/` tests load `zurd_world.tscn`, without Zurds unless a test asks for them. Each
+  run without the game world; `scene/` tests load `zurd_world01.tscn`, without Zurds unless a test asks for them. Each
   test extends `tests/test_case.gd` by path. The export presets exclude this folder too.
 
 ---

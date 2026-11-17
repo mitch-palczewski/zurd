@@ -9,7 +9,9 @@ extends Node
 ## when it makes no checks, or when it doesn't finish within [member frame_limit] frames.[br]
 ## Tests check behaviour, not tuning: expected values come from the nodes' exports.
 
-const WORLD_PATH := "res://scenes/world/zurd_world.tscn"
+## The world scene tests run in: the main menu's main world, with the procedural terrain (and
+## its collider) the flight and Zurd tests need.
+const WORLD_PATH := "res://scenes/world/zurd_world01.tscn"
 
 ## Frames one test may take before it counts as stuck (120 s at 60 fps).
 var frame_limit: int = 7200
