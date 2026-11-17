@@ -1,11 +1,9 @@
 [gd_scene format=3 uid="uid://becnt4sgwk05x"]
 
-[ext_resource type="PackedScene" uid="uid://cf11rkyt73j4s" path="res://assets/models/objects/Bush_Stock_01.glb" id="1_blsnb"]
+[ext_resource type="PackedScene" uid="uid://b6wikfrx7cji2" path="res://scenes/scenery/bush_stock.tscn" id="1_bush"]
+[ext_resource type="Material" uid="uid://nmnq15wbdker" path="res://assets/materials/scenery/bush_pink.tres" id="2_pink"]
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_hdy71"]
-albedo_color = Color(0.5064414, 0.3656281, 0.42232615, 1)
-
-[node name="Bush_Stock_01" unique_id=1254520205 instance=ExtResource("1_blsnb")]
+[node name="BushStockPink" unique_id=1254520205 instance=ExtResource("1_bush")]
 
 [node name="Sphere" parent="." index="0" unique_id=1558558907]
-surface_material_override/0 = SubResource("StandardMaterial3D_hdy71")
+surface_material_override/0 = ExtResource("2_pink")

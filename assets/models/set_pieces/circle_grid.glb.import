@@ -3,13 +3,13 @@
 importer="scene"
 importer_version=1
 type="PackedScene"
-uid="uid://bd5xjboyai057"
-path="res://.godot/imported/reflecting_pool_01.glb-75154afae2dc507699de9494f2a2d9c0.scn"
+uid="uid://bniusvn7vaktp"
+path="res://.godot/imported/circle_grid.glb-839bc950704aace673e39b4e9102481c.scn"
 
 [deps]
 
-source_file="res://assets/models/terrain/reflecting_pool_01.glb"
-dest_files=["res://.godot/imported/reflecting_pool_01.glb-75154afae2dc507699de9494f2a2d9c0.scn"]
+source_file="res://assets/models/set_pieces/circle_grid.glb"
+dest_files=["res://.godot/imported/circle_grid.glb-839bc950704aace673e39b4e9102481c.scn"]
 
 [params]
 

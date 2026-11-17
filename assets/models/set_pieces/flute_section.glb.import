@@ -3,13 +3,13 @@
 importer="scene"
 importer_version=1
 type="PackedScene"
-uid="uid://bom54lrned14g"
-path="res://.godot/imported/mega_tree.glb-55d7c878344b33e966176bf867f7ff53.scn"
+uid="uid://j0omledhmyr6"
+path="res://.godot/imported/flute_section.glb-3bb06a5229e3a175e1e6f27316d44a33.scn"
 
 [deps]
 
-source_file="res://assets/models/terrain/mega_tree.glb"
-dest_files=["res://.godot/imported/mega_tree.glb-55d7c878344b33e966176bf867f7ff53.scn"]
+source_file="res://assets/models/set_pieces/flute_section.glb"
+dest_files=["res://.godot/imported/flute_section.glb-3bb06a5229e3a175e1e6f27316d44a33.scn"]
 
 [params]
 
@@ -39,13 +39,7 @@ import_script/path="uid://bvn4a22k5odgd"
 materials/extract=0
 materials/extract_format=0
 materials/extract_path=""
-_subresources={
-"nodes": {
-"PATH:Cylinder": {
-"generate/physics": true
-}
-}
-}
+_subresources={}
 gltf/naming_version=2
 gltf/embedded_image_handling=1
 gltf/texture_map_mode=1

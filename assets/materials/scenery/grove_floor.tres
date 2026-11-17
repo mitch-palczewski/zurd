@@ -1,0 +1,9 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://1asesxyf5rec"]
+
+[ext_resource type="Texture2D" uid="uid://cyo614h3yfnxg" path="res://assets/textures/ground103_normal.jpg" id="1_normal"]
+
+[resource]
+albedo_color = Color(0.05882353, 0, 0.12156863, 1)
+normal_enabled = true
+normal_scale = 1.46
+normal_texture = ExtResource("1_normal")

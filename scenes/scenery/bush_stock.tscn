@@ -1,0 +1,7 @@
+[gd_scene format=3 uid="uid://b6wikfrx7cji2"]
+
+[ext_resource type="PackedScene" uid="uid://cf11rkyt73j4s" path="res://assets/models/objects/Bush_Stock_01.glb" id="1_model"]
+[ext_resource type="Script" path="res://scenes/scenery/solid_scenery.gd" id="2_solid"]
+
+[node name="BushStock" unique_id=1018762999 instance=ExtResource("1_model")]
+script = ExtResource("2_solid")

@@ -1,0 +1,87 @@
+[gd_scene format=3 uid="uid://6eej32vp4xvy"]
+
+[ext_resource type="PackedScene" uid="uid://dv2jbnpol7244" path="res://scenes/scenery/reflecting_pool.tscn" id="1_pool"]
+[ext_resource type="PackedScene" uid="uid://4cnctimkmj1s" path="res://scenes/scenery/flute_section.tscn" id="2_flute"]
+[ext_resource type="PackedScene" uid="uid://dxmbj1qghxp3" path="res://scenes/objects/static/Arch_01_static.tscn" id="3_arch"]
+
+[node name="PoolCourt" type="Node3D" unique_id=880459923]
+
+[node name="ReflectingPool" parent="." unique_id=467949867 instance=ExtResource("1_pool")]
+transform = Transform3D(1, 0, 0, 0, 2, 0, 0, 0, 1, 0, 5.661682, 0)
+
+[node name="FluteSections" type="Node3D" parent="." unique_id=1903114415]
+
+[node name="North" type="Node3D" parent="FluteSections" unique_id=725655834]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5.161682, 0)
+
+[node name="FluteSection" parent="FluteSections/North" unique_id=2127518061 instance=ExtResource("2_flute")]
+transform = Transform3D(-3.496911e-07, 0, -8, 0, 8, 0, 8, 0, -3.496911e-07, -129.9642, -1.1394958, -303.29596)
+
+[node name="FluteSection2" parent="FluteSections/North" unique_id=1392198506 instance=ExtResource("2_flute")]
+transform = Transform3D(-3.496911e-07, 0, -8, 0, 8, 0, 8, 0, -3.496911e-07, -382.44983, -1.1394958, -303.29596)
+
+[node name="FluteSection3" parent="FluteSections/North" unique_id=1093404625 instance=ExtResource("2_flute")]
+transform = Transform3D(-3.496911e-07, 0, -8, 0, 8, 0, 8, 0, -3.496911e-07, 122.15152, -1.1394958, -303.29596)
+
+[node name="FluteSection4" parent="FluteSections/North" unique_id=168790384 instance=ExtResource("2_flute")]
+transform = Transform3D(-3.496911e-07, 0, -8, 0, 8, 0, 8, 0, -3.496911e-07, 373.61493, -1.1394958, -303.29596)
+
+[node name="South" type="Node3D" parent="FluteSections" unique_id=530761129]
+transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 0, 5.161682, 0)
+
+[node name="FluteSection" parent="FluteSections/South" unique_id=1335125379 instance=ExtResource("2_flute")]
+transform = Transform3D(-3.496911e-07, 0, -8, 0, 8, 0, 8, 0, -3.496911e-07, -129.9642, -1.1394958, -303.29596)
+
+[node name="FluteSection2" parent="FluteSections/South" unique_id=1083509887 instance=ExtResource("2_flute")]
+transform = Transform3D(-3.496911e-07, 0, -8, 0, 8, 0, 8, 0, -3.496911e-07, -382.44983, -1.1394958, -303.29596)
+
+[node name="FluteSection3" parent="FluteSections/South" unique_id=273835272 instance=ExtResource("2_flute")]
+transform = Transform3D(-3.496911e-07, 0, -8, 0, 8, 0, 8, 0, -3.496911e-07, 122.15152, -1.1394958, -303.29596)
+
+[node name="FluteSection4" parent="FluteSections/South" unique_id=1833806425 instance=ExtResource("2_flute")]
+transform = Transform3D(-3.496911e-07, 0, -8, 0, 8, 0, 8, 0, -3.496911e-07, 373.61493, -1.1394958, -303.29596)
+
+[node name="West" type="Node3D" parent="FluteSections" unique_id=1539272580]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -248.29169, 5.161682, -247.23322)
+
+[node name="FluteSection" parent="FluteSections/West" unique_id=1478554855 instance=ExtResource("2_flute")]
+transform = Transform3D(-3.496911e-07, 0, -8, 0, 8, 0, 8, 0, -3.496911e-07, -129.9642, -1.1394958, -303.29596)
+
+[node name="FluteSection2" parent="FluteSections/West" unique_id=1089058223 instance=ExtResource("2_flute")]
+transform = Transform3D(-3.496911e-07, 0, -8, 0, 8, 0, 8, 0, -3.496911e-07, -382.44983, -1.1394958, -303.29596)
+
+[node name="East" type="Node3D" parent="FluteSections" unique_id=2123079593]
+transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 251.66098, 5.161743, 225.17505)
+
+[node name="FluteSection" parent="FluteSections/East" unique_id=582743855 instance=ExtResource("2_flute")]
+transform = Transform3D(-3.496911e-07, 0, -8, 0, 8, 0, 8, 0, -3.496911e-07, -129.9642, -1.1394958, -303.29596)
+
+[node name="FluteSection2" parent="FluteSections/East" unique_id=1240612924 instance=ExtResource("2_flute")]
+transform = Transform3D(-3.496911e-07, 0, -8, 0, 8, 0, 8, 0, -3.496911e-07, -382.44983, -1.1394958, -303.29596)
+
+[node name="Arches" type="Node3D" parent="." unique_id=1584429757]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5.161682, 0)
+
+[node name="Arch" parent="Arches" unique_id=132838332 instance=ExtResource("3_arch")]
+transform = Transform3D(50, 0, 0, 0, 30, 0, 0, 0, 30, -441.90424, -8.744232, 235.20148)
+
+[node name="Arch2" parent="Arches" unique_id=569481004 instance=ExtResource("3_arch")]
+transform = Transform3D(50, 0, 0, 0, 30, 0, 0, 0, 30, -194.60483, -8.744232, 235.20148)
+
+[node name="Arch3" parent="Arches" unique_id=1348330227 instance=ExtResource("3_arch")]
+transform = Transform3D(50, 0, 0, 0, 30, 0, 0, 0, 30, 57.580536, -8.744232, 235.20148)
+
+[node name="Arch4" parent="Arches" unique_id=2080943993 instance=ExtResource("3_arch")]
+transform = Transform3D(50, 0, 0, 0, 30, 0, 0, 0, 30, 310.8664, -8.744232, 235.20148)
+
+[node name="Arch5" parent="Arches" unique_id=1495148677 instance=ExtResource("3_arch")]
+transform = Transform3D(50, 0, 0, 0, 30, 0, 0, 0, 30, -309.61542, -8.744232, -237.27667)
+
+[node name="Arch6" parent="Arches" unique_id=1838428067 instance=ExtResource("3_arch")]
+transform = Transform3D(50, 0, 0, 0, 30, 0, 0, 0, 30, -62.315994, -8.744232, -237.27667)
+
+[node name="Arch7" parent="Arches" unique_id=54142633 instance=ExtResource("3_arch")]
+transform = Transform3D(50, 0, 0, 0, 30, 0, 0, 0, 30, 189.86937, -8.744232, -237.27667)
+
+[node name="Arch8" parent="Arches" unique_id=1264485803 instance=ExtResource("3_arch")]
+transform = Transform3D(50, 0, 0, 0, 30, 0, 0, 0, 30, 443.1552, -8.744232, -237.27667)

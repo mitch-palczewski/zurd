@@ -1,10 +1,13 @@
 [gd_scene format=3 uid="uid://4cnctimkmj1s"]
 
-[ext_resource type="PackedScene" uid="uid://j0omledhmyr6" path="res://assets/models/terrain/flute_section.glb" id="1_hlim1"]
-[ext_resource type="Material" uid="uid://joexhwiycjt4" path="res://assets/materials/reflecting_pool_water.tres" id="2_vrkb5"]
-[ext_resource type="Material" uid="uid://cq5jfvdpxh8hp" path="res://assets/materials/reflecting_pool_basin02.tres" id="3_vrkb5"]
+[ext_resource type="PackedScene" uid="uid://j0omledhmyr6" path="res://assets/models/set_pieces/flute_section.glb" id="1_hlim1"]
+[ext_resource type="Material" uid="uid://joexhwiycjt4" path="res://assets/materials/scenery/pool_water.tres" id="2_vrkb5"]
+[ext_resource type="Material" uid="uid://cq5jfvdpxh8hp" path="res://assets/materials/scenery/flute_basin.tres" id="3_vrkb5"]
+[ext_resource type="Script" path="res://scenes/scenery/solid_scenery.gd" id="4_solid"]
 
-[node name="flute_section" unique_id=2127518061 instance=ExtResource("1_hlim1")]
+[node name="FluteSection" unique_id=2127518061 node_paths=PackedStringArray("exclude") instance=ExtResource("1_hlim1")]
+script = ExtResource("4_solid")
+exclude = [NodePath("section_waters")]
 
 [node name="section_waters" parent="." index="0" unique_id=1237985004]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.18048096, 2.1083663, -3.235064)

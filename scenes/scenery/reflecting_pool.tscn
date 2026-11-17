@@ -1,9 +1,9 @@
 [gd_scene format=3 uid="uid://dv2jbnpol7244"]
 
-[ext_resource type="PackedScene" uid="uid://bd5xjboyai057" path="res://assets/models/terrain/reflecting_pool_01.glb" id="1_2aw30"]
+[ext_resource type="PackedScene" uid="uid://bd5xjboyai057" path="res://assets/models/set_pieces/reflecting_pool_01.glb" id="1_2aw30"]
 [ext_resource type="Script" uid="uid://ca6ue1mngoi87" path="res://scenes/scenery/reflecting_pool.gd" id="1_pool"]
-[ext_resource type="Material" uid="uid://n0ste2atbkji" path="res://assets/materials/reflecting_pool_basin.tres" id="2_basin"]
-[ext_resource type="Material" uid="uid://joexhwiycjt4" path="res://assets/materials/reflecting_pool_water.tres" id="3_water"]
+[ext_resource type="Material" uid="uid://n0ste2atbkji" path="res://assets/materials/scenery/pool_basin.tres" id="2_basin"]
+[ext_resource type="Material" uid="uid://joexhwiycjt4" path="res://assets/materials/scenery/pool_water.tres" id="3_water"]
 [ext_resource type="Script" uid="uid://c68nyunv4wagq" path="res://scenes/scenery/planar_reflection.gd" id="4_reflection"]
 
 [node name="ReflectingPool" type="Node3D" unique_id=467949867 node_paths=PackedStringArray("basin_mesh")]

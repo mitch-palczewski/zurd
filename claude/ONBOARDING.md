@@ -146,7 +146,8 @@ builds the C# project (needs internet once). You need to install these applicati
   `Ship`, `Zurds`, loose `Objects`, sculpture `Masses` and swat `Projectiles`. Its script
   (`base_world.gd`, `class_name BaseWorld`) listens for `EventBus.spawn_requested` and puts each
   spawned node in its container. The main playable world, `zurd_world01.tscn`, is `base_world.tscn`
-  plus the procedural terrain; `zurd_world02.tscn` is the next iteration in progress. The world doesn't wrap: the toroidal world
+  plus the procedural terrain; `zurd_world02.tscn` is the next iteration in progress, built from
+  scenery scenes (`scenes/scenery/`) grouped into areas (`scenes/world/areas/`). The world doesn't wrap: the toroidal world
   was removed in November 2026, and teleportation may come later for a small part of the map.
 - **Player ship** (`scenes/characters/player/`, designed in
   `claude/design/Ship-Controls Design Doc.md`): `PlayerShip` (`class_name PlayerShip`, a

@@ -1,9 +1,9 @@
 [gd_scene format=3 uid="uid://ccbi2r1wqtjca"]
 
-[ext_resource type="PackedScene" uid="uid://bom54lrned14g" path="res://assets/models/terrain/mega_tree.glb" id="1_oqq6x"]
-[ext_resource type="Material" uid="uid://cv1nr0vxfl147" path="res://assets/materials/mega_tree.tres" id="2_trunk"]
+[ext_resource type="PackedScene" uid="uid://bom54lrned14g" path="res://assets/models/set_pieces/mega_tree.glb" id="1_oqq6x"]
+[ext_resource type="Material" uid="uid://cv1nr0vxfl147" path="res://assets/materials/scenery/mega_tree_trunk.tres" id="2_trunk"]
 
-[node name="mega_tree" unique_id=1328218593 groups=["mega_trees"] instance=ExtResource("1_oqq6x")]
+[node name="MegaTree" unique_id=1328218593 groups=["mega_trees"] instance=ExtResource("1_oqq6x")]
 
 [node name="Cylinder" parent="." index="0" unique_id=1207617288]
 material_override = ExtResource("2_trunk")

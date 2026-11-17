@@ -1,12 +1,11 @@
 [gd_scene format=3 uid="uid://cfrryebdb3n2a"]
 
-[ext_resource type="PackedScene" uid="uid://bniusvn7vaktp" path="res://assets/models/terrain/circle_grid.glb" id="1_ftfh1"]
+[ext_resource type="PackedScene" uid="uid://bniusvn7vaktp" path="res://assets/models/set_pieces/circle_grid.glb" id="1_ftfh1"]
+[ext_resource type="Script" path="res://scenes/scenery/solid_scenery.gd" id="2_solid"]
+[ext_resource type="Material" uid="uid://djr76y5p8vg6k" path="res://assets/materials/scenery/circle_grid.tres" id="3_grid"]
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_2m58j"]
-albedo_color = Color(0.56078434, 0.40392157, 0.40784314, 1)
-metallic = 0.31
-
-[node name="circle_grid" unique_id=133136815 instance=ExtResource("1_ftfh1")]
+[node name="CircleGrid" unique_id=133136815 instance=ExtResource("1_ftfh1")]
+script = ExtResource("2_solid")
 
 [node name="Plane" parent="." index="0" unique_id=40421077]
-surface_material_override/0 = SubResource("StandardMaterial3D_2m58j")
+surface_material_override/0 = ExtResource("3_grid")
