@@ -219,9 +219,10 @@ builds the C# project (needs internet once). You need to install these applicati
   `MassPiece` holding its visuals while its `CollisionShape3D`s move onto the mass. Fused
   objects stay solid (`assets/shaders/sculpture_mass.gdshader`, opaque, only part of the way
   toward white as the mass grows); at the threshold the mass jumps to the cloud look
-  (`sculpture_cloud.gdshader`) in a white flash while every object puffs up, then holds a
-  moment before rising. `SculptureFx` wires placeholder effects to the EventBus signals. Try
-  it in `sandbox/test_sculpture_mass.tscn`.
+  (`sculpture_cloud.gdshader`) in a white flash while every object puffs up. Then `CloudSky`
+  lifts it into a slow gyre high above the play area, growing it, with puffs on its objects and
+  wisps around it (Cloud-Formation Design Doc §4). `SculptureFx` wires placeholder effects to
+  the EventBus signals. Try it in `sandbox/test_sculpture_mass.tscn`.
 - **Lidar input** (`scripts/lidar/` + `scenes/tools/lidar_setup/`, all C#): drives the
   physical installation. `LidarDevice` wraps the vendored `RpLidar.NET` serial driver; the
   `touch/` code baselines the empty scene and detects touches; `calibration/` maps lidar

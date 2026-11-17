@@ -80,7 +80,7 @@ All parameters are exported values so they can be tuned. Speeds will be refined 
 | Rise / sink speed | Vertical speed at full input | 5 m/s |
 | Ground clearance | Closest the ship may sink toward the ground below it | 4 m |
 | Lowest altitude | Floor used where there is no ground under the ship | −50 m (the toroidal world's ground is at about −30 m) |
-| Altitude ceiling | Highest the ship may rise. Stays below the cloud band (`MassManager.atmosphere_y_range` starts at 150 m). | 120 m |
+| Altitude ceiling | Highest the ship may rise. Stays below the cloud zone (`CloudSky.zone_heights` starts at 1000 m). | 120 m (off for prototyping since 2026-11-17: 10 km) |
 | Idle drift speed | Gentle wander while hovering. Must stay below the flight controller's `min_impact_speed` (2.0) so a resting ship never breaks objects off a mass. | 0.5 m/s max |
 | Drift loop | Time for one slow drift loop around the hover spot | 40 s |
 | Hover bob | Height and rate of the slow up-and-down bob while hovering | 0.2 m, 0.15 bobs/s |

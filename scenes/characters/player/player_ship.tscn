@@ -47,6 +47,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.6, -0.562, -0.7)
 [node name="Camera3D" type="Camera3D" parent="Cockpit" unique_id=660655444]
 current = true
 fov = 90.0
+far = 12000.0
 size = 0.2
 
 [node name="FlightController" type="Node" parent="." unique_id=87340966]

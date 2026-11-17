@@ -1,12 +1,16 @@
 shader_type spatial;
-render_mode blend_mix;
+render_mode blend_mix, shadows_disabled;
 
-// Stylised cloud shader.
-// - Soft, bluish-grey shading instead of hard Lambert falloff (works with your DirectionalLight3D)
-// - Optional fbm vertex "billow" displacement (needs a reasonably dense mesh; the puff spheres are fine)
+// Soft cloud puffs: the spheres CloudPuffs scatters over a cloud's objects and the small puffs
+// CloudWisps keeps around it (Cloud-Formation Design Doc §4.2). Meant for MultiMesh spheres.
+// cloud_puff.tres draws after the clouds' objects (render_priority 1), so the objects' depth
+// (sculpture_cloud.gdshader writes it) always hides the half of each puff sunk into them.
+// - Soft, bluish-grey shading instead of hard Lambert falloff
+// - fbm vertex "billow" displacement (needs a reasonably dense mesh; the puff spheres are fine)
 // - Rim light for the silver-lining look
-// - Reads INSTANCE_CUSTOM.xyz as a per-puff noise seed, so every MultiMesh sphere billows differently.
-//   (On a normal MeshInstance3D that value is zero, so it just works there too.)
+// - Per puff, from INSTANCE_CUSTOM: xyz is a noise seed, so every sphere billows and pulses
+//   differently, and w fades it out (0 shows it fully, 1 hides it). On a plain MeshInstance3D
+//   all four are zero, so it just shows.
 group_uniforms transparency;
 uniform float transparency_min : hint_range(0.0, 1.0) = 0.40;
 uniform float transparency_max : hint_range(0.0, 1.0) = 0.6;
@@ -30,6 +34,8 @@ uniform float noise_scale = 2.0;
 uniform float billow_speed : hint_range(0.0, 1.0) = 0.08;
 
 varying float v_billow;
+varying float v_fade;
+varying float v_phase;
 
 // --- 3D gradient noise (iq) -------------------------------------------------
 vec3 hash33(vec3 p) {
@@ -74,6 +80,8 @@ float fbm(vec3 p) {
 // ----------------------------------------------------------------------------
 
 void vertex() {
+	v_fade = 1.0 - clamp(INSTANCE_CUSTOM.w, 0.0, 1.0);
+	v_phase = INSTANCE_CUSTOM.x * 6.28318;
 	vec3 seed = INSTANCE_CUSTOM.xyz * 37.0;
 	vec3 p = VERTEX * noise_scale + seed + vec3(0.0, TIME * billow_speed, 0.0);
 	float n = fbm(p);
@@ -93,9 +101,9 @@ void fragment() {
 	ROUGHNESS = 1.0;
 	SPECULAR = 0.0;
 
-	// Smoothly pulse between two transparency levels.
-	float pulse = (sin(TIME * transparency_speed * 6.28318) + 1.0) * 0.5;
-	ALPHA = mix(transparency_min, transparency_max, pulse);
+	// Smoothly pulse between two transparency levels, each puff on its own beat.
+	float pulse = (sin(TIME * transparency_speed * 6.28318 + v_phase) + 1.0) * 0.5;
+	ALPHA = mix(transparency_min, transparency_max, pulse) * v_fade;
 
 	float rim = pow(
 		1.0 - clamp(dot(normalize(NORMAL), normalize(VIEW)), 0.0, 1.0),

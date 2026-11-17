@@ -25,8 +25,8 @@ var _material: ShaderMaterial
 var _cloud_material: ShaderMaterial
 var _flash_tween: Tween
 var _debug_label: Label3D
-var _cloud_height: float = 0.0
-var _drift_heading: float = 0.0
+## The cloud's body; null until the mass becomes a cloud (see [method get_cloud_body]).
+var _cloud_body: Node3D
 
 
 func _ready() -> void:
@@ -45,18 +45,6 @@ func _ready() -> void:
 		_debug_label.font_size = 48
 		_debug_label.outline_size = 12
 		add_child(_debug_label)
-
-	# Only clouds move themselves.
-	set_physics_process(false)
-
-
-func _physics_process(delta: float) -> void:
-	# Cosmetic cloud drift (Design Doc §4.7): rise into the atmosphere band, then wander slowly.
-	var pos := global_position
-	pos.y = move_toward(pos.y, _cloud_height, manager.rise_speed * delta)
-	_drift_heading += randf_range(-1.0, 1.0) * delta
-	pos += Vector3(cos(_drift_heading), 0.0, sin(_drift_heading)) * manager.drift_speed * delta
-	global_position = pos
 
 
 ## Asks the manager to break off the piece that owns [param shape]. The ship calls this when it
@@ -179,6 +167,12 @@ func get_chunks() -> Array[Array]:
 	return chunks
 
 
+## The node a cloud's objects gather under when the mass becomes a cloud, at the mass's centre, so
+## [CloudSky] can turn and grow the cloud around its middle. Null until then.
+func get_cloud_body() -> Node3D:
+	return _cloud_body
+
+
 func get_global_center_of_mass() -> Vector3:
 	return global_transform * center_of_mass
 
@@ -238,8 +232,9 @@ func flash(color: Color, blinks: int = 2, duration: float = 0.5) -> void:
 ## Turns the mass into a permanent cloud (Design Doc §4.7): it stops colliding and stops being a
 ## Zurd target. Its look jumps to the cloud material in a white burst that settles over the manager's
 ## [member MassManager.cloud_transition_time] ([SculptureFx] puffs the objects up on
-## [signal EventBus.cloud_formed]). It holds still for [member MassManager.cloud_rise_delay], so the
-## change is seen, then rises into the atmosphere band.
+## [signal EventBus.cloud_formed]). Its objects gather under the cloud body before the signal, so
+## every listener sees the cloud as it will stay. [CloudSky] takes it from there: it holds still a
+## moment, then rises into the cloud zone (Cloud-Formation Design Doc §4).
 func _become_cloud() -> void:
 	is_cloud = true
 	collision_layer = 0
@@ -254,14 +249,23 @@ func _become_cloud() -> void:
 	_switch_to_cloud_look()
 	# Full burst from this frame on; the tween's first step only comes next frame.
 	_set_burst(1.0)
-	_cloud_height = randf_range(manager.atmosphere_y_range.x, manager.atmosphere_y_range.y)
-	_drift_heading = randf() * TAU
+	_gather_into_cloud_body()
 
-	var tween := create_tween().set_parallel()
+	var tween := create_tween()
 	# Exponential: a short white-hot flash, then a long soft settle into the cloud.
 	tween.tween_method(_set_burst, 1.0, 0.0, maxf(manager.cloud_transition_time, 0.01)).set_trans(Tween.TRANS_EXPO).set_ease(Tween.EASE_OUT)
-	tween.tween_callback(set_physics_process.bind(true)).set_delay(maxf(manager.cloud_rise_delay, 0.0))
 	EventBus.cloud_formed.emit(self)
+
+
+## Moves every piece under a new cloud body at the mass's centre, keeping where they are. The
+## collision shapes stay on the mass; a cloud's are off.
+func _gather_into_cloud_body() -> void:
+	_cloud_body = Node3D.new()
+	_cloud_body.name = "CloudBody"
+	add_child(_cloud_body)
+	_cloud_body.position = center_of_mass
+	for piece in pieces:
+		piece.reparent(_cloud_body)
 
 
 func _set_cloud_progress(progress: float) -> void:

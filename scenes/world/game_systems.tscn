@@ -6,6 +6,7 @@
 [ext_resource type="Script" uid="uid://c4238dscey2i" path="res://scenes/characters/enemy/zurd_director.gd" id="4_zdir"]
 [ext_resource type="PackedScene" uid="uid://bxjnraf4ofxwq" path="res://scenes/characters/enemy/zurd.tscn" id="5_zurd"]
 [ext_resource type="PackedScene" uid="uid://dg40uonmum030" path="res://scenes/ui/hud/zurd_testing_hud.tscn" id="6_zhud"]
+[ext_resource type="Script" path="res://scenes/sculpture/cloud_sky.gd" id="7_csky"]
 
 [node name="GameSystems" type="Node" unique_id=976592037]
 
@@ -19,6 +20,9 @@ combine_size_mode = 1
 
 [node name="SculptureFx" type="Node" parent="." unique_id=1577201930]
 script = ExtResource("3_sfx")
+
+[node name="CloudSky" type="Node" parent="." unique_id=1485800852]
+script = ExtResource("7_csky")
 
 [node name="ZurdDirector" type="Node" parent="." unique_id=1191661251]
 script = ExtResource("4_zdir")

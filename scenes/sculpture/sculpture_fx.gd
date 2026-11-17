@@ -90,13 +90,14 @@ func _on_object_resized(obj: Node3D, old_size: float, new_size: float) -> void:
 
 ## Every object in the new cloud puffs up by [member cloud_pop], then settles [member cloud_swell]
 ## bigger than it was. Each grows around its own middle, not its pivot, so tall objects puff in place.
+## The pieces sit under the cloud's body by now, so the middle is worked out in the piece's parent.
 func _on_cloud_formed(mass: SculptureMass) -> void:
 	for piece in mass.pieces:
 		# The last object to fuse may still be in its fuse punch: puff from its normal size.
 		var base_scale: Vector3 = piece.get_meta(BASE_SCALE_META, piece.scale)
 		piece.set_meta(BASE_SCALE_META, base_scale * (1.0 + cloud_swell))
 		_kill_tween(piece)
-		var center := mass.to_local(piece.get_center())
+		var center := (piece.get_parent() as Node3D).to_local(piece.get_center())
 		var start := piece.position
 		var set_size := func(factor: float) -> void:
 			piece.scale = base_scale * factor

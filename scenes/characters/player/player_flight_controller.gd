@@ -33,7 +33,7 @@ const GROUND_PROBE_LENGTH: float = 1000.0
 @export var ground_clearance: float = 4.0
 ## Floor used where there is no ground under the ship.
 @export var lowest_altitude: float = -50.0
-## Highest the ship may rise. Keep it below the cloud band ([member MassManager.atmosphere_y_range]).
+## Highest the ship may rise. Keep it below the cloud zone ([member CloudSky.zone_heights]).
 @export var altitude_ceiling: float = 120.0
 @export_flags_3d_physics var ground_mask: int = 1
 

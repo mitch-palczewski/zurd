@@ -5,12 +5,7 @@
 
 [node name="ZurdWorld02" unique_id=1406931788 instance=ExtResource("1_28esl")]
 
-[node name="MassManager" parent="GameSystems" parent_id_path=PackedInt32Array(976592037) index="0" unique_id=1093488417]
-atmosphere_y_range = Vector2(482.1801, 532.1801)
-
 [node name="Ship" parent="Actors" index="0" unique_id=1204900820]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 332.1801, 0)
 
 [node name="Terrain02" parent="." index="4" unique_id=432275119 instance=ExtResource("2_y5tpc")]
-
-[editable path="GameSystems"]

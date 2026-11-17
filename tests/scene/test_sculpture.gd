@@ -252,6 +252,40 @@ func test_cloud_counts_parts() -> void:
 	check(is_instance_valid(late) and mass.pieces.size() == 3, "a cloud takes no new objects")
 
 
+func test_cloud_rises_into_the_sky_dressed_in_puffs() -> void:
+	manager.cloud_threshold_count = 2
+	var sky := world.find_child("CloudSky", true, false)
+	if not check(sky != null, "set-up: the world has a cloud sky"):
+		return
+	# A quick rise; the rule is where it ends up, not how long it takes.
+	sky.set(&"rise_delay", 0.1)
+	sky.set(&"rise_time", 1.0)
+	var mass := await _make_mass(AREA, SLAB, OTHER)
+	if not check(mass.is_cloud, "set-up: two objects make a cloud"):
+		return
+	var body: Node3D = mass.get_cloud_body()
+	if not check(body != null, "a cloud has a body"):
+		return
+	var gathered := true
+	var dressed := true
+	for piece in mass.pieces:
+		gathered = gathered and piece.get_parent() == body
+		dressed = dressed and piece.find_child("CloudPuffs", false, false) != null
+	check(gathered, "its objects gather under the body")
+	check(dressed, "each object gets cloud puffs")
+	check(mass.find_child("CloudWisps", false, false) != null, "and small puffs come and go around it")
+
+	await wait_seconds(sky.get(&"rise_delay") + sky.get(&"rise_time") + 0.3)
+	var zone: Vector2 = sky.get(&"zone_heights")
+	var bob: float = sky.get(&"bob_height")
+	var radius_range: Vector2 = sky.get(&"gyre_radius_range")
+	var middle := body.global_position
+	check(middle.y >= zone.x - bob - 0.01 and middle.y <= zone.y + bob + 0.01, "it rises into the cloud zone")
+	var ring := Vector2(middle.x, middle.z).distance_to(sky.get(&"gyre_center"))
+	check(ring >= radius_range.x - 0.01 and ring <= radius_range.y + 0.01, "onto the gyre around the play area")
+	check_near(body.scale.x / sky.get(&"scale_multiplier"), 1.0, sky.get(&"breath") + 0.001, "grown to scale_multiplier times its size")
+
+
 func test_hits_in_the_same_frame_follow_what_objects_became() -> void:
 	var middle := spawn_object(SLAB, AREA)
 	var left := spawn_beside(OTHER, middle, Vector3.LEFT)
