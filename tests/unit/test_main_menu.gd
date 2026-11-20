@@ -1,8 +1,8 @@
 extends "res://tests/test_case.gd"
 
 ## The main menu: its controls label follows the live input map, scene entries that point at a
-## missing scene are skipped, the Controllers section sets profiles, and a failed load gives the
-## buttons back.
+## missing scene are skipped, the Controllers section sets profiles, the Performance section sets the
+## Graphics settings, and a failed load gives the buttons back.
 
 const MENU_PATH := "res://scenes/ui/menus/main_menu.tscn"
 const NOT_A_SCENE := "res://assets/shaders/sculpture_mass.gdshader"
@@ -10,6 +10,8 @@ const PAD := 73
 
 ## Input map entries a test changed: action -> its events before.
 var _saved_events: Dictionary = {}
+## The Graphics config file in use before a test switched to its own, or "".
+var _run_graphics_config := ""
 
 
 func after_each() -> void:
@@ -20,6 +22,10 @@ func after_each() -> void:
 	_saved_events.clear()
 	if Controllers.get_devices().has(PAD):
 		Controllers.disconnect_device(PAD)
+	if not _run_graphics_config.is_empty():
+		DirAccess.remove_absolute(Graphics.config_path)
+		Graphics.set_config_path(_run_graphics_config)
+		_run_graphics_config = ""
 	for child in get_children():
 		child.free()
 
@@ -60,6 +66,42 @@ func test_controller_list_sets_profiles() -> void:
 	check_equal(Controllers.get_profile_id(PAD), ControllerProfile.ARCADE_KIT, "picking a profile gives it to the controller")
 
 
+func test_performance_section_sets_graphics() -> void:
+	_run_graphics_config = Graphics.config_path
+	Graphics.set_config_path(temp_path("menu_graphics_test.json"))
+	Graphics.set_preset(Graphics.HIGH)
+	var menu := await _make_menu()
+	var panel := menu.get(&"performance_panel") as Control
+	if not check(panel != null, "the menu has a Performance section"):
+		return
+	var preset_option := panel.find_child("preset", true, false) as OptionButton
+	check_equal(preset_option.get_item_text(preset_option.selected), Graphics.PRESETS[Graphics.HIGH], "it shows the current preset")
+
+	var low_index := _item_index(preset_option, Graphics.PRESETS[Graphics.LOW])
+	preset_option.select(low_index)
+	preset_option.item_selected.emit(low_index)
+	check_equal(Graphics.get_preset(), Graphics.LOW, "picking a preset sets it")
+	for setting: StringName in Graphics.SETTINGS:
+		var option := panel.find_child(setting, true, false) as OptionButton
+		if not check(option != null, "%s has a dropdown" % setting):
+			continue
+		var shown: Variant = Graphics.SETTINGS[setting]["choices"][option.selected][0]
+		check_equal(shown, Graphics.get_setting(setting), "the %s dropdown shows the preset's value" % setting)
+
+	var resolution := panel.find_child(Graphics.RESOLUTION, true, false) as OptionButton
+	var other := (resolution.selected + 1) % resolution.item_count
+	resolution.select(other)
+	resolution.item_selected.emit(other)
+	check_equal(Graphics.get_setting(Graphics.RESOLUTION), Graphics.SETTINGS[Graphics.RESOLUTION]["choices"][other][0], "picking a choice sets it")
+	check_equal(preset_option.get_item_text(preset_option.selected), "Custom", "and the preset shows Custom")
+
+	var show_fps := panel.find_child("ShowFps", true, false) as CheckBox
+	show_fps.button_pressed = true
+	check(Graphics.show_fps, "the Show FPS box shows the frame rate")
+	Graphics.set_show_fps(false)
+	check(not show_fps.button_pressed, "and follows it when it's turned off elsewhere (F3)")
+
+
 func test_failed_load_gives_the_buttons_back() -> void:
 	var entries: Array[SceneEntry] = [_scene_entry("Not a scene", NOT_A_SCENE)]
 	var menu := await _make_menu(entries)
@@ -89,6 +131,13 @@ func _replace_events(action: StringName, events: Array) -> void:
 	InputMap.action_erase_events(action)
 	for event: InputEvent in events:
 		InputMap.action_add_event(action, event)
+
+
+func _item_index(option: OptionButton, text: String) -> int:
+	for i in option.item_count:
+		if option.get_item_text(i) == text:
+			return i
+	return -1
 
 
 func _key(keycode: Key) -> InputEventKey:

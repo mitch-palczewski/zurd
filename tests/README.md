@@ -1,7 +1,7 @@
 # Tests
 
 Automated checks of the game's rules: sculpture masses, the ship's flight, launching, the object
-catalog, controllers, loading and the project's files. They run headless in about half a minute.
+catalog, controllers, graphics settings, loading and the project's files. They run headless in about half a minute.
 Run them before committing code changes; a failure means a rule changed, on purpose or not.
 
 ## Running
@@ -29,17 +29,18 @@ editor exe in the Godot download; it isn't on PATH):
 ## Your files are safe
 
 The tests never read or write `user://` files. Before anything loads, the runner points the
-Controllers autoload at a temporary file in the OS temp folder, and deletes that folder afterwards.
-To make sure, the runner fingerprints `user://controller_config.json`, `user://lidar_config.json`
-and `data/object_catalog.tres` before and after the run. If one changed, the run fails, and the
+Controllers and Graphics autoloads at temporary files in the OS temp folder, and deletes that
+folder afterwards. To make sure, the runner fingerprints `user://controller_config.json`,
+`user://graphics_config.json`, `user://lidar_config.json` and `data/object_catalog.tres` before and
+after the run. If one changed, the run fails, and the
 file as it was before is kept in the OS temp folder under `zurd_tests_backup/`.
 
 ## What's covered
 
 | Folder | Runs | Covers |
 | --- | --- | --- |
-| `unit/` | without the game world | object parts and sizes, break-off geometry, the object catalog (and that every rigid scene is in it and keeps the collider contract), the object tracker, controller profiles and the Controllers autoload, scene loading, the main menu, the reflecting pool's mirror camera and outline edges, solid scenery (colliders, shared shapes, water left non-solid), the cloud sky (rise, gyre, spacing, tumble, puffs, wisps, ridges), Zurd anger (feeding calms it), roles, temperament and the packs' spread, and that every scene and resource loads |
-| `scene/` | in `zurd_world01.tscn` | sculpture masses (fuse, combine, merge, growth break-off, bites, break-off, clouds and their rise into the sky), the ship's flight, launching and the launch station, the world's layout (its parts, where spawned things go, the worlds built on it), and the Zurds (the starting cast and its packs, roles' homes, packs roaming to food and keeping apart, Shadows swooping back into view, feeding and appetite, each Zurd's own anger and Hostility, hunting by role, Sentinels finding settled sculptures, one Zurd per target, the bubbles around Zurds and the ship, keeping clear of the terrain, calming down, swats by boldness, ramming, objects thrown to a Zurd, growth, the cloud chase) |
+| `unit/` | without the game world | object parts and sizes, break-off geometry, the object catalog (and that every rigid scene is in it and keeps the collider contract), the object tracker, controller profiles and the Controllers autoload, the graphics settings (presets, Custom, saving and loading, defaults, what reaches the screen, the F3 counter), scene loading, the main menu (with its Performance panel), the reflecting pool's mirror camera and outline edges, solid scenery (colliders, shared shapes, water left non-solid), the cloud sky (rise, gyre, spacing, tumble, puffs, wisps, ridges), Zurd anger (feeding calms it), roles, temperament and the packs' spread, and that every scene and resource loads |
+| `scene/` | in `zurd_world01.tscn` | sculpture masses (fuse, combine, merge, growth break-off, bites, break-off, clouds and their rise into the sky), the ship's flight, launching and the launch station, the world's layout (its parts, where spawned things go, the worlds built on it), and the Zurds (the starting cast and its packs, roles' homes, packs roaming to food and keeping apart, Shadows swooping back into view, feeding and appetite, each Zurd's own anger and Hostility, hunting by role, Sentinels finding settled sculptures, one Zurd per target, the bubbles around Zurds and the ship, keeping clear of the terrain, calming down, swats by boldness, ramming, objects thrown to a Zurd, growth, the cloud chase), and graphics settings reaching the world (the sun's shadows, the pool's reflection, the sky canopy's shells, nodes added later, High giving each node its own values back) |
 
 Not covered, on purpose:
 

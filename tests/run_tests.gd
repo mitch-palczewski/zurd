@@ -17,9 +17,15 @@ const FOLDER_ORDER: Array[String] = ["unit", "scene"]
 ## A change fails the run, and the file as it was before the run is kept in the OS temp folder.
 const GUARDED_FILES: Array[String] = [
 	"user://controller_config.json",
+	"user://graphics_config.json",
 	"user://lidar_config.json",
 	"res://data/object_catalog.tres",
 ]
+## Autoloads that save the player's settings, with the temporary file each uses during a run.
+const CONFIG_AUTOLOADS := {
+	"Controllers": "controller_config.json",
+	"Graphics": "graphics_config.json",
+}
 ## The [Logger] error type of warnings. Every other type (errors, script errors, shader errors)
 ## fails the test that logged it unless the test allowed it.
 const WARNING_TYPE := 1
@@ -91,16 +97,14 @@ func _initialize() -> void:
 	_remove_temp_dir()
 	DirAccess.make_dir_recursive_absolute(_temp_dir)
 	_snapshot_guarded_files()
-	# The autoloads exist but aren't ready yet, so Controllers loads its config from here, never
-	# from the real file.
-	var controllers := root.get_node_or_null(^"Controllers")
-	if controllers:
-		controllers.set(&"config_path", get_temp_path("controller_config.json"))
-	if controllers == null or controllers.get(&"config_path") != get_temp_path("controller_config.json"):
-		print("RESULT: FAIL (couldn't point Controllers at a temporary config, so no test ran; the real one stays untouched)")
-		_finished = true
-		quit(1)
-		return
+	# The autoloads exist but aren't ready yet, so Controllers and Graphics load their configs from
+	# here, never from the real files.
+	for autoload in CONFIG_AUTOLOADS:
+		if not _use_temp_config(autoload, CONFIG_AUTOLOADS[autoload]):
+			print("RESULT: FAIL (couldn't point %s at a temporary config, so no test ran; the real one stays untouched)" % autoload)
+			_finished = true
+			quit(1)
+			return
 	_run()
 
 
@@ -361,6 +365,15 @@ func _folder_rank(path: String) -> int:
 # ==============================================================================
 # GUARDED FILES AND TEMPORARY FILES
 # ==============================================================================
+
+## Points the autoload [param autoload]'s config_path at [param file_name] in the run's temporary
+## folder. False when it couldn't.
+func _use_temp_config(autoload: String, file_name: String) -> bool:
+	var node := root.get_node_or_null(NodePath(autoload))
+	if node:
+		node.set(&"config_path", get_temp_path(file_name))
+	return node != null and node.get(&"config_path") == get_temp_path(file_name)
+
 
 func _snapshot_guarded_files() -> void:
 	for path in GUARDED_FILES:

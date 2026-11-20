@@ -115,6 +115,8 @@ Autoload scripts in Godot are global scripts allowing functions to be called thr
 | **EventBus** | `res://scripts/autoload/event_bus.gd` | Central message bus for global signals (interaction, spawning, UI). |
 | **SceneChanger** | `res://scripts/autoload/scene_changer.gd` | Handles asynchronous scene loading and transition overlays. |
 | **ObjectTracker** | `res://scripts/autoload/object_tracker.gd` | Tracks every object a Zurd can target: loose launched objects and objects fused into a sculpture mass. |
+| **Controllers** | `res://scripts/autoload/controllers.gd` | Gives each connected controller its own layout (profile), saved per computer. |
+| **Graphics** | `res://scripts/autoload/graphics.gd` | Performance settings (preset, resolution, shadows, reflections, sky canopy, anti-aliasing, frame limit), saved per computer; F3 shows the frame rate. |
 
 
 
