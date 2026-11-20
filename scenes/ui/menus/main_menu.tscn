@@ -5,26 +5,32 @@
 
 [sub_resource type="Resource" id="Resource_flhq8"]
 script = ExtResource("2_h1kbi")
-label = "The all consuming Zurd (main)"
+label = "Zurd World 01"
 path = "uid://x0l623new2xy"
 metadata/_custom_type_script = "uid://d3fjs43kfsd3m"
 
 [sub_resource type="Resource" id="Resource_g740y"]
 script = ExtResource("2_h1kbi")
-label = "Zurd World 2"
+label = "Zurd World 02"
 path = "uid://cosmow4dsimvy"
+metadata/_custom_type_script = "uid://d3fjs43kfsd3m"
+
+[sub_resource type="Resource" id="Resource_qve52"]
+script = ExtResource("2_h1kbi")
+label = "Zurd World 03"
+path = "uid://c7vkxdqaijj3h"
+metadata/_custom_type_script = "uid://d3fjs43kfsd3m"
+
+[sub_resource type="Resource" id="Resource_h1kbi"]
+script = ExtResource("2_h1kbi")
+label = "Large World Test"
+path = "uid://7rn8yfug4u75"
 metadata/_custom_type_script = "uid://d3fjs43kfsd3m"
 
 [sub_resource type="Resource" id="Resource_jtlqt"]
 script = ExtResource("2_h1kbi")
 label = "Lidar Setup"
 path = "uid://drrw5xnj8oie1"
-metadata/_custom_type_script = "uid://d3fjs43kfsd3m"
-
-[sub_resource type="Resource" id="Resource_h1kbi"]
-script = ExtResource("2_h1kbi")
-label = "large world example"
-path = "uid://7rn8yfug4u75"
 metadata/_custom_type_script = "uid://d3fjs43kfsd3m"
 
 [node name="MainMenu" type="Control" unique_id=408600085]
@@ -35,7 +41,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_flhq8")
-scenes = Array[ExtResource("2_h1kbi")]([SubResource("Resource_flhq8"), SubResource("Resource_g740y"), SubResource("Resource_jtlqt"), SubResource("Resource_h1kbi")])
+scenes = Array[ExtResource("2_h1kbi")]([SubResource("Resource_flhq8"), SubResource("Resource_g740y"), SubResource("Resource_qve52"), SubResource("Resource_h1kbi"), SubResource("Resource_jtlqt")])
 
 [node name="CenterContainer" type="CenterContainer" parent="." unique_id=1854115553]
 layout_mode = 1

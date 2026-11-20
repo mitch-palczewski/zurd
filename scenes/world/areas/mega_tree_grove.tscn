@@ -6,10 +6,10 @@
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_grove"]
 material = ExtResource("1_floor")
-size = Vector2(2000, 2000)
+size = Vector2(3000, 2000)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_grove"]
-size = Vector3(2000, 2, 2000)
+size = Vector3(3000, 2, 2000)
 
 [node name="MegaTreeGrove" type="Node3D" unique_id=1355297043]
 
@@ -39,7 +39,7 @@ transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 222.94698, 20.278564, -
 transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 498.02856, 20.278564, -1613.7158)
 
 [node name="MegaTree5" parent="Trees" unique_id=991319413 instance=ExtResource("2_tree")]
-transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 719.24603, 20.278564, -1443.5651)
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 888.7263, 20.278625, -2233.1729)
 
 [node name="MegaTree6" parent="Trees" unique_id=832531755 instance=ExtResource("2_tree")]
 transform = Transform3D(-99.27214, 0, 12.043338, 0, 100, 0, -12.043338, 0, -99.27214, 354.2962, 20.278564, -2091.963)
@@ -55,6 +55,48 @@ transform = Transform3D(-99.27214, 0, 12.043338, 0, 100, 0, -12.043338, 0, -99.2
 
 [node name="MegaTree10" parent="Trees" unique_id=126911782 instance=ExtResource("2_tree")]
 transform = Transform3D(-99.27214, 0, 12.043338, 0, 100, 0, -12.043338, 0, -99.27214, -379.85498, 20.278564, -2012.5702)
+
+[node name="MegaTree11" parent="Trees" unique_id=236031120 instance=ExtResource("2_tree")]
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, -793.9666, 20.278564, -1892.6024)
+
+[node name="MegaTree12" parent="Trees" unique_id=1297414277 instance=ExtResource("2_tree")]
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, -572.74915, 20.278564, -1722.4517)
+
+[node name="MegaTree13" parent="Trees" unique_id=2145379824 instance=ExtResource("2_tree")]
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 902.95435, 20.278564, -1785.4028)
+
+[node name="MegaTree14" parent="Trees" unique_id=369578630 instance=ExtResource("2_tree")]
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 1124.1719, 20.278564, -1615.2521)
+
+[node name="MegaTree15" parent="Trees" unique_id=1486718758 instance=ExtResource("2_tree")]
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, -1092.7201, 20.278564, -1132.2656)
+
+[node name="MegaTree16" parent="Trees" unique_id=709307956 instance=ExtResource("2_tree")]
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, -869.77313, 20.278564, -1327.8965)
+
+[node name="MegaTree17" parent="Trees" unique_id=1364710617 instance=ExtResource("2_tree")]
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, -594.6915, 20.278564, -1469.6475)
+
+[node name="MegaTree18" parent="Trees" unique_id=2065111177 instance=ExtResource("2_tree")]
+transform = Transform3D(-99.27214, 0, 12.043338, 0, 100, 0, -12.043338, 0, -99.27214, -983.30865, 20.278564, -1780.5378)
+
+[node name="MegaTree19" parent="Trees" unique_id=292842286 instance=ExtResource("2_tree")]
+transform = Transform3D(-99.27214, 0, 12.043338, 0, 100, 0, -12.043338, 0, -99.27214, -1273.4596, 20.278564, -1672.9476)
+
+[node name="MegaTree20" parent="Trees" unique_id=1104077919 instance=ExtResource("2_tree")]
+transform = Transform3D(9.335122, 0, -99.563324, 0, 100, 0, 99.563324, 0, 9.335122, 901.0118, 20.278564, -1494.782)
+
+[node name="MegaTree21" parent="Trees" unique_id=977244227 instance=ExtResource("2_tree")]
+transform = Transform3D(9.335122, 0, -99.563324, 0, 100, 0, 99.563324, 0, 9.335122, 1116.6008, 20.278564, -1291.071)
+
+[node name="MegaTree22" parent="Trees" unique_id=2098497713 instance=ExtResource("2_tree")]
+transform = Transform3D(9.335122, 0, -99.563324, 0, 100, 0, 99.563324, 0, 9.335122, 1283.412, 20.278564, -1030.4232)
+
+[node name="MegaTree23" parent="Trees" unique_id=1931139735 instance=ExtResource("2_tree")]
+transform = Transform3D(2.7235737, 0, 99.96291, 0, 100.000015, 0, -99.96291, 0, 2.7235737, 1389.7285, 20.278564, -1349.5509)
+
+[node name="MegaTree24" parent="Trees" unique_id=1800605206 instance=ExtResource("2_tree")]
+transform = Transform3D(2.7235737, 0, 99.96291, 0, 100.000015, 0, -99.96291, 0, 2.7235737, 1422.4606, 20.278564, -1725.2056)
 
 [node name="SkyCanopy" parent="." unique_id=1873402219 instance=ExtResource("3_canopy")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1210.3087, -97.26895)

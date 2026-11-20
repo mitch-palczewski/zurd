@@ -1,0 +1,78 @@
+[gd_scene format=3 uid="uid://btwmhgnrgucae"]
+
+[ext_resource type="Material" uid="uid://6oeukltnb3fd" path="res://assets/materials/scenery/floor_checker.tres" id="1_t6147"]
+[ext_resource type="PackedScene" uid="uid://6eej32vp4xvy" path="res://scenes/world/areas/pool_court.tscn" id="2_4gh7n"]
+[ext_resource type="PackedScene" uid="uid://c81ypcrs4mwlx" path="res://scenes/world/areas/mega_tree_grove.tscn" id="3_0kxb3"]
+[ext_resource type="PackedScene" uid="uid://becnt4sgwk05x" path="res://scenes/scenery/bush_stock_pink.tscn" id="4_lwsg5"]
+[ext_resource type="PackedScene" uid="uid://b6wikfrx7cji2" path="res://scenes/scenery/bush_stock.tscn" id="5_pplp5"]
+[ext_resource type="PackedScene" uid="uid://cfrryebdb3n2a" path="res://scenes/scenery/circle_grid.tscn" id="6_mn5ww"]
+[ext_resource type="PackedScene" uid="uid://df13piglwmuld" path="res://assets/models/set_pieces/half_pipe.glb" id="7_4gh7n"]
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_floor"]
+size = Vector2(10000, 10000)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_floor"]
+size = Vector3(10000, 10, 10000)
+
+[node name="Terrain02" type="Node3D" unique_id=432275119]
+
+[node name="Floor" type="StaticBody3D" parent="." unique_id=2060908878]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0)
+collision_mask = 0
+
+[node name="Mesh" type="MeshInstance3D" parent="Floor" unique_id=1580377214]
+material_override = ExtResource("1_t6147")
+mesh = SubResource("PlaneMesh_floor")
+
+[node name="Collision" type="CollisionShape3D" parent="Floor" unique_id=1287950713]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -5, 0)
+shape = SubResource("BoxShape3D_floor")
+
+[node name="PoolCourt" parent="." unique_id=880459923 instance=ExtResource("2_4gh7n")]
+
+[node name="MegaTreeGrove" parent="." unique_id=1355297043 instance=ExtResource("3_0kxb3")]
+transform = Transform3D(0.034578778, 0, -0.999402, 0, 1, 0, 0.999402, 0, 0.034578778, 1012.7755, -6.1035156e-05, -26.084167)
+
+[node name="BushGarden" type="Node3D" parent="." unique_id=2132073992]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5.161682, 0)
+
+[node name="PinkBush" parent="BushGarden" unique_id=1254520205 instance=ExtResource("4_lwsg5")]
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, -1050.3424, 64.82587, 64.61597)
+
+[node name="Bush" parent="BushGarden" unique_id=157503733 instance=ExtResource("5_pplp5")]
+transform = Transform3D(50, 0, 0, 0, 50, 0, 0, 0, 50, -962.9715, 31.896461, 65.08293)
+
+[node name="Bush2" parent="BushGarden" unique_id=1096813317 instance=ExtResource("5_pplp5")]
+transform = Transform3D(70, 0, 0, 0, 70, 0, 0, 0, 70, -958.73035, 44.33451, -7.9654846)
+
+[node name="Bush3" parent="BushGarden" unique_id=1277688958 instance=ExtResource("5_pplp5")]
+transform = Transform3D(11.111451, 0, -48.749725, 0, 50, 0, 48.749725, 0, 11.111451, -1129.9666, 31.8964, -104.415665)
+
+[node name="Bush4" parent="BushGarden" unique_id=1910524438 instance=ExtResource("5_pplp5")]
+transform = Transform3D(15.556031, 0, -68.24961, 0, 70, 0, 68.24961, 0, 15.556031, -1054.2067, 44.33451, 157.89153)
+
+[node name="PinkBush2" parent="BushGarden" unique_id=875963961 instance=ExtResource("4_lwsg5")]
+transform = Transform3D(89, 0, 0, 0, 89, 0, 0, 0, 89, -1130.7843, 51.123993, 187.91171)
+
+[node name="ZurdLandmark" type="Marker3D" parent="BushGarden" unique_id=585346318 groups=["zurd_landmarks"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1050, 100, 60)
+
+[node name="CircleGrids" type="Node3D" parent="." unique_id=1675520834]
+
+[node name="CircleGrid" parent="CircleGrids" unique_id=133136815 instance=ExtResource("6_mn5ww")]
+transform = Transform3D(30, 0, 0, 0, 30, 0, 0, 0, 30, -62.972206, 2.1369476, 658.25543)
+
+[node name="CircleGrid2" parent="CircleGrids" unique_id=805396817 instance=ExtResource("6_mn5ww")]
+transform = Transform3D(-22.794899, 0.19892806, -19.502644, 0.26179612, 29.998865, 0, 19.501907, -0.17019059, -22.795765, 296.892, 3, 660)
+
+[node name="CircleGrid3" parent="CircleGrids" unique_id=317237364 instance=ExtResource("6_mn5ww")]
+transform = Transform3D(-26.875265, 0.2980171, 13.327847, 0.6482985, 29.986237, 0.6367702, -13.315407, 0.8584596, -26.86937, 12.472748, 6.903473, 963.58594)
+
+[node name="ZurdLandmark" type="Marker3D" parent="CircleGrids" unique_id=53205793 groups=["zurd_landmarks"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 80, 50, 780)
+
+[node name="half_pipe" parent="." unique_id=1260834405 instance=ExtResource("7_4gh7n")]
+transform = Transform3D(10, 0, 0, 0, 10, 0, 0, 0, 10, -17.544968, -70.2269, 6.8345337)
+
+[node name="MegaTreeGrove2" parent="." unique_id=1314987869 instance=ExtResource("3_0kxb3")]
+transform = Transform3D(-0.008777745, 0, 0.99996144, 0, 1, 0, -0.99996144, 0, -0.008777745, -1080.4761, -6.1035156e-05, -26.084167)

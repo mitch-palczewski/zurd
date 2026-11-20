@@ -1,0 +1,11 @@
+[gd_scene format=3 uid="uid://c7vkxdqaijj3h"]
+
+[ext_resource type="PackedScene" uid="uid://8u5j2653xk4d" path="res://scenes/world/base_world.tscn" id="1_qve52"]
+[ext_resource type="PackedScene" uid="uid://btwmhgnrgucae" path="res://scenes/world/terrain03.tscn" id="2_qve52"]
+
+[node name="ZurdWorld02" unique_id=1406931788 instance=ExtResource("1_qve52")]
+
+[node name="Ship" parent="Actors" parent_id_path=PackedInt32Array(891117025) index="0" unique_id=1204900820]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 332.1801, 0)
+
+[node name="Terrain02" parent="." index="4" unique_id=432275119 instance=ExtResource("2_qve52")]
