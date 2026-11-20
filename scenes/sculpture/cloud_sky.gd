@@ -319,7 +319,7 @@ func _on_cloud_formed(mass: SculptureMass) -> void:
 	if body == null:
 		push_warning("CloudSky: a cloud formed without a cloud body; it stays where it is.")
 		return
-	var cloud := add_cloud(body.global_position, _get_radius(body), mass)
+	var cloud := add_cloud(body.global_position, get_cloud_radius(body), mass)
 	_dress(cloud, body)
 
 
@@ -381,8 +381,9 @@ func get_ridge_mesh(mesh: Mesh) -> ArrayMesh:
 	return mesh.get_meta(RIDGES_META)
 
 
-## Half the longest side of the box around the cloud's objects, in metres: roughly its radius.
-func _get_radius(body: Node3D) -> float:
+## Half the longest side of the box around the objects under the cloud's [param body], in the body's
+## space: roughly the cloud's radius before it grows. Zurds chasing a new cloud use it too.
+static func get_cloud_radius(body: Node3D) -> float:
 	var to_body := body.global_transform.affine_inverse()
 	var bounds := AABB()
 	var has_bounds := false

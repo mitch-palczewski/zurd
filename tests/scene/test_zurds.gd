@@ -1,10 +1,12 @@
 extends "res://tests/test_case.gd"
 
 ## The Zurds in the game world (Zurd Core Design Doc §5, §6, §12): the starting cast, feeding and
-## appetite, each Zurd's own anger and Hostility, the roles' homes and hunting, Sentinels finding
-## settled sculptures, swats by boldness, ramming and object hits. The world has no terrain unless a
-## test needs it. The ship hovers at the origin's height of 100 m; Zurds are placed beside it. Many
-## Zurds here are held still (wander speed 0), so they stay where a test puts them.
+## appetite, each Zurd's own anger and Hostility, the roles' homes and hunting (Grazer packs, Shadows
+## swooping back into view), Sentinels finding settled sculptures, swats by boldness, ramming,
+## objects thrown to a Zurd, growth, the cloud chase, and the space Zurds keep around each other and
+## the ship. The world has no terrain unless a test needs it. The ship hovers at the origin's height
+## of 100 m; Zurds are placed beside it. Many Zurds here are held still (wander speed 0), so they stay
+## where a test puts them.
 
 const AREA := Vector3(150.0, 100.0, 0.0)
 const SLAB := "res://scenes/objects/rigid/GEO_Stock_07_rigid.tscn"
@@ -37,13 +39,22 @@ func test_world_starts_with_its_cast() -> void:
 		calm = calm and not zurd.is_hostile and zurd.anger.value == 0.0
 	check(placed, "each is in Actors/Zurds, its body unscaled (Godot advises against scaling physics bodies)")
 	check(calm, "each starts Passive, its anger at 0")
-	var in_patch := true
-	var patches: Dictionary[int, bool] = {}
+	var sized := true
+	for zurd in director.get_zurds():
+		sized = sized and zurd.size >= zurd.role.body.x - 0.001 and zurd.size <= zurd.role.body.y + 0.001
+	check(sized, "each starts at its own size, within its role's range")
+	check_equal(director.get_pack_count(), director.pack_count, "the Grazers form their packs")
+	var shares := true
+	var with_pack := true
+	for index in director.get_pack_count():
+		var members := director.get_pack_members(index).size()
+		shares = shares and absf(members - float(director.grazer_count) / director.pack_count) < 1.0
+		for other in director.get_pack_count():
+			with_pack = with_pack and (other == index or _flat(director.get_pack_center(index), director.get_pack_center(other)) >= director.pack_spacing)
 	for grazer in grazers:
-		in_patch = in_patch and _ground_distance_to(grazer, grazer.patch_center) <= grazer.patch_radius
-		patches[grazer.patch_index] = true
-	check(in_patch, "each Grazer starts in its patch")
-	check_equal(patches.size(), director.grazer_count, "each has a patch of its own")
+		with_pack = with_pack and grazer.pack_index >= 0 and _ground_distance_to(grazer, director.get_pack_center(grazer.pack_index)) <= director.pack_radius + 1.0
+	check(shares, "the Grazers are shared out evenly between the packs")
+	check(with_pack, "each Grazer starts by its pack's middle, the packs well apart")
 	var watching := true
 	for sentinel in sentinels:
 		watching = watching and sentinel.home_landmark != null and sentinel.global_position.distance_to(sentinel.home_landmark.global_position) <= 60.0
@@ -56,18 +67,61 @@ func test_world_starts_with_its_cast() -> void:
 	check(in_view, "each Shadow starts at its spot, in the players' view at its distance from the ship")
 
 
-func test_grazer_keeps_to_its_patch() -> void:
+func test_grazer_keeps_to_its_pack() -> void:
 	await _setup()
+	# A pack that stays put, so only the Grazer moves.
+	director.pack_speed = 0.0
+	var pack := director.add_pack(AREA)
 	var grazer := director.spawn_zurd(AREA + Vector3(400.0, 0.0, 0.0))
-	grazer.patch_center = AREA
-	grazer.patch_radius = 100.0
-	var came_back := await wait_until(func() -> bool: return _ground_distance_to(grazer, AREA) <= grazer.patch_radius, 60.0)
-	check(came_back, "a Grazer away from its patch heads back to it")
+	director.join_pack(grazer, pack)
+	var came_back := await wait_until(func() -> bool: return _ground_distance_to(grazer, AREA) <= director.pack_radius, 60.0)
+	check(came_back, "a Grazer away from its pack heads back to it")
 	var furthest := 0.0
 	for frame in 30 * Engine.physics_ticks_per_second:
 		await get_tree().physics_frame
 		furthest = maxf(furthest, _ground_distance_to(grazer, AREA))
-	check(furthest <= grazer.patch_radius * 1.25, "and stays in it (%.0f m out at most, patch radius %.0f m)" % [furthest, grazer.patch_radius])
+	check(furthest <= director.pack_radius * 1.25, "and wanders around its middle (%.0f m out at most, pack radius %.0f m)" % [furthest, director.pack_radius])
+
+
+func test_packs_head_for_loose_objects_they_smell() -> void:
+	await _setup()
+	director.pack_speed = 40.0
+	var near := director.add_pack(AREA)
+	var other := director.add_pack(AREA + Vector3(0.0, 0.0, 900.0))
+	var food := spawn_object(OTHER, AREA + Vector3(400.0, 60.0, 0.0))
+	var theirs := spawn_object(OTHER, AREA + Vector3(0.0, 0.0, 500.0))
+	await wait_physics(2)
+	check(director.is_pack_smelling_food(near) and _flat(director.get_pack_goal(near), food.global_position) < 1.0,
+			"a pack heads for the nearest loose object within its scent")
+	check(_flat(director.get_pack_goal(other), theirs.global_position) < 1.0,
+			"and leaves an object nearer another pack to that pack")
+	var arrived := await wait_until(func() -> bool: return director.get_pack_center(near).distance_to(food.global_position) <= 5.0, 20.0)
+	check(arrived, "its middle gets there, rising to it")
+	var grazer := director.spawn_zurd(director.get_pack_center(other))
+	director.join_pack(grazer, other)
+	await wait_physics(2)
+	check(grazer.pack_center.is_equal_approx(director.get_pack_center(other)), "its members wander around its middle as it moves")
+
+
+func test_packs_keep_apart_and_on_the_disc() -> void:
+	await _setup()
+	director.pack_speed = 40.0
+	director.grazing_radius = 1000.0
+	var first := director.add_pack(Vector3(0.0, 100.0, 0.0))
+	var second := director.add_pack(Vector3(100.0, 100.0, 0.0))
+	var stray := director.add_pack(Vector3(1600.0, 100.0, -1600.0))
+	await wait_physics(2)
+	check(Vector2(director.get_pack_center(stray).x, director.get_pack_center(stray).z).length() <= director.grazing_radius + 1.0,
+			"a pack off the grazing disc is brought back onto it")
+	var apart := await wait_until(func() -> bool: return _flat(director.get_pack_center(first), director.get_pack_center(second)) >= director.pack_spacing * 0.75, 10.0)
+	check(apart, "packs too close move apart (%.0f m, spacing %.0f m)" % [_flat(director.get_pack_center(first), director.get_pack_center(second)), director.pack_spacing])
+	var on_disc := true
+	for frame in 5 * Engine.physics_ticks_per_second:
+		await get_tree().physics_frame
+		for index in director.get_pack_count():
+			var center := director.get_pack_center(index)
+			on_disc = on_disc and Vector2(center.x, center.z).length() <= director.grazing_radius + 1.0
+	check(on_disc, "and every pack roams within the disc")
 
 
 func test_shadow_keeps_its_spot_in_view() -> void:
@@ -86,6 +140,26 @@ func test_shadow_keeps_its_spot_in_view() -> void:
 	release(&"ship_forward")
 	var kept_up: bool = await wait_until(at_spot, 30.0)
 	check(kept_up, "when the ship flies on, it catches up to its spot again")
+
+
+func test_shadow_out_of_view_swoops_back() -> void:
+	await _setup()
+	var camera := ship.get_viewport().get_camera_3d()
+	var shadow := director.spawn_zurd(ship.global_position + Vector3(0.0, 0.0, 300.0), director.shadow_role)
+	await wait_physics(2)
+	check(camera != null and not camera.is_position_in_frustum(shadow.global_position), "set-up: a Shadow behind the ship, out of view")
+	var swooped := await wait_until(func() -> bool: return shadow.is_swooping(), shadow.view_lost_time + 0.5)
+	check(swooped, "out of view for view_lost_time, it swoops back")
+	var fastest := 0.0
+	var time := 0.0
+	while not camera.is_position_in_frustum(shadow.global_position) and time < 10.0:
+		await get_tree().physics_frame
+		time += 1.0 / Engine.physics_ticks_per_second
+		fastest = maxf(fastest, shadow.velocity.length())
+	check(camera.is_position_in_frustum(shadow.global_position), "and is back in view within seconds (%.1f s)" % time)
+	check(fastest > shadow.role.travel_speed * 1.2, "faster than it travels (%.0f m/s, travel speed %.0f)" % [fastest, shadow.role.travel_speed])
+	await wait_physics(2)
+	check(not shadow.is_swooping(), "back in view, it stops swooping")
 
 
 # ==============================================================================
@@ -265,7 +339,7 @@ func test_hostile_shadow_goes_after_loose_objects_nearest_the_ship_then_large_sc
 	check(shadow.get_target() == null, "a sculpture under the size limit it leaves alone")
 
 
-func test_hostile_grazer_clears_its_patch_sculptures_included() -> void:
+func test_hostile_grazer_clears_the_ground_around_its_pack_sculptures_included() -> void:
 	await _setup()
 	var sculpture := await _make_sculpture(AREA + Vector3(0.0, 0.0, -40.0), 2)
 	var grazer := _spawn_still_zurd(AREA)
@@ -275,11 +349,11 @@ func test_hostile_grazer_clears_its_patch_sculptures_included() -> void:
 	grazer.anger.decay_rate = 0.0
 	grazer.anger.value = 1.0
 	await wait_physics(3)
-	check(grazer.get_target() == loose, "a Hostile Grazer goes after the loose objects in its patch first")
+	check(grazer.get_target() == loose, "a Hostile Grazer goes after the loose objects around its pack first")
 	loose.queue_free()
 	await wait_physics(3)
 	var target := grazer.get_target() as MassPiece
-	check(target != null and target.mass == sculpture, "then a sculpture in its patch, of any size: it treats it like a loose object")
+	check(target != null and target.mass == sculpture, "then a sculpture around its pack, of any size: it treats it like a loose object")
 
 
 func test_hostile_zurd_reaches_food_right_beside_it() -> void:
@@ -494,31 +568,140 @@ func test_ramming_a_zurd_counts_as_a_swat() -> void:
 	check(hit, "flying the ship into a Zurd counts as a swat")
 
 
-func test_launched_object_stuns_angers_then_gets_eaten() -> void:
+func test_a_launched_object_feeds_the_zurd_it_hits() -> void:
 	await _setup()
 	var zurd := _spawn_still_zurd(AREA)
+	zurd.anger.decay_rate = 0.0
+	zurd.anger.value = 0.5
+	var size := zurd.size
 	var stunned := watch(EventBus.zurd_stunned)
 	var eaten := watch(EventBus.object_eaten)
 	var thrown := spawn_object(SLAB, AREA + Vector3(30.0, 0.0, 0.0), 0.5, Vector3(-30.0, 0.0, 0.0))
-	var hit := await wait_until(func() -> bool: return not stunned.is_empty(), 3.0)
-	check(hit, "a launched object flying into a Zurd stuns it")
-	check_equal(zurd.swats, 0, "without counting as a swat")
-	check(zurd.anger.value > 0.0, "it angers the Zurd it hit")
-	var ate := await wait_until_freed(thrown, zurd.stun_time + 10.0)
-	check(ate and eaten.any(func(event: Array) -> bool: return event[0] == zurd), "after the stun, the Zurd eats that object")
+	var caught := await wait_until(func() -> bool: return zurd.get_target() == thrown, 3.0)
+	check(caught, "a launched object flying into a Zurd is food: it goes for it at once")
+	var ate := await wait_until_freed(thrown, 4.0)
+	check(ate and eaten.any(func(event: Array) -> bool: return event[0] == zurd), "and eats it quickly")
+	check(stunned.is_empty() and zurd.swats == 0, "no stun, and not a swat")
+	check_near(zurd.anger.value, 0.5 - zurd.anger.fed_calm, 0.0001, "being fed calms it a little")
+	check_near(zurd.size, size + zurd.growth_per_bite, 0.0001, "and grows it, like every bite")
+
+
+# ==============================================================================
+# GROWTH
+# ==============================================================================
+
+func test_eating_grows_a_zurd_up_to_the_cap() -> void:
+	await _setup()
+	var zurd := _spawn_still_zurd(AREA)
+	var food := spawn_object(SLAB, _in_mouth(zurd), SMALL)
+	var size := zurd.size
+	check(await wait_until_freed(food, zurd.passive_eat_time + 2.0), "set-up: the Zurd eats an object")
+	check_near(zurd.size, size + zurd.growth_per_bite, 0.0001, "each part it eats grows it by growth_per_bite")
+	var crumb := Node3D.new()
+	for bite in ceili(zurd.max_size / zurd.growth_per_bite) + 5:
+		EventBus.object_eaten.emit(zurd, crumb, null)
+	crumb.free()
+	check_near(zurd.size, zurd.max_size, 0.0001, "up to max_size")
+	await wait_seconds(1.0)
+	check_near(zurd.size, zurd.max_size, 0.0001, "and it stays big")
+
+
+func test_a_growing_zurd_scales_all_its_parts_together() -> void:
+	await _setup()
+	var zurd := _spawn_still_zurd(AREA)
+	var other := _spawn_still_zurd(AREA + Vector3(0.0, 0.0, 60.0))
+	var parts := _parts_at_size_one(zurd)
+	zurd.set_size(3.0)
+	await wait_physics(1)
+	var grown := _parts_at_size_one(zurd)
+	var together := true
+	for i in parts.size():
+		together = together and is_equal_approx(grown[i], parts[i])
+	check(together, "its mesh, body, mouth, hit area and health bar all grow with it %s" % [grown])
+	check(zurd.global_basis.get_scale().is_equal_approx(Vector3.ONE), "its body node stays unscaled")
+	check(other.get_body_radius() < zurd.get_body_radius() * 0.5, "the other Zurds keep their size: the shapes are its own")
+	check(is_equal_approx(_parts_at_size_one(other)[0], parts[0]), "the other Zurd's parts are as they were")
+
+
+func test_bigger_zurds_are_slower_and_take_more_swats() -> void:
+	await _setup()
+	var bold := director.spawn_zurd(AREA)
+	var timid := director.spawn_zurd(AREA + Vector3(0.0, 0.0, 60.0))
+	_set_boldness(bold, 1.0)
+	_set_boldness(timid, 0.0)
+	var speed := bold.movement_component.hunting_speed
+	var size := bold.size
+	bold.set_size(size + 2.0 * bold.growth_per_swat)
+	timid.set_size(timid.size + 2.0 * timid.growth_per_swat)
+	check_near(bold.movement_component.hunting_speed, speed * pow(bold.size / size, -bold.size_slowdown), 0.001, "bigger is slower")
+	check_equal(bold.drive_off_swats, bold.bold_swats.y + 2, "a bold Zurd takes one more swat per growth_per_swat it has grown")
+	check_equal(timid.drive_off_swats, 1, "a timid one still flees at the first")
+
+
+# ==============================================================================
+# THE CLOUD CHASE
+# ==============================================================================
+
+func test_zurds_that_see_a_new_cloud_chase_it_then_go_home() -> void:
+	await _setup()
+	get_mass_manager(world).cloud_threshold_count = 3
+	var sculpture := await _make_sculpture(AREA, 2)
+	var chaser := director.spawn_zurd(AREA + Vector3(60.0, 0.0, 0.0))
+	var home := AREA + Vector3(300.0, 0.0, 0.0)
+	chaser.pack_center = home
+	var food := spawn_object(OTHER, AREA + Vector3(100.0, 0.0, 0.0))
+	chaser.anger.decay_rate = 0.0
+	chaser.anger.value = 1.0
+	var bystander := _spawn_still_zurd(AREA + Vector3(0.0, 0.0, 400.0))
+	bystander.anger.decay_rate = 0.0
+	bystander.anger.value = 0.5
+	await wait_physics(3)
+	check(chaser.is_hostile and chaser.get_target() == food, "set-up: a Hostile Zurd going after food")
+	await _add_to_sculpture(sculpture, THIRD)
+	check(sculpture.is_cloud, "set-up: the sculpture became a cloud")
+	food.queue_free()
+	check(chaser.is_chasing_cloud(), "a Zurd that sees a new cloud chases it")
+	check(not chaser.is_hostile and chaser.get_target() == null, "dropping its hostility and its target")
+	check(chaser.anger.value <= chaser.anger.calm_threshold, "its anger falls to the calm threshold")
+	check(not bystander.is_chasing_cloud() and bystander.anger.value == 0.5, "one that can't see the cloud carries on")
+	var bounced := await wait_until(func() -> bool: return chaser.cloud_bounces > 0, chaser.chase_time)
+	check(bounced, "it reaches the cloud and bounces off it")
+	check_equal(sculpture.get_part_count(), 3, "it can't eat the cloud")
+	var gave_up := await wait_until(func() -> bool: return not chaser.is_chasing_cloud(), chaser.chase_time + 0.5)
+	check(gave_up, "after chase_time it gives up")
+	var away := _ground_distance_to(chaser, home)
+	await wait_seconds(3.0)
+	check(_ground_distance_to(chaser, home) < away - 20.0, "and heads home (%.0f m from home, was %.0f m)" % [_ground_distance_to(chaser, home), away])
 
 
 # ==============================================================================
 # GETTING AROUND
 # ==============================================================================
 
-func test_zurds_keep_their_personal_space() -> void:
+func test_zurds_keep_out_of_each_others_bubbles() -> void:
 	await _setup()
 	var first := _spawn_still_zurd(AREA)
 	var second := _spawn_still_zurd(AREA + Vector3(1.0, 0.0, 0.0))
-	var space := first.movement_component.personal_space
-	var apart := await wait_until(func() -> bool: return first.global_position.distance_to(second.global_position) >= space * 0.75, 3.0)
-	check(apart, "two Zurds on top of each other drift apart to most of their personal space")
+	var reach := func() -> float: return first.movement_component.get_bubble_radius(first) + first.movement_component.get_bubble_radius(second)
+	var apart := func() -> bool: return first.global_position.distance_to(second.global_position) >= reach.call() * 0.75
+	check(await wait_until(apart, 3.0), "two Zurds on top of each other push apart, out of most of their bubbles")
+	first.set_size(3.0)
+	check(await wait_until(apart, 3.0), "a Zurd's bubble grows with it (%.0f m apart, bubbles %.0f m)" % [first.global_position.distance_to(second.global_position), reach.call()])
+
+
+func test_zurds_keep_out_of_the_ships_space() -> void:
+	await _setup()
+	var idle := _spawn_still_zurd(ship.global_position + Vector3(10.0, 0.0, 0.0))
+	var space := idle.movement_component.ship_space
+	var out := await wait_until(func() -> bool: return idle.global_position.distance_to(ship.global_position) >= space * 0.85, 6.0)
+	check(out, "a Zurd inside the space around the ship is pushed out of it")
+	var hungry := _spawn_still_zurd(ship.global_position + Vector3(0.0, 0.0, 90.0))
+	hungry.temperament.greed = 1.0
+	var food := spawn_object(OTHER, ship.global_position + Vector3(0.0, 0.0, 20.0))
+	var fetched := await wait_until_freed(food, 25.0)
+	check(fetched, "but one may dip in for food there")
+	var left := await wait_until(func() -> bool: return hungry.global_position.distance_to(ship.global_position) >= space * 0.85, 8.0)
+	check(left, "and leaves again after")
 
 
 func test_wandering_zurds_keep_clear_of_the_terrain() -> void:
@@ -613,6 +796,25 @@ func _ground_height(at: Vector3) -> float:
 	var query := PhysicsRayQueryParameters3D.create(from, from + Vector3.DOWN * 4000.0, 1)
 	var hit := ship.get_world_3d().direct_space_state.intersect_ray(query)
 	return hit["position"].y if not hit.is_empty() else -1000.0
+
+
+## [param zurd]'s mesh scale, body, mouth and hit radii and health bar height, each divided by its
+## size: the same at any size when its parts grow together.
+func _parts_at_size_one(zurd: Zurd) -> Array[float]:
+	var radii: Array[float] = []
+	for parent: Node in [zurd, zurd.mouth_component, zurd.hit_area]:
+		for child in parent.get_children():
+			var shape := child as CollisionShape3D
+			if shape and shape.shape is SphereShape3D:
+				radii.append((shape.shape as SphereShape3D).radius / zurd.size)
+				break
+	radii.append(zurd.body_mesh.scale.x / zurd.size)
+	radii.append(zurd.health_label.position.y / zurd.size)
+	return radii
+
+
+func _flat(a: Vector3, b: Vector3) -> float:
+	return Vector2(a.x - b.x, a.z - b.z).length()
 
 
 func _ground_distance(a: Node3D, b: Node3D) -> float:

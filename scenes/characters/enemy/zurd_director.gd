@@ -2,19 +2,40 @@ class_name ZurdDirector
 extends Node
 
 ## Runs the Zurds as a cast (Zurd Core Design Doc §12). It spawns them by role when the world starts:
-## Shadows around the ship, Grazers at their patches spread over the map, Sentinels at the landmarks.
-## It keeps one Zurd per target, tells Zurds that see the ship launch, tells a Sentinel when its
-## sculpture grows, and sends Sentinels to sculptures that have settled (left unchanged for
-## [member settle_time]), spawning more Sentinels up to a cap. Each Zurd keeps its own anger and turns
-## Hostile by itself. One per world, in GameSystems. Every Zurd in the [constant Zurd.GROUP] group is
-## directed, whoever spawned it.
+## Shadows around the ship, Grazers in packs spread over the map, Sentinels at the landmarks. It moves
+## the packs: each pack's middle roams the grazing disc, heads for loose objects it smells and keeps
+## away from the other packs, and its Grazers wander around it, eating what they find. It keeps one
+## Zurd per target, tells Zurds that see the ship launch, tells a Sentinel when its sculpture grows,
+## sends Sentinels to sculptures that have settled (left unchanged for [member settle_time]),
+## spawning more Sentinels up to a cap, and sets the Zurds that see a new cloud chasing it. Each Zurd
+## keeps its own anger and turns Hostile by itself. One per world, in GameSystems. Every Zurd in the
+## [constant Zurd.GROUP] group is directed, whoever spawned it.
 
 ## The group of the hand-placed marker nodes Sentinels watch (one Sentinel per landmark).
 const LANDMARK_GROUP := &"zurd_landmarks"
-## The sunflower spiral's turn between patches, so they spread evenly over the disc.
+## The sunflower spiral's turn between points, so they spread evenly over the disc.
 const GOLDEN_ANGLE := PI * (3.0 - sqrt(5.0))
 ## How often (seconds) the Sentinels' homes are checked.
 const SENTINEL_CHECK_INTERVAL := 0.5
+## How often (seconds) the packs sniff for loose objects and check the ground under them.
+const PACK_SNIFF_INTERVAL := 0.5
+## Seconds a roaming pack heads for one spot before it picks another.
+const PACK_ROAM_TIME := 90.0
+
+
+## A pack of Grazers (Zurd Core Design Doc §12.7). Its middle roams; its members wander around it.
+class GrazerPack:
+	## Its middle (world), kept above the ground.
+	var center: Vector3
+	## The height it roams at; it rises or sinks to food it smells.
+	var height: float
+	## Where it's heading: the loose object it smells, else a spot it roams to.
+	var goal: Vector3
+	var has_goal: bool = false
+	var smells_food: bool = false
+	## Seconds before a roaming pack picks a new spot.
+	var roam_left: float = 0.0
+
 
 @export var zurd_scene: PackedScene
 
@@ -32,11 +53,24 @@ const SENTINEL_CHECK_INTERVAL := 0.5
 @export var spawn_at_start: bool = true
 
 @export_group("Grazing")
-## Middle (world X, Z) of the disc the Grazers' patches spread over.
+## Middle (world X, Z) of the disc the Grazer packs roam.
 @export var grazing_center: Vector2 = Vector2.ZERO
 @export var grazing_radius: float = 1500.0
-## Grazers hover about the ship's starting height, give or take this.
+## Packs hover about the ship's starting height, give or take this.
 @export var grazing_height_spread: float = 30.0
+## Packs the Grazers are shared out between. Fixed: packs don't merge or split.
+@export var pack_count: int = 3
+## How far around its pack's middle a Grazer wanders.
+@export var pack_radius: float = 60.0
+## How far around its pack's middle a Hostile Grazer hunts: loose objects first, then sculptures.
+@export var pack_hunt_radius: float = 250.0
+## A pack smells loose objects this far from its middle and heads for the nearest. With none, it roams
+## to a spot within this distance.
+@export var pack_scent: float = 600.0
+## Speed a pack's middle moves at.
+@export var pack_speed: float = 8.0
+## Packs keep about this far apart, so the map stays covered.
+@export var pack_spacing: float = 400.0
 
 @export_group("Sculptures")
 ## Parts a sculpture may have before growing it angers the Sentinel watching it, and before a
@@ -50,7 +84,8 @@ const SENTINEL_CHECK_INTERVAL := 0.5
 @export var spawn_ground_clearance: float = 10.0
 
 @export_group("Testing")
-## Shows the testing HUD (the Zurds nearest the ship and their anger) for playtests.
+## Shows the testing HUD (the Zurds nearest the ship and their anger) and an anger bar over each Zurd,
+## for playtests.
 @export var show_testing_hud: bool = true
 @export var testing_hud_scene: PackedScene
 
@@ -62,14 +97,15 @@ var _mass_changed_at: Dictionary[SculptureMass, float] = {}
 ## Who is going after what: target (a loose object or a sculpture's piece) -> the Zurd that claimed
 ## it. Untyped, because a target may have been freed.
 var _claims: Dictionary = {}
-## The Grazers' patch middles (world), from [method get_patch_centers].
-var _patches: Array[Vector3] = []
+var _packs: Array[GrazerPack] = []
 var _sentinel_timer: float = 0.0
+var _sniff_timer: float = 0.0
 
 
 func _ready() -> void:
 	_rng.randomize()
 	EventBus.object_launched.connect(_on_object_launched)
+	EventBus.cloud_formed.connect(_on_cloud_formed)
 	if show_testing_hud and testing_hud_scene:
 		add_child(testing_hud_scene.instantiate())
 	if spawn_at_start:
@@ -81,21 +117,22 @@ func _physics_process(delta: float) -> void:
 	_time += delta
 	_drop_stale_claims()
 	_check_sculptures()
+	_update_packs(delta)
 	_sentinel_timer -= delta
 	if _sentinel_timer <= 0.0:
 		_sentinel_timer = SENTINEL_CHECK_INTERVAL
 		update_sentinels()
 
 
-## [param count] patch middles spread evenly over the disc of [param radius] around [param center]
-## (a sunflower spiral), at [param center]'s height.
-static func get_patch_centers(center: Vector3, radius: float, count: int) -> Array[Vector3]:
-	var centers: Array[Vector3] = []
+## [param count] points spread evenly over the disc of [param radius] around [param center] (a
+## sunflower spiral), at [param center]'s height: where the packs start.
+static func spread_over_disc(center: Vector3, radius: float, count: int) -> Array[Vector3]:
+	var points: Array[Vector3] = []
 	for i in count:
 		var distance := radius * sqrt((i + 0.5) / count)
 		var angle := i * GOLDEN_ANGLE
-		centers.append(center + Vector3(cos(angle) * distance, 0.0, sin(angle) * distance))
-	return centers
+		points.append(center + Vector3(cos(angle) * distance, 0.0, sin(angle) * distance))
+	return points
 
 
 ## The bearings (radians from the ship's heading) of [param count] Shadows: spread evenly over
@@ -112,14 +149,9 @@ static func get_shadow_bearings(count: int, arc_degrees: float) -> PackedFloat32
 	return bearings
 
 
-## The radius of each Grazer's patch: the disc shared out between them.
-func get_patch_radius() -> float:
-	return grazing_radius / sqrt(maxf(grazer_count, 1))
-
-
 ## Spawns a Zurd of [param role] (a Grazer when null) at [param at]. A Zurd spawned this way homes
-## where it starts: a Grazer's patch around it, a Sentinel at the nearest free landmark, a Shadow at
-## the next free spot by the ship.
+## where it starts: a Grazer around that spot until it joins a pack ([method join_pack]), a Sentinel
+## at the nearest free landmark, a Shadow at the next free spot by the ship.
 func spawn_zurd(at: Vector3, role: ZurdRole = null) -> Zurd:
 	if zurd_scene == null:
 		push_error("ZurdDirector: No zurd_scene assigned.")
@@ -137,8 +169,9 @@ func spawn_zurd(at: Vector3, role: ZurdRole = null) -> Zurd:
 		return null
 	zurd.global_position = at
 	zurd.home_point = at
-	zurd.patch_center = at
-	zurd.patch_radius = get_patch_radius()
+	zurd.pack_center = at
+	zurd.pack_radius = pack_radius
+	zurd.hunt_radius = pack_hunt_radius
 	match zurd.role.home:
 		ZurdRole.Home.SHIP:
 			var ship_distance := zurd.role.ship_distance
@@ -224,6 +257,53 @@ func is_claimed_by_other(target: Node3D, zurd: Zurd) -> bool:
 	return holder != null and holder != zurd and _still_holds(holder, target)
 
 
+## Starts a pack of Grazers whose middle is at [param center]; it keeps that height. Returns the
+## pack's index.
+func add_pack(center: Vector3) -> int:
+	var pack := GrazerPack.new()
+	pack.center = center
+	pack.height = center.y
+	_packs.append(pack)
+	return _packs.size() - 1
+
+
+## Makes [param zurd] a member of pack [param index]: it wanders around the pack's middle and, when
+## Hostile, hunts around it.
+func join_pack(zurd: Zurd, index: int) -> void:
+	zurd.pack_index = index
+	zurd.pack_center = _packs[index].center
+	zurd.pack_radius = pack_radius
+	zurd.hunt_radius = pack_hunt_radius
+
+
+func get_pack_count() -> int:
+	return _packs.size()
+
+
+## The middle (world) of pack [param index].
+func get_pack_center(index: int) -> Vector3:
+	return _packs[index].center
+
+
+## Where pack [param index] is heading: the loose object it smells, else a spot it roams to.
+func get_pack_goal(index: int) -> Vector3:
+	return _packs[index].goal
+
+
+## True while pack [param index] heads for a loose object it smells.
+func is_pack_smelling_food(index: int) -> bool:
+	return _packs[index].smells_food
+
+
+## The Grazers in pack [param index].
+func get_pack_members(index: int) -> Array[Zurd]:
+	var members: Array[Zurd] = []
+	for zurd in get_zurds_with_role(grazer_role):
+		if zurd.pack_index == index:
+			members.append(zurd)
+	return members
+
+
 ## Gives the Sentinels their homes (Zurd Core Design Doc §12.2). A Sentinel whose sculpture went (a
 ## cloud, or eaten away) goes back to a landmark, or becomes a Grazer if it was an extra. Each settled
 ## sculpture without a Sentinel gets the nearest free one, or a new one up to the cap. Runs every
@@ -265,6 +345,18 @@ func _on_object_launched(_obj: RigidBody3D) -> void:
 			zurd.on_launch_seen()
 
 
+## A new cloud (Zurd Core Design Doc §12.5): every Zurd that can see it gives chase, except those
+## driven off.
+func _on_cloud_formed(mass: SculptureMass) -> void:
+	var body := mass.get_cloud_body()
+	if body == null:
+		return
+	var radius := CloudSky.get_cloud_radius(body)
+	for zurd in get_zurds():
+		if not zurd.is_driven_off() and zurd.can_see(body.global_position):
+			zurd.start_cloud_chase(mass, radius)
+
+
 ## A claim counts while its Zurd is alive and still going after that target.
 func _still_holds(holder: Variant, target: Variant) -> bool:
 	return (is_instance_valid(holder) and not holder.is_queued_for_deletion()
@@ -296,6 +388,108 @@ func _check_sculptures() -> void:
 		sizes[mass] = size
 	_mass_sizes = sizes
 	_mass_changed_at = changed
+
+
+## Moves each pack's middle (Zurd Core Design Doc §12.7): toward the loose object it smells (rising
+## or sinking to it), else to a spot it roams to at its own height; away from packs closer than the
+## spacing; and back onto the grazing disc. Its members follow it.
+func _update_packs(delta: float) -> void:
+	if _packs.is_empty():
+		return
+	_sniff_timer -= delta
+	if _sniff_timer <= 0.0:
+		_sniff_timer = PACK_SNIFF_INTERVAL
+		var loose := get_loose_objects()
+		for pack in _packs:
+			_sniff(pack, loose)
+			pack.center.y = maxf(pack.center.y, _get_ground_height(pack.center) + spawn_ground_clearance)
+	for pack in _packs:
+		pack.roam_left -= delta
+		var to_goal := pack.goal - pack.center
+		var move := Vector3.ZERO
+		if to_goal.length() > maxf(pack_speed * delta, 1.0):
+			move = to_goal.normalized()
+		elif not pack.smells_food:
+			# Reached the spot it roamed to: it picks another at the next sniff.
+			pack.has_goal = false
+		for other in _packs:
+			if other == pack:
+				continue
+			var offset := Vector3(pack.center.x - other.center.x, 0.0, pack.center.z - other.center.z)
+			var distance := offset.length()
+			if distance < pack_spacing:
+				var away := offset / distance if distance > 0.01 else Vector3.RIGHT.rotated(Vector3.UP, _rng.randf() * TAU)
+				move += away * (1.0 - distance / pack_spacing) * 4.0
+		pack.center = _onto_disc(pack.center + move.limit_length(1.0) * pack_speed * delta)
+	for zurd in get_zurds_with_role(grazer_role):
+		if zurd.pack_index >= 0 and zurd.pack_index < _packs.size():
+			zurd.pack_center = _packs[zurd.pack_index].center
+
+
+## Picks where [param pack] heads: the nearest of the [param loose] objects within its scent that no
+## other pack is nearer to; else, once it has reached its last spot, smelled food there or roamed too
+## long, a new spot within its scent.
+func _sniff(pack: GrazerPack, loose: Array[RigidBody3D]) -> void:
+	var food: RigidBody3D = null
+	var food_distance := pack_scent
+	for obj in loose:
+		var distance := _flat_distance(pack.center, obj.global_position)
+		if distance > food_distance or _is_nearer_another_pack(pack, obj.global_position, distance):
+			continue
+		food = obj
+		food_distance = distance
+	if food:
+		pack.goal = food.global_position
+		pack.has_goal = true
+		pack.smells_food = true
+		return
+	if pack.smells_food or not pack.has_goal or pack.roam_left <= 0.0:
+		pack.smells_food = false
+		pack.has_goal = true
+		pack.roam_left = PACK_ROAM_TIME
+		pack.goal = _pick_roam_spot(pack)
+
+
+func _is_nearer_another_pack(pack: GrazerPack, point: Vector3, distance: float) -> bool:
+	for other in _packs:
+		if other != pack and _flat_distance(other.center, point) < distance:
+			return true
+	return false
+
+
+## A spot within [member pack_scent] of [param pack]'s middle, on the disc and at the pack's own
+## height, at least the spacing away from the other packs when one can be found (else the roomiest of
+## a few tries).
+func _pick_roam_spot(pack: GrazerPack) -> Vector3:
+	var level := Vector3(pack.center.x, pack.height, pack.center.z)
+	var best := level
+	var best_room := -INF
+	for attempt in 6:
+		var angle := _rng.randf() * TAU
+		var spot := _onto_disc(level + Vector3(cos(angle), 0.0, sin(angle)) * pack_scent * sqrt(_rng.randf()))
+		var room := INF
+		for other in _packs:
+			if other != pack:
+				room = minf(room, _flat_distance(other.center, spot))
+		if room >= pack_spacing:
+			return spot
+		if room > best_room:
+			best_room = room
+			best = spot
+	return best
+
+
+## [param point] moved onto the grazing disc, if it's off it.
+func _onto_disc(point: Vector3) -> Vector3:
+	var flat := Vector2(point.x - grazing_center.x, point.z - grazing_center.y)
+	if flat.length() <= grazing_radius:
+		return point
+	flat = flat.normalized() * grazing_radius
+	return Vector3(grazing_center.x + flat.x, point.y, grazing_center.y + flat.y)
+
+
+static func _flat_distance(a: Vector3, b: Vector3) -> float:
+	return Vector2(a.x - b.x, a.z - b.z).length()
 
 
 func _is_live_sculpture(mass: SculptureMass) -> bool:
@@ -355,27 +549,24 @@ func _find_landmark_for(sentinel: Zurd) -> Node3D:
 	return nearest_free if nearest_free else nearest_any
 
 
-## An extra Sentinel whose sculpture went becomes a Grazer, in the patch with the fewest Grazers.
+## An extra Sentinel whose sculpture went becomes a Grazer, in the pack with the fewest Grazers (or
+## around where it is, without packs).
 func _make_grazer(zurd: Zurd) -> void:
 	zurd.is_extra = false
 	zurd.home_landmark = null
+	zurd.pack_index = -1
 	zurd.set_role(grazer_role)
-	if _patches.is_empty():
-		zurd.patch_center = zurd.global_position
-		zurd.patch_index = -1
+	if _packs.is_empty():
+		zurd.pack_center = zurd.global_position
 		return
-	var counts: Array[int] = []
-	counts.resize(_patches.size())
-	counts.fill(0)
-	for other in get_zurds_with_role(grazer_role):
-		if other != zurd and other.patch_index >= 0 and other.patch_index < counts.size():
-			counts[other.patch_index] += 1
-	var emptiest := 0
-	for i in counts.size():
-		if counts[i] < counts[emptiest]:
-			emptiest = i
-	zurd.patch_index = emptiest
-	zurd.patch_center = _patches[emptiest]
+	var smallest := 0
+	var smallest_size := get_pack_members(0).size()
+	for i in range(1, _packs.size()):
+		var members := get_pack_members(i).size()
+		if members < smallest_size:
+			smallest = i
+			smallest_size = members
+	join_pack(zurd, smallest)
 
 
 ## Spreads the Shadows' spots over the players' view, in a stable order.
@@ -389,19 +580,24 @@ func _assign_shadow_bearings() -> void:
 		shadows[i].ship_bearing = bearings[i]
 
 
-## The world's starting cast: the Grazers at their patches, the Sentinels at the landmarks, the
-## Shadows at their spots by the ship.
+## The world's starting cast: the Grazer packs spread over the disc, the Sentinels at the landmarks,
+## the Shadows at their spots by the ship.
 func _spawn_cast() -> void:
 	var ship := _get_ship()
 	var start := ship.global_position if ship else Vector3.ZERO
-	_patches = get_patch_centers(Vector3(grazing_center.x, start.y, grazing_center.y), grazing_radius, grazer_count)
-	for i in _patches.size():
-		var at := _patches[i] + Vector3.UP * _rng.randf_range(-grazing_height_spread, grazing_height_spread)
+	if grazer_count > 0:
+		for center in spread_over_disc(Vector3(grazing_center.x, start.y, grazing_center.y), grazing_radius, maxi(pack_count, 1)):
+			center.y += _rng.randf_range(-grazing_height_spread, grazing_height_spread)
+			center.y = maxf(center.y, _get_ground_height(center) + spawn_ground_clearance)
+			add_pack(center)
+	for i in grazer_count:
+		var index := i % _packs.size()
+		var angle := _rng.randf() * TAU
+		var at := _packs[index].center + Vector3(cos(angle), 0.0, sin(angle)) * pack_radius * sqrt(_rng.randf())
 		at.y = maxf(at.y, _get_ground_height(at) + spawn_ground_clearance)
-		_patches[i] = at
 		var grazer := spawn_zurd(at, grazer_role)
 		if grazer:
-			grazer.patch_index = i
+			join_pack(grazer, index)
 	var landmarks := get_landmarks()
 	for i in sentinel_count:
 		var at := start + Vector3(_rng.randf_range(-200.0, 200.0), 30.0, _rng.randf_range(-200.0, 200.0))

@@ -50,11 +50,11 @@ func find_hostile_target(from: Vector3, min_sculpture_size: int, is_free := Call
 	return _nearest_piece(from, large_sculptures[largest]) if largest else null
 
 
-## A Hostile Grazer's target (Zurd Core Design Doc §12.2): the nearest loose object in its patch (the
-## circle of [param radius] around [param center] on the ground plane); else the nearest object of
-## any sculpture in its patch, since a Grazer treats sculptures like loose objects; else the nearest
-## stray in sight outside it. Only objects [param is_free] accepts count.
-func find_patch_target(from: Vector3, center: Vector3, radius: float, is_free := Callable()) -> Node3D:
+## A Hostile Grazer's target (Zurd Core Design Doc §12.2): the nearest loose object in the area around
+## its pack (the circle of [param radius] around [param center] on the ground plane); else the
+## nearest object of any sculpture in that area, since a Grazer treats sculptures like loose objects;
+## else the nearest stray in sight outside it. Only objects [param is_free] accepts count.
+func find_area_target(from: Vector3, center: Vector3, radius: float, is_free := Callable()) -> Node3D:
 	var loose: Node3D = null
 	var loose_distance := INF
 	var piece_target: Node3D = null
@@ -68,13 +68,13 @@ func find_patch_target(from: Vector3, center: Vector3, radius: float, is_free :=
 		if piece == null and (not obj is RigidBody3D or obj is SculptureMass):
 			continue
 		var position: Vector3 = piece.get_center() if piece else obj.global_position
-		var in_patch := Vector2(position.x - center.x, position.z - center.z).length() <= radius
+		var in_area := Vector2(position.x - center.x, position.z - center.z).length() <= radius
 		var distance := from.distance_squared_to(position)
 		if piece:
-			if in_patch and distance < piece_distance:
+			if in_area and distance < piece_distance:
 				piece_target = piece
 				piece_distance = distance
-		elif in_patch:
+		elif in_area:
 			if distance < loose_distance:
 				loose = obj
 				loose_distance = distance

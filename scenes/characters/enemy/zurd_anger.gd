@@ -3,11 +3,12 @@ extends RefCounted
 
 ## One Zurd's anger, from 0 to 1 (Zurd Core Design Doc §12.1). It rises with what this Zurd itself
 ## perceives: noticing mess beyond what it tolerates in view, seeing the ship launch while it sees
-## too much mess, the sculpture it watches growing past the size limit, and being attacked. The
-## amounts come from its role and are scaled by its temper. Every launch it sees holds the anger
-## where it is; after a quiet spell it falls, faster for a patient Zurd. The Zurd turns Hostile at
-## [member hostile_threshold] and may calm again only below the lower [member calm_threshold], so it
-## doesn't flicker between the two. Plain rules with no scene, unit-tested on their own.
+## too much mess, the sculpture it watches growing past the size limit, and being swatted or rammed.
+## The amounts come from its role and are scaled by its temper. Being fed a thrown object calms it a
+## little (§12.7). Every launch it sees holds the anger where it is; after a quiet spell it falls,
+## faster for a patient Zurd. The Zurd turns Hostile at [member hostile_threshold] and may calm again
+## only below the lower [member calm_threshold], so it doesn't flicker between the two. Plain rules
+## with no scene, unit-tested on their own.
 
 ## Mess (loose objects, and sculptures when they count) tolerated in view.
 var tolerated_in_view: int = 3
@@ -17,8 +18,10 @@ var mess_anger: float = 0.1
 var launch_anger: float = 0.0
 ## Added per part the watched sculpture gains beyond the size limit.
 var sculpture_anger: float = 0.0
-## Added per swat, ram or thrown object.
+## Added per swat or ram.
 var attack_anger: float = 0.2
+## Taken off per part of a thrown object it eats: being fed calms it a little.
+var fed_calm: float = 0.1
 ## Multiplies every amount added.
 var temper: float = 1.0
 ## Multiplies how fast it falls.
@@ -82,9 +85,14 @@ func on_sculpture_grew(parts_added: int, size: int, tolerated_size: int) -> void
 		_add(sculpture_anger * beyond)
 
 
-## A swat, ram or thrown object hit it.
+## A swat or ram hit it.
 func on_attacked() -> void:
 	_add(attack_anger)
+
+
+## It ate a part of an object thrown to it (Zurd Core Design Doc §12.7): being fed calms it a little.
+func on_fed() -> void:
+	value = maxf(value - fed_calm, 0.0)
 
 
 ## Calms it at once: a timid Zurd swatted, a Zurd driven off.

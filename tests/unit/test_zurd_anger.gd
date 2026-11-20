@@ -2,8 +2,9 @@ extends "res://tests/test_case.gd"
 
 ## ZurdAnger: one Zurd's own anger (Zurd Core Design Doc §12.1). Noticing mess past what it
 ## tolerates, launches it sees while it does, its sculpture growing past the limit and attacks raise
-## it, scaled by its temper. Every launch it sees holds it; it falls after a quiet spell, scaled by
-## its patience. The hostile and calm thresholds keep the Zurd from flickering between its states.
+## it, scaled by its temper; being fed lowers it a little (§12.7). Every launch it sees holds it; it
+## falls after a quiet spell, scaled by its patience. The hostile and calm thresholds keep the Zurd
+## from flickering between its states.
 
 
 func test_starts_calm_and_stays_calm_without_provocation() -> void:
@@ -81,6 +82,17 @@ func test_only_sculpture_growth_past_the_limit_adds_anger() -> void:
 	anger.value = 0.0
 	anger.on_sculpture_grew(4, 30, 15)
 	check_near(anger.value, 0.2, 0.0001, "a sculpture already past the limit: every added part counts")
+
+
+func test_being_fed_calms_it_a_little() -> void:
+	var anger := ZurdAnger.new()
+	anger.temper = 2.0
+	anger.value = 0.5
+	anger.on_fed()
+	check_near(anger.value, 0.5 - anger.fed_calm, 0.0001, "each part of a thrown object it eats takes fed_calm off, whatever its temper")
+	anger.value = anger.fed_calm * 0.5
+	anger.on_fed()
+	check_equal(anger.value, 0.0, "but never below 0")
 
 
 func test_anger_stays_within_zero_and_one() -> void:

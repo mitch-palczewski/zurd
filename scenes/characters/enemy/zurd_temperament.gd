@@ -17,6 +17,8 @@ var boldness: float = 0.5
 var curiosity: float = 1.0
 ## Multiplies its speeds.
 var pace: float = 1.0
+## Its size at spawn, before it grows by eating.
+var body: float = 1.0
 
 
 ## Traits rolled between each range's min and max in [param role].
@@ -28,6 +30,7 @@ static func roll(role: ZurdRole, rng: RandomNumberGenerator) -> ZurdTemperament:
 	temperament.boldness = rng.randf_range(role.boldness.x, role.boldness.y)
 	temperament.curiosity = rng.randf_range(role.curiosity.x, role.curiosity.y)
 	temperament.pace = rng.randf_range(role.pace.x, role.pace.y)
+	temperament.body = rng.randf_range(role.body.x, role.body.y)
 	return temperament
 
 

@@ -131,9 +131,10 @@ completed (section 7). During the first objective the Zurds stay Passive whateve
 Swatting (from the lidar walls; the mouse until the lidar is hooked up) is the players' defence.
 **Running into a Zurd with the ship counts as a swat.**
 
-**A launched object hitting a Zurd only stuns it,** and doesn't add to its swat count. When the
-stun ends, the Zurd eats that object. This gives the players a tactic: hit a Zurd with an object
-to hold it in place while someone gets close enough to swat it.
+**A launched object hitting a Zurd feeds it** (2.1, from the 2.0 playtest, 12.7): no stun, and it
+doesn't add to the swat count. The Zurd snatches it out of the air and eats it very quickly, and
+being fed calms it a little. Feeding a Zurd buys time, but it grows (12.4). (Until 2.1 a thrown
+object stunned the Zurd, which ate it afterwards.)
 
 - **The first swats stun** the Zurd: it stops, is knocked back a little, and any bite it was
   taking is cancelled (*proposed:* swats 1 and 2, a 1.5 s stun each).
@@ -165,7 +166,8 @@ objectives:
 
 ## 8. Parameters
 
-All *proposed*, tuned in playtests.
+All *proposed*, tuned in playtests. Iteration 2 changed several of these: its values are in 12.6
+and 12.8.
 
 | Parameter | Meaning | Proposed |
 | --- | --- | --- |
@@ -175,7 +177,7 @@ All *proposed*, tuned in playtests.
 | Mess anger | Anger added per object launched while over the mess limit | 0.05 |
 | Tolerated sculpture size | Objects in a sculpture before it angers the Zurds (hard cut-off) | 15 |
 | Sculpture anger | Anger added per object added beyond the sculpture size limit | 0.03 |
-| Attack anger | Anger added per swat, ram or object hit on a Zurd | 0.1 |
+| Attack anger | Anger added per swat or ram | 0.1 |
 | Calm delay | Time without a launch or a provocation before anger starts to fall | 3 s |
 | Anger decay | How fast anger falls once it does | 0.05 per second |
 | Hostile cooldown | Least time a Zurd stays Hostile | 10 s |
@@ -187,14 +189,14 @@ All *proposed*, tuned in playtests.
 | Calm appetite | Chance a Passive Zurd decides to eat an object it sees, at anger 0 (rising to 1 at full anger) | 0.5 |
 | Appetite recheck | How long a Zurd keeps its decision about an object | 20 s |
 | Roam radius | How far from the ship an idle Passive Zurd roams | 200 m |
-| Hit area | Radius in which a thrown object stuns the Zurd | 7 m |
+| Hit area | Radius in which a thrown object is caught (fed to the Zurd; 2.1) | 7 m |
 | Stun swats | Swats that stun | 2 |
 | Stun time | Length of a stun | 1.5 s |
-| Drive-off swat | The swat that drives a Zurd off (ramming counts; launched objects only stun) | 3rd |
+| Drive-off swat | The swat that drives a Zurd off (ramming counts; launched objects feed instead) | 3rd |
 | Hit cooldown | Least time between two hits that count | 0.4 s |
 | Away time | How long a driven-off Zurd stays away | 20 s |
 | Retreat distance | How far from the ship a driven-off Zurd goes | *proposed:* 300 m |
-| Personal space | Distance Zurds keep from each other | 8 m |
+| Personal space | Distance Zurds keep from each other (2.1: a bubble of 1.5× the body radius, and 40 m around the ship) | 8 m |
 | Ground clearance | Least height above the ground between targets | 8 m |
 | Look-ahead | How far ahead a Zurd looks for obstacles, in time at its speed | 1 s |
 | Difficulty step | How much the tolerances tighten per completed objective | *playtest* |
@@ -244,6 +246,9 @@ Answered 2026-11-12: tolerated sculpture size 15 (hard cut-off); cloud sizes per
 turn Hostile first; driven-off Zurds retreat from the ship; a placeholder health bar; ramming is a
 swat, a launched object only stuns (then gets eaten); a testing HUD for anger.
 
+Answered 2026-11-20 (the 2.0 playtest): a thrown object feeds the Zurd and calms it a little
+(question 4 below, 12.7).
+
 Still open:
 
 1. **Anger feedback for players:** how players learn that mess angers the Zurds (out of scope for
@@ -253,8 +258,8 @@ Still open:
    anger, so defending makes more Zurds Hostile, which raises the question of why to swat at all.
    Options: only attacks on Passive Zurds anger them; a lower attack anger; driving a Zurd off
    calms the others a little.
-4. **Throwing objects at Zurds** (same review, open): a throw stuns the Zurd, adds anger as an
-   attack, and feeds it, so "pin it with an object, then swat it" mostly hands it food.
+4. ~~**Throwing objects at Zurds**~~ (answered 2026-11-20): a throw feeds the Zurd, quickly, and
+   calms it a little; it no longer stuns it or counts as an attack.
 5. **The sculpture limit and the cloud size** (to settle with objectives): every sculpture passes
    the anger limit (10) on its way to a cloud (20), so finishing a cloud always angers the Zurds.
 6. **Spawning:** more Zurds as objects pile up, or as a sculpture grows.
@@ -265,7 +270,8 @@ Different Zurds with different behaviour, so the game feels balanced and the wor
 inhabited: a few keep the ship company, most are spread across the map, and some watch the
 places and sculptures that matter. Built in two steps:
 - **2.0:** individual anger, roles, temperament, the nearby-anger testing HUD, role switching;
-- **2.1:** growth and the cloud chase.
+- **2.1:** feeding, Grazer packs, growth and the cloud chase, with the changes from the 2.0
+  playtest (12.7).
 
 The Passive/Hostile states (section 5), sight (4), getting around (4b) and swatting (6) stay
 unless changed here.
@@ -281,8 +287,9 @@ unless changed here.
     world-wide mess limit);
   - launches it sees;
   - the sculpture it watches growing past the sculpture limit;
-  - attacks on it (swats, rams, thrown objects).
-- **What lowers it:** it falls after a quiet spell.
+  - attacks on it (swats and rams; a thrown object feeds it instead, 12.7).
+- **What lowers it:** it falls after a quiet spell, and being fed a thrown object calms it a little
+  (2.1).
 - **Each role weighs these differently** (12.2), and temperament scales them (12.3).
 - **Hostile** when its anger passes the *hostile threshold*; **calm again** below the lower *calm
   threshold*. The gap stops it flickering. The hostile cooldown and "finish the meal before
@@ -302,7 +309,7 @@ unless changed here.
 | Role | Count | Home | Angered mostly by | When Hostile |
 |---|---|---|---|---|
 | **Shadow** | 3 | Its own spot around the ship (its own bearing, *proposed* 150–300 m out), following the ship's path a few seconds late; never on its tail | Launches near it; the ship bumping it | Goes after the loose objects nearest the ship |
-| **Grazer** | 15 | Its own patch of the map; the patches are spread evenly over a disc around the world centre (*proposed* radius: 1500 m in `zurd_world02`, 1000 m in `zurd_world01`) | Loose objects in its patch; **sculptures count like loose objects** | Clears its patch (sculptures included), then strays nearby |
+| **Grazer** | 15 | Its pack (2.1: 3 packs of 5): the pack's middle roams a disc around the world centre (1500 m) and heads for loose objects, like a vacuum; the Grazers wander around it. (2.0: its own patch of the map, spread evenly over the disc.) | Loose objects it sees; **sculptures count like loose objects** | Clears the ground around its pack (sculptures included), then strays nearby |
 | **Sentinel** | 5 (scales, see below) | One landmark or one sculpture, which it circles and watches. **One Sentinel per sculpture or landmark.** | Its sculpture growing past the limit | Eats from its sculpture |
 | **Brute** (later) | 0 | None: appears where Zurds are angry | Everything | Tougher, hard to drive off; the future ship attacker |
 
@@ -337,7 +344,7 @@ Each Zurd rolls a few traits within its role's ranges:
   - **A timid Zurd flees and calms after a single swat.**
   - **A bolder one takes more swats to drive off,** and gets angrier with each.
 - **Curiosity:** how long it lingers to watch.
-- **Body:** a little variety in size, speed and tint.
+- **Body:** a little variety in size, speed and tint (2.1 builds the size: 0.9–1.1×).
 
 ### 12.4 Growth (2.1)
 
@@ -370,7 +377,7 @@ tunable:
 | Temperament | each role | temper and patience 0.6–1.4, greed 0.3–0.7, boldness 0–1, curiosity 0.6–1.6, pace 0.9–1.1 |
 | Swats | `Zurd` | timid below 0.3: 1 swat; bolder: 2–4 |
 | Cast | `ZurdDirector` | 3 Shadows, 15 Grazers, 5 Sentinels, cap 8 |
-| Grazing disc | `ZurdDirector` | 1500 m around the world origin, patch radius 1500 ÷ √15 ≈ 387 m, at the ship's starting height ± 30 m |
+| Grazing disc | `ZurdDirector` | 1500 m around the world origin, patch radius 1500 ÷ √15 ≈ 387 m, at the ship's starting height ± 30 m (2.1 replaced the patches with packs, 12.8) |
 | Settle time | `ZurdDirector` | 30 s |
 | Landmarks | the worlds | `zurd_world01`: 3 around the middle, 45 m above the ground. `zurd_world02`: the pool court, the grove, the bush garden and the circle grids. |
 
@@ -383,3 +390,61 @@ tunable:
 - **Being driven off** calms a Zurd: it comes back with its anger at 0.
 - **Shadows** have no literal lag: their top speed makes them fall behind on fast flights, and
   they catch up when the ship slows.
+
+### 12.7 Playtest of 2.0 (2026-11-20)
+
+**Kept:**
+- **The hostility ramp** is good for now.
+- **Swatting:** its point is to preserve a sculpture long enough for it to become a cloud, and
+  stunning helps with that. It stays as it is.
+- **The sculpture limit (10) below the cloud size (20)** is right: starting a sculpture is easy,
+  finishing one is hard.
+- **Grazers in the distance:** seeing Zurds far off works.
+
+**To change in 2.1:**
+- **A launched object hitting a Zurd feeds it, not stuns it.** The Zurd turns and eats it very
+  quickly, the way a hungry Zurd would. It makes a game of precise launching. (Replaces "a launched
+  object only stuns it" in §6.)
+- **Shadows get lost behind the ship.** When a Shadow is out of view, it moves quickly back to
+  where it can be seen.
+- **Zurds come too close to the ship,** sometimes into the camera. In general they give the
+  players room to manoeuvre.
+- **Grazers are a little passive, and their spread is too perfect.** They become packs that roam
+  the map and clean up objects, like a vacuum.
+- **Growth is a priority** (12.4). **The cloud chase** comes too (12.5).
+- **The testing HUD** makes it hard to see which Zurds are getting angrier. In the end this becomes
+  a single five-star rating; for now, the HUD should show it per Zurd.
+
+**Later stays later:** Brutes and the ship attack, spreading anger, a background mood, more states,
+trickling in, and population growing with the mess.
+
+### 12.8 As built (2.1, 2026-11-20)
+
+Iteration 2.1 is built (`claude/plans/2026-11-20-zurd-growth-and-packs-plan.md`). Starting values,
+all tunable:
+
+| What | Where | Value |
+|---|---|---|
+| Feeding | `Zurd` | a launched object at 8 m/s or more entering the hit area (7 m × size) is caught: it stops in the air, and the Zurd eats it at 4× a Hostile bite (0.75 s); each part eaten takes 0.1 off its anger |
+| Ship space | `ZurdMovementComponent` | 40 m around the ship; the push out is 25 m/s at the ship, easing to nothing at the edge; off while a Zurd goes for food inside it, and while it eats |
+| Zurd bubble | `ZurdMovementComponent` | 1.5× the body radius, so it grows with the Zurd; a push of up to 20 m/s, at full strength once two bubbles overlap by a third; none while eating |
+| Shadow swoop | `Zurd` | out of the camera's view for 1.5 s, a Shadow swoops to its spot at 90 m/s, until it's back in view or at its spot |
+| Packs | `ZurdDirector` | 3 packs of 5, spread over the 1500 m disc at the start; Grazers wander within 60 m of the pack's middle; Hostile ones hunt within 250 m of it; a pack smells loose objects 600 m out and moves at 8 m/s; packs keep about 400 m apart |
+| Growth | `Zurd` | +0.1 per part eaten, up to 4.5×; speeds × size^−0.3; +1 swat per +1.0 grown (not for timid Zurds); each starts at 0.9–1.1× (the role's `body`) |
+| Cloud chase | `Zurd` | 15 s at 50 m/s (6 s at first; longer after a request on 2026-11-20); anger falls to the calm threshold (0.3); a bounce lasts 0.8 s at 25 m/s, spinning 12 rad/s |
+| Anger bars | `Zurd`, while the testing HUD is on | 8 cells over each Zurd: green, yellow, then red at the hostile threshold (red while Hostile); arrows while it's rising or falling; the same size on screen at any distance, hidden past 800 m |
+
+**How it plays out:**
+- **Shadows move with the ship.** A Shadow's spot moves with the ship, so it carries the ship's
+  velocity and wanders or swoops on top of that. Without it, Shadows fell behind at full speed
+  (the ship's 55 m/s beats their 45) and kept dropping out of view. In a 40 s test flight with
+  turns, a Shadow was out of view for 2.5 s at most, just after a turn.
+- **Thrown food comes first:** a caught object becomes the Zurd's target, even over the sculpture
+  it was eating. A Zurd chasing a cloud ignores thrown food.
+- **Packs** rise or sink to the food they smell (with free flight, objects float at any height),
+  then roam at their own height again. A pack leaves food that's nearer another pack to that pack.
+- **What grows:** the mesh, body collider, mouth, hit area, the health and anger bars' height, and
+  the distances the Zurd keeps (ground clearance, obstacle look-ahead, watch distance). Each Zurd
+  has its own copies of the shapes. The body node stays unscaled.
+- **The cloud chase** sizes the cloud once, when it forms, and scales that as the cloud grows. A
+  Zurd chasing a cloud can't turn Hostile until it gives up.

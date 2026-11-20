@@ -9,16 +9,16 @@ enum Home {
 	## Its own spot around the ship, in the players' view (Shadow). Hostile, it goes after the loose
 	## objects nearest the ship, then sculptures over the size limit.
 	SHIP,
-	## Its own patch of the map (Grazer). Hostile, it clears its patch, sculptures included, then
-	## strays nearby.
-	PATCH,
+	## Its pack, which roams the map and vacuums up loose objects (Grazer). Hostile, it clears the
+	## ground around its pack, sculptures included, then strays nearby.
+	PACK,
 	## A landmark or a settled sculpture, which it circles and watches (Sentinel). Hostile, it eats
 	## its sculpture.
 	WATCH,
 }
 
 @export var role_name: String = "Zurd"
-@export var home: Home = Home.PATCH
+@export var home: Home = Home.PACK
 ## Faint placeholder tint over the body while Passive, so the roles can be told apart in playtests.
 @export var tint: Color = Color(1.0, 1.0, 1.0, 0.0)
 
@@ -39,14 +39,14 @@ enum Home {
 @export var launch_anger: float = 0.0
 ## Added per part the sculpture it watches gains beyond the sculpture size limit.
 @export var sculpture_anger: float = 0.0
-## Added per swat, ram or thrown object that hits it (a timid Zurd flees instead).
+## Added per swat or ram that doesn't drive it off (a timid Zurd flees at the first).
 @export var attack_anger: float = 0.2
 
 @export_group("Getting Around")
 ## Speed it heads home at when it's far away; 0 keeps its wander speed.
 @export var travel_speed: float = 0.0
 ## How far around its home it roams: a Shadow's spot, a Sentinel's landmark without a sculpture.
-## A Grazer roams its whole patch.
+## A Grazer roams around its pack's middle, as far as the director's pack_radius.
 @export var home_radius: float = 40.0
 
 @export_group("Shadow")
@@ -66,3 +66,5 @@ enum Home {
 @export var boldness: Vector2 = Vector2(0.0, 1.0)
 @export var curiosity: Vector2 = Vector2(0.6, 1.6)
 @export var pace: Vector2 = Vector2(0.9, 1.1)
+## Its size at spawn, before it grows by eating (Zurd Core Design Doc §12.4).
+@export var body: Vector2 = Vector2(0.9, 1.1)

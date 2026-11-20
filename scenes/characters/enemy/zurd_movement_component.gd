@@ -1,10 +1,11 @@
 class_name ZurdMovementComponent
 extends Node
 
-## Moves a Zurd (Zurd Core Design Doc §5, §6): wandering around a point, hunting a target, holding
-## its mouth on what it eats, hovering while it nibbles, the knock-back of a stun, and retreating
-## from the ship. Between targets it keeps clear of the terrain (a height field, so climbing is
-## enough) and of other Zurds, and it knocks around the objects it bumps into.
+## Moves a Zurd (Zurd Core Design Doc §5, §6, §12): wandering around a point, hunting a target,
+## holding its mouth on what it eats, hovering while it nibbles, the knock-back of a stun, retreating
+## from the ship, and flying to a point (the cloud chase). Between targets it keeps clear of the
+## terrain (a height field, so climbing is enough), out of other Zurds' bubbles and out of the space
+## around the ship (§12.7), and it knocks around the objects it bumps into.
 
 @export_group("Avoidance")
 @export var avoidance_distance: float = 5.0
@@ -51,10 +52,18 @@ extends Node
 @export var ground_check_interval: float = 0.1
 
 @export_group("Personal Space")
-## Other Zurds closer than this push the Zurd away, more strongly the closer they are.
-@export var personal_space: float = 8.0
-## Speed of that push when another Zurd is right on top of it.
-@export var separation_speed: float = 6.0
+## A Zurd's bubble: this many times its body radius, so it grows with the Zurd (Zurd Core Design Doc
+## §12.7). Overlapping bubbles push the Zurds apart, at full strength once they overlap by a third.
+@export var bubble_scale: float = 1.5
+## Speed of that push at full strength.
+@export var bubble_push: float = 20.0
+
+@export_group("Ship Space")
+## Zurds keep out of this radius around the ship, so the players have room to manoeuvre. It's soft:
+## a Zurd may dip in for food and is eased back out after.
+@export var ship_space: float = 40.0
+## Speed of the push out at the ship's middle, easing to nothing at the edge.
+@export var ship_push: float = 25.0
 
 @export_group("Retreat")
 ## Speed of a Zurd flying away after being driven off.
@@ -83,7 +92,8 @@ extends Node
 @export var push_force: float = 6.0
 
 
-var _wander_target: Vector3
+## The wander leg's destination, from the middle it wanders around (which may move).
+var _wander_offset: Vector3
 var _has_wander_target: bool = false
 var _wander_timer: float = 0.0
 
@@ -109,22 +119,24 @@ func _ready() -> void:
 ## Wanders around [param center] (its home, or where a driven-off Zurd waits): random legs that stay
 ## within [param radius] of it, and a leg straight back when the Zurd is outside that radius. With a
 ## [param far_speed], a Zurd well outside the radius heads straight home at that speed instead, easing
-## off as it nears (a Shadow keeping up with the ship).
-func process_wander(actor: CharacterBody3D, center: Vector3, radius: float, delta: float, far_speed: float = 0.0) -> void:
+## off as it nears. [param carry] is how fast the middle itself moves (a Shadow's spot moves with the
+## ship): the Zurd moves along with it and wanders on top of that, so the legs move with the middle.
+func process_wander(actor: CharacterBody3D, center: Vector3, radius: float, delta: float, far_speed: float = 0.0, carry: Vector3 = Vector3.ZERO) -> void:
 	var distance := actor.global_position.distance_to(center)
 	if far_speed > wander_speed and distance > radius * 1.5:
 		_has_wander_target = false
 		var factor := clampf(distance / maxf(radius * 4.0, 0.001), 0.3, 1.0)
-		_steer_and_move(actor, actor.global_position.direction_to(center), maxf(far_speed * factor, wander_speed), hunting_turn_speed, delta)
+		var homing := actor.global_position.direction_to(center) * maxf(far_speed * factor, wander_speed)
+		_steer_with_carry(actor, homing, carry, hunting_turn_speed, delta)
 		_process_bobbing(actor, delta)
 		return
 	_wander_timer += delta
 	if (not _has_wander_target
 			or _wander_timer >= wander_timeout
-			or actor.global_position.distance_to(_wander_target) <= arrival_distance):
+			or actor.global_position.distance_to(center + _wander_offset) <= arrival_distance):
 		_pick_wander_target(actor, center, radius)
-	var direction := actor.global_position.direction_to(_wander_target)
-	_steer_and_move(actor, direction, wander_speed, wander_turn_speed, delta)
+	var leg := actor.global_position.direction_to(center + _wander_offset) * wander_speed
+	_steer_with_carry(actor, leg, carry, wander_turn_speed, delta)
 	_process_bobbing(actor, delta)
 
 
@@ -136,7 +148,7 @@ func process_watch(actor: CharacterBody3D, center: Vector3, delta: float) -> voi
 		_watch_pause_left -= delta
 		_turn_towards(actor, actor.global_position.direction_to(center), wander_turn_speed, delta)
 		_level_roll(actor, delta)
-		actor.velocity = actor.velocity.lerp(_get_separation(actor), _get_exp_decay_weight(10.0, delta))
+		actor.velocity = actor.velocity.lerp(_get_separation(actor) + _get_ship_push(actor), _get_exp_decay_weight(10.0, delta))
 		_move(actor, delta)
 		_process_bobbing(actor, delta)
 		if _watch_pause_left <= 0.0:
@@ -158,6 +170,7 @@ func process_watch(actor: CharacterBody3D, center: Vector3, delta: float) -> voi
 
 ## Flies toward [param target] at [param speed] (the hunting speed when negative), slowing down
 ## near it and while it's well off to the side, so the Zurd turns onto it instead of circling it.
+## It may dip into the ship's space for a target inside it: the ship's push is off while it does.
 func process_hunt(actor: CharacterBody3D, target: Node3D, delta: float, speed: float = -1.0) -> void:
 	_has_wander_target = false
 	var to_target := target.global_position - actor.global_position
@@ -167,8 +180,18 @@ func process_hunt(actor: CharacterBody3D, target: Node3D, delta: float, speed: f
 	if _get_forward_direction(actor).dot(direction) < 0.5:
 		factor = min_arrival_speed
 	var top_speed := hunting_speed if speed < 0.0 else speed
+	var ship := _get_ship(actor)
+	var target_by_ship := ship != null and ship.global_position.distance_to(target.global_position) < ship_space
 	# Within the arrival radius it may come down to the target, even on a hillside.
-	_steer_and_move(actor, direction, top_speed * factor, hunting_turn_speed, delta, distance > arrival_radius)
+	_steer_and_move(actor, direction, top_speed * factor, hunting_turn_speed, delta, distance > arrival_radius, not target_by_ship)
+	_process_bobbing(actor, delta)
+
+
+## Flies straight at [param point] at [param speed], keeping clear of the terrain (the cloud chase, a
+## Shadow swooping back). [param carry] is how fast the point itself moves; the speed is on top of it.
+func process_fly_to(actor: CharacterBody3D, point: Vector3, speed: float, delta: float, carry: Vector3 = Vector3.ZERO) -> void:
+	_has_wander_target = false
+	_steer_with_carry(actor, actor.global_position.direction_to(point) * speed, carry, hunting_turn_speed, delta)
 	_process_bobbing(actor, delta)
 
 
@@ -218,32 +241,45 @@ func _process_bobbing(actor: CharacterBody3D, delta: float) -> void:
 func _pick_wander_target(actor: CharacterBody3D, center: Vector3, radius: float) -> void:
 	_has_wander_target = true
 	_wander_timer = 0.0
+	var target: Vector3
 	if actor.global_position.distance_to(center) > radius:
 		# Head back toward the center, to a spot near it.
 		var near_center := Vector3(randf_range(-1.0, 1.0), randf_range(-1.0, 1.0) * wander_vertical, randf_range(-1.0, 1.0))
-		_wander_target = center + near_center * radius * 0.3
+		target = center + near_center * radius * 0.3
 	else:
 		var direction := Vector3(randf_range(-1.0, 1.0), randf_range(-1.0, 1.0) * wander_vertical, randf_range(-1.0, 1.0))
 		if direction.is_zero_approx():
 			direction = Vector3.FORWARD
-		var target := actor.global_position + direction.normalized() * randf_range(min_wander_distance, max_wander_distance)
-		_wander_target = center + (target - center).limit_length(radius)
+		var away := actor.global_position + direction.normalized() * randf_range(min_wander_distance, max_wander_distance)
+		target = center + (away - center).limit_length(radius)
 	# Never into the ground: lift the destination clear of the terrain under it.
-	_wander_target.y = maxf(_wander_target.y, _get_ground_height(actor, _wander_target) + ground_clearance)
+	target.y = maxf(target.y, _get_ground_height(actor, target) + ground_clearance)
+	_wander_offset = target - center
 
 
 ## Turns toward [param desired_dir] and moves forward at [param move_speed]. With
 ## [param keep_clear] it also climbs to keep its ground clearance and steers around what's ahead.
-## Other Zurds nearby always push it away.
-func _steer_and_move(actor: CharacterBody3D, desired_dir: Vector3, move_speed: float, turn_rate: float, delta: float, keep_clear: bool = true) -> void:
+## Other Zurds' bubbles always push it away, and so does the ship's space unless
+## [param keep_off_ship] is off.
+func _steer_and_move(actor: CharacterBody3D, desired_dir: Vector3, move_speed: float, turn_rate: float, delta: float, keep_clear: bool = true, keep_off_ship: bool = true) -> void:
 	var direction := desired_dir
 	if keep_clear:
 		direction = _get_avoidance_direction(actor, _keep_ground_clearance(actor, direction, delta))
 	_turn_towards(actor, direction.normalized(), turn_rate, delta)
 	_level_roll(actor, delta)
 	var target_velocity := _get_forward_direction(actor) * move_speed + _get_separation(actor)
+	if keep_off_ship:
+		target_velocity += _get_ship_push(actor)
 	actor.velocity = actor.velocity.lerp(target_velocity, _get_exp_decay_weight(10.0, delta))
 	_move(actor, delta)
+
+
+## Moves at [param own_velocity] on top of [param carry], facing where that takes it in the world.
+func _steer_with_carry(actor: CharacterBody3D, own_velocity: Vector3, carry: Vector3, turn_rate: float, delta: float) -> void:
+	var world_velocity := own_velocity + carry
+	var speed := world_velocity.length()
+	var direction := world_velocity / speed if speed > 0.001 else _get_forward_direction(actor)
+	_steer_and_move(actor, direction, speed, turn_rate, delta)
 
 
 ## [param direction], tipped upward when the Zurd is below its ground clearance: the lower it is, the
@@ -270,23 +306,54 @@ func _get_ground_height(actor: CharacterBody3D, point: Vector3) -> float:
 	return hit["position"].y if not hit.is_empty() else -INF
 
 
-## A push away from other Zurds inside the personal space: up to [member separation_speed], stronger
-## the closer they are.
+## A push away from the Zurds whose bubbles overlap this one's. It grows quickly with the overlap, to
+## [member bubble_push] once they overlap by a third, so Zurds may brush past each other but never
+## sit inside one another.
 func _get_separation(actor: CharacterBody3D) -> Vector3:
-	if personal_space <= 0.0:
+	if bubble_scale <= 0.0:
 		return Vector3.ZERO
+	var mine := get_bubble_radius(actor)
 	var push := Vector3.ZERO
 	for node in actor.get_tree().get_nodes_in_group(Zurd.GROUP):
 		var other := node as Node3D
 		if other == null or other == actor:
 			continue
+		var reach := mine + get_bubble_radius(other)
 		var offset := actor.global_position - other.global_position
 		var distance := offset.length()
-		if distance >= personal_space:
+		if distance >= reach:
 			continue
 		var away := offset / distance if distance > 0.01 else Vector3(randf_range(-1.0, 1.0), 0.0, randf_range(-1.0, 1.0)).normalized()
-		push += away * (1.0 - distance / personal_space)
-	return push.limit_length(1.0) * separation_speed
+		push += away * clampf((1.0 - distance / reach) * 3.0, 0.0, 1.0)
+	return push.limit_length(1.0) * bubble_push
+
+
+## The radius of [param zurd]'s bubble: [member bubble_scale] times its body radius.
+func get_bubble_radius(zurd: Node3D) -> float:
+	var body_radius := 3.0
+	if zurd is Zurd:
+		body_radius = (zurd as Zurd).get_body_radius()
+	return body_radius * bubble_scale
+
+
+## A push out of the ship's space: [member ship_push] at the ship's middle, easing to nothing at the
+## edge.
+func _get_ship_push(actor: CharacterBody3D) -> Vector3:
+	if ship_space <= 0.0:
+		return Vector3.ZERO
+	var ship := _get_ship(actor)
+	if ship == null:
+		return Vector3.ZERO
+	var offset := actor.global_position - ship.global_position
+	var distance := offset.length()
+	if distance >= ship_space:
+		return Vector3.ZERO
+	var away := offset / distance if distance > 0.01 else Vector3.UP
+	return away * ship_push * (1.0 - distance / ship_space)
+
+
+func _get_ship(actor: Node) -> Node3D:
+	return actor.get_tree().get_first_node_in_group(PlayerShip.GROUP) as Node3D
 
 
 func _move(actor: CharacterBody3D, delta: float) -> void:
