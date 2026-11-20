@@ -2,6 +2,11 @@
 
 [ext_resource type="Script" uid="uid://bo1xq5oh5kpnl" path="res://scenes/ui/menus/main_menu.gd" id="1_flhq8"]
 [ext_resource type="Script" uid="uid://d3fjs43kfsd3m" path="res://scenes/ui/menus/scene_entry.gd" id="2_h1kbi"]
+[ext_resource type="Texture2D" uid="uid://b6ms5lq3bo64i" path="res://assets/images/gameWorld.jpg" id="3_y4aia"]
+[ext_resource type="Texture2D" uid="uid://baal8e5nt6vy1" path="res://assets/images/hungryZurd.jpg" id="4_jk7nv"]
+[ext_resource type="Texture2D" uid="uid://he48074yaypy" path="res://assets/images/launchObject.jpg" id="5_dhmlp"]
+[ext_resource type="Texture2D" uid="uid://fs73emb7g86h" path="res://assets/images/zurdEatShip.jpg" id="6_ykpw6"]
+[ext_resource type="Texture2D" uid="uid://dq0x4d2qwjmxj" path="res://assets/images/zurdVFlyswatter.jpg" id="7_h4dpu"]
 
 [sub_resource type="Resource" id="Resource_flhq8"]
 script = ExtResource("2_h1kbi")
@@ -80,3 +85,28 @@ theme_override_constants/separation = 16
 [node name="ControlsLabel" type="Label" parent="InfoPanel" unique_id=1105627790]
 layout_mode = 2
 autowrap_mode = 2
+
+[node name="GameWorld" type="Sprite2D" parent="." unique_id=1990212780]
+position = Vector2(195, 909)
+scale = Vector2(0.061749984, 0.061749984)
+texture = ExtResource("3_y4aia")
+
+[node name="HungryZurd" type="Sprite2D" parent="." unique_id=625057441]
+position = Vector2(575, 908)
+scale = Vector2(0.061875023, 0.061875023)
+texture = ExtResource("4_jk7nv")
+
+[node name="LaunchObject" type="Sprite2D" parent="." unique_id=1911424611]
+position = Vector2(958, 904)
+scale = Vector2(0.062000055, 0.062000055)
+texture = ExtResource("5_dhmlp")
+
+[node name="ZurdEatShip" type="Sprite2D" parent="." unique_id=942147588]
+position = Vector2(1340, 904.00006)
+scale = Vector2(0.06062498, 0.06062498)
+texture = ExtResource("6_ykpw6")
+
+[node name="ZurdVFlyswatter" type="Sprite2D" parent="." unique_id=712379042]
+position = Vector2(1707.3438, 907.43744)
+scale = Vector2(0.059718724, 0.059718724)
+texture = ExtResource("7_h4dpu")
