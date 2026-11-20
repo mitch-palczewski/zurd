@@ -106,9 +106,18 @@ func _ready() -> void:
 		_visual_base_rotation = visual_root.rotation
 
 
-## Wanders around [param center] (the ship, or where a driven-off Zurd waits): random legs that stay
-## within [param radius] of it, and a leg straight back when the Zurd is outside that radius.
-func process_wander(actor: CharacterBody3D, center: Vector3, radius: float, delta: float) -> void:
+## Wanders around [param center] (its home, or where a driven-off Zurd waits): random legs that stay
+## within [param radius] of it, and a leg straight back when the Zurd is outside that radius. With a
+## [param far_speed], a Zurd well outside the radius heads straight home at that speed instead, easing
+## off as it nears (a Shadow keeping up with the ship).
+func process_wander(actor: CharacterBody3D, center: Vector3, radius: float, delta: float, far_speed: float = 0.0) -> void:
+	var distance := actor.global_position.distance_to(center)
+	if far_speed > wander_speed and distance > radius * 1.5:
+		_has_wander_target = false
+		var factor := clampf(distance / maxf(radius * 4.0, 0.001), 0.3, 1.0)
+		_steer_and_move(actor, actor.global_position.direction_to(center), maxf(far_speed * factor, wander_speed), hunting_turn_speed, delta)
+		_process_bobbing(actor, delta)
+		return
 	_wander_timer += delta
 	if (not _has_wander_target
 			or _wander_timer >= wander_timeout

@@ -117,7 +117,7 @@ func _ready() -> void:
 	var world: Node = (load(WORLD) as PackedScene).instantiate()
 	var director := world.find_child("ZurdDirector", true, false)
 	if director:
-		director.set(&"starting_zurds", 0)
+		director.set(&"spawn_at_start", false)
 	_background.add_child(world)
 	_ship_camera = world.find_child("PlayerShip", true, false).find_child("Camera3D", true, false)
 

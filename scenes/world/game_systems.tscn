@@ -27,7 +27,5 @@ script = ExtResource("7_csky")
 [node name="ZurdDirector" type="Node" parent="." unique_id=1191661251]
 script = ExtResource("4_zdir")
 zurd_scene = ExtResource("5_zurd")
-starting_zurds = 8
-tolerated_mess = 17
 tolerated_sculpture_size = 10
 testing_hud_scene = ExtResource("6_zhud")

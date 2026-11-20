@@ -44,6 +44,9 @@ There is no lose state. The Zurds create pressure, not failure.
 
 ## 3. What the Zurds Know
 
+> **Replaced by iteration 2 (section 12, decided 2026-11-17):** each Zurd gets its own anger from
+> what it perceives. This section describes the shared anger that is built now.
+
 All Zurds know the state of the whole world: the number of loose objects, the sculptures and
 their sizes, and recent launches. That keeps aggression simple to scale: one shared **anger**
 value, worked out once for the world (by a single "Zurd director").
@@ -92,7 +95,8 @@ completed (section 7). During the first objective the Zurds stay Passive whateve
 ### 5.1 Passive
 
 - With nothing to eat or watch, it roams, staying loosely near the ship (*proposed:* within
-  200 m). Ignores the ship otherwise. (Homes were dropped 2026-11-12.)
+  200 m). Ignores the ship otherwise. (Homes were dropped 2026-11-12.) **Iteration 2 (section
+  12.2) gives each Zurd a home again, from its role.**
 - **Feeds on loose objects it sees, by choice** (changed 2026-11-12): for each object it sees it
   decides whether to eat it, about half the time when the Zurds are calm and always at full anger,
   and decides again after a while (*proposed:* 20 s). It goes to the ones it wants at an easy pace
@@ -111,6 +115,8 @@ completed (section 7). During the first objective the Zurds stay Passive whateve
 **Bumping:** a Zurd that flies into objects or sculptures it isn't eating knocks them around.
 
 ### 5.3 Switching
+
+> **Replaced by iteration 2 (section 12.1):** each Zurd turns Hostile from its own anger.
 
 - **How many Zurds are Hostile follows the anger:** at anger 0 none are, at anger 1 all are
   (*proposed*). As anger rises, the Zurds nearest to the mess turn Hostile first.
@@ -197,7 +203,7 @@ All *proposed*, tuned in playtests.
 
 | Signal | Fired when |
 | --- | --- |
-| zurd\_anger\_changed(anger) | The shared anger changes noticeably (for a HUD and sound later) |
+| zurd\_anger\_changed(zurd, anger) | A Zurd's own anger changes noticeably (for sound later). Was the shared anger until iteration 2. |
 | zurd\_state\_changed(zurd, hostile) | A Zurd turns Hostile or Passive |
 | zurd\_stunned(zurd) | A swat stuns a Zurd |
 | zurd\_driven\_off(zurd) | A Zurd is driven off |
@@ -212,9 +218,9 @@ question.
   attack the ship (jaws clamped, the ship shaken and shoved).
 - An Alert Level display in the HUD.
 - Killing Zurds (many swats, a cartoony fall).
-- Zurds growing as they eat; angry Zurds spitting out new ones like nesting dolls.
+- Angry Zurds spitting out new ones like nesting dolls. (Growing as they eat moved to 12.4.)
 - Population growing with pressure; difficulty scaling with how many are playing.
-- Following a new cloud up into the sky.
+- Following a new cloud up into the sky (now 12.5).
 
 ## 10b. Review of the Implementation (2026-11-12)
 
@@ -252,3 +258,128 @@ Still open:
 5. **The sculpture limit and the cloud size** (to settle with objectives): every sculpture passes
    the anger limit (10) on its way to a cloud (20), so finishing a cloud always angers the Zurds.
 6. **Spawning:** more Zurds as objects pile up, or as a sculpture grows.
+
+## 12. Iteration 2: Personality (decided 2026-11-17)
+
+Different Zurds with different behaviour, so the game feels balanced and the world feels
+inhabited: a few keep the ship company, most are spread across the map, and some watch the
+places and sculptures that matter. Built in two steps:
+- **2.0:** individual anger, roles, temperament, the nearby-anger testing HUD, role switching;
+- **2.1:** growth and the cloud chase.
+
+The Passive/Hostile states (section 5), sight (4), getting around (4b) and swatting (6) stay
+unless changed here.
+
+**Arrival:** all the Zurds are there from the start, which makes testing easier (decided
+2026-11-17). Trickling them in, for a calm opening, may come later.
+
+### 12.1 Individual anger
+
+- **Each Zurd has its own anger**, 0 to 1. There is no shared anger.
+- **What raises it** is what that Zurd itself perceives:
+  - loose objects it sees beyond what it tolerates (*proposed:* 3 in view; this replaces the
+    world-wide mess limit);
+  - launches it sees;
+  - the sculpture it watches growing past the sculpture limit;
+  - attacks on it (swats, rams, thrown objects).
+- **What lowers it:** it falls after a quiet spell.
+- **Each role weighs these differently** (12.2), and temperament scales them (12.3).
+- **Hostile** when its anger passes the *hostile threshold*; **calm again** below the lower *calm
+  threshold*. The gap stops it flickering. The hostile cooldown and "finish the meal before
+  calming" (5.3) stay.
+- **Appetite rises with its anger:** a calm Zurd eats only some of the strays it sees
+  (*proposed:* half), an angry one nearly all.
+- **Hunting order stays:** loose objects first, then a sculpture over the limit.
+- **Later, only if playtests ask:**
+  - anger spreading between nearby Zurds, if too few Zurds take part (it adds feedback loops that
+    are hard to tune and to read);
+  - a shared background mood for the difficulty ramp.
+- **Testing HUD:** the role, state and anger of the few Zurds nearest the ship, and their
+  average as "nearby anger". It replaces the shared-anger HUD (decided 2026-11-17).
+
+### 12.2 Roles
+
+| Role | Count | Home | Angered mostly by | When Hostile |
+|---|---|---|---|---|
+| **Shadow** | 3 | Its own spot around the ship (its own bearing, *proposed* 150–300 m out), following the ship's path a few seconds late; never on its tail | Launches near it; the ship bumping it | Goes after the loose objects nearest the ship |
+| **Grazer** | 15 | Its own patch of the map; the patches are spread evenly over a disc around the world centre (*proposed* radius: 1500 m in `zurd_world02`, 1000 m in `zurd_world01`) | Loose objects in its patch; **sculptures count like loose objects** | Clears its patch (sculptures included), then strays nearby |
+| **Sentinel** | 5 (scales, see below) | One landmark or one sculpture, which it circles and watches. **One Sentinel per sculpture or landmark.** | Its sculpture growing past the limit | Eats from its sculpture |
+| **Brute** (later) | 0 | None: appears where Zurds are angry | Everything | Tougher, hard to drive off; the future ship attacker |
+
+- Each role is a settings file: home, anger weights, hunting, toughness, and its temperament
+  ranges.
+- **Sentinels are about sculptures** (decided 2026-11-17); Grazers treat a sculpture like any
+  other object in their patch.
+- **Landmarks** are marker nodes placed by hand in each world. A Sentinel with no free landmark
+  or sculpture hangs out near the nearest landmark.
+- **Finding sculptures** (a slow beeline, decided 2026-11-17):
+  - A sculpture becomes **settled** once nothing has been added to it or taken off it for a while
+    (*proposed:* 30 s). That filters out sculptures that break apart and come back together
+    while players build.
+  - The nearest free Sentinel then **wanders over** at its easy pace and takes it on: a slow
+    beeline, so it seems to find it eventually.
+  - Not every sculpture gets a Sentinel.
+- **Sentinel numbers scale:**
+  - When every Sentinel is busy and a settled sculpture has no watcher, a new Sentinel trickles
+    in, up to a cap (*proposed:* 8).
+  - When a sculpture becomes a cloud (or is eaten away), its Sentinel returns to a landmark.
+  - A Sentinel beyond the starting count becomes a Grazer instead.
+  - (This replaces the earlier idea of Grazers switching to Sentinels.)
+
+### 12.3 Temperament
+
+Each Zurd rolls a few traits within its role's ranges:
+
+- **Temper:** how fast it gets angry.
+- **Patience:** how fast it calms down.
+- **Greed:** its baseline appetite.
+- **Boldness:** how close it comes to the ship, and how it takes a swat:
+  - **A timid Zurd flees and calms after a single swat.**
+  - **A bolder one takes more swats to drive off,** and gets angrier with each.
+- **Curiosity:** how long it lingers to watch.
+- **Body:** a little variety in size, speed and tint.
+
+### 12.4 Growth (2.1)
+
+Zurds grow as they eat and **stay big forever**, up to a cap (*proposed:* 4–5× their starting size).
+A bigger Zurd is **a little slower** and **takes more swats** to drive off.
+
+### 12.5 The cloud chase (2.1)
+
+- **Who joins:** every Zurd that can see the new cloud (decided 2026-11-17).
+- **Hostile Zurds drop their hostility:** they stop what they're doing, their anger falls, and
+  they join the chase.
+
+- When a cloud forms, Zurds that see it race up after it, snap at it and bounce off comically.
+- After a few seconds they give up and scatter back to their homes, which spreads them out again.
+- This answers the Cloud-Formation Design Doc's question of how the Zurds react to a new cloud.
+
+### 12.6 As built (2.0, 2026-11-17)
+
+Iteration 2.0 is built (`claude/plans/2026-11-17-zurd-personality-plan.md`). Starting values, all
+tunable:
+
+| What | Where | Value |
+|---|---|---|
+| Hostile / calm thresholds | `Zurd` | 0.6 / 0.3 |
+| Calm delay, decay | `Zurd` | 3 s, 0.05 per second × patience |
+| Tolerated in view | each role | 3 |
+| Shadow | `data/zurd_roles/shadow.tres` | sight 350 m (so it sees the ship from its spot); mess 0.05, launch 0.08, attack 0.25; spot 150–300 m out (bolder nearer), within 50° of the heading; heads back at 45 m/s; faint blue |
+| Grazer | `grazer.tres` | sight 150 m; sculptures count as mess; mess 0.12, attack 0.2; faint green |
+| Sentinel | `sentinel.tres` | sight 200 m; mess 0.03, sculpture 0.1, attack 0.2; boldness 0.5–1; faint gold |
+| Temperament | each role | temper and patience 0.6–1.4, greed 0.3–0.7, boldness 0–1, curiosity 0.6–1.6, pace 0.9–1.1 |
+| Swats | `Zurd` | timid below 0.3: 1 swat; bolder: 2–4 |
+| Cast | `ZurdDirector` | 3 Shadows, 15 Grazers, 5 Sentinels, cap 8 |
+| Grazing disc | `ZurdDirector` | 1500 m around the world origin, patch radius 1500 ÷ √15 ≈ 387 m, at the ship's starting height ± 30 m |
+| Settle time | `ZurdDirector` | 30 s |
+| Landmarks | the worlds | `zurd_world01`: 3 around the middle, 45 m above the ground. `zurd_world02`: the pool court, the grove, the bush garden and the circle grids. |
+
+**How it plays out:**
+- **Noticing mess:** only the items beyond a Zurd's tolerance count.
+- **Launches:** every launch a Zurd sees holds its anger, but it adds anger only while that Zurd
+  sees more mess than it tolerates. Building methodically stays safe.
+- **Hostile Zurds act only on what they see** (and, for a Grazer, on what's in its patch). With
+  nothing there, they keep to their home until they calm.
+- **Being driven off** calms a Zurd: it comes back with its anger at 0.
+- **Shadows** have no literal lag: their top speed makes them fall behind on fast flights, and
+  they catch up when the ship slows.

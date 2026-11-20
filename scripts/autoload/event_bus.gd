@@ -110,14 +110,15 @@ signal station_activity_changed(station: StringName, active: bool)
 
 # Zurds (see claude/design/Zurd Core Design Doc.md, §9).
 
-## Fired when the ship launches an object, once it's in the world and tracked. Zurds count launches.
+## Fired when the ship launches an object, once it's in the world and tracked. Zurds that see the
+## ship launch are told (Zurd Core Design Doc §12.1).
 @warning_ignore("unused_signal")
 signal object_launched(obj: RigidBody3D)
 
 
-## Fired when the Zurds' shared anger (0 to 1) changes by a noticeable amount.
+## Fired when a Zurd's own anger (0 to 1) changes by a noticeable amount.
 @warning_ignore("unused_signal")
-signal zurd_anger_changed(anger: float)
+signal zurd_anger_changed(zurd: Node3D, anger: float)
 
 
 ## Fired when a Zurd turns Hostile ([param hostile] true) or Passive.

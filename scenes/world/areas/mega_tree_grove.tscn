@@ -58,3 +58,6 @@ transform = Transform3D(-99.27214, 0, 12.043338, 0, 100, 0, -12.043338, 0, -99.2
 
 [node name="SkyCanopy" parent="." unique_id=1873402219 instance=ExtResource("3_canopy")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1210.3087, -97.26895)
+
+[node name="ZurdLandmark" type="Marker3D" parent="." unique_id=1446397889 groups=["zurd_landmarks"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 130, 120, -1680)

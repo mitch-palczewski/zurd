@@ -386,6 +386,9 @@ Files: `zurd_director.gd`, `zurd.gd`, `zurd_movement_component.gd`, `zurd_testin
 
 *Noted 2026-11-13 from playtesting, for the next iteration's plan.*
 
+*Addressed 2026-11-17 by iteration 2.0 (`claude/plans/2026-11-17-zurd-personality-plan.md`): only
+Shadows keep near the ship, each at its own spot in view; the rest spread over the map.*
+
 - **Zurds follow the ship too closely.** They should want to be *nearby*, around the ship, not on
   its tail.
 - **They bunch up and chase the ship as a pack.** Each should keep to its own patch around the

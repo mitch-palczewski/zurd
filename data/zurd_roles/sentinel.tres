@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="ZurdRole" format=3 uid="uid://b01njps0c33wl"]
+
+[ext_resource type="Script" path="res://scenes/characters/enemy/zurd_role.gd" id="1_role"]
+
+[resource]
+script = ExtResource("1_role")
+role_name = "Sentinel"
+home = 2
+tint = Color(1, 0.85, 0.3, 0.3)
+sight_radius = 200.0
+tolerated_in_view = 3
+mess_anger = 0.03
+sculpture_anger = 0.1
+attack_anger = 0.2
+home_radius = 40.0
+boldness = Vector2(0.5, 1)

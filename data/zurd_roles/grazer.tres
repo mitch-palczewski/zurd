@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="ZurdRole" format=3 uid="uid://bfeqjhkq8me8c"]
+
+[ext_resource type="Script" path="res://scenes/characters/enemy/zurd_role.gd" id="1_role"]
+
+[resource]
+script = ExtResource("1_role")
+role_name = "Grazer"
+home = 1
+tint = Color(0.4, 1, 0.4, 0.3)
+sight_radius = 150.0
+tolerated_in_view = 3
+sculptures_count_as_mess = true
+mess_anger = 0.12
+attack_anger = 0.2
+travel_speed = 20.0

@@ -7,3 +7,14 @@
 
 [node name="Terrain" parent="." index="4" unique_id=255451220 instance=ExtResource("2_gwyab")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -77.23289, 0)
+
+[node name="ZurdLandmarks" type="Node3D" parent="." index="5" unique_id=155469661]
+
+[node name="North" type="Marker3D" parent="ZurdLandmarks" unique_id=1734216093 groups=["zurd_landmarks"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -30, -250)
+
+[node name="SouthEast" type="Marker3D" parent="ZurdLandmarks" unique_id=902731548 groups=["zurd_landmarks"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 250, -30, 150)
+
+[node name="SouthWest" type="Marker3D" parent="ZurdLandmarks" unique_id=1388540277 groups=["zurd_landmarks"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -250, -30, 150)

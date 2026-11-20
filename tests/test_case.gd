@@ -157,7 +157,7 @@ func load_world(with_terrain := true, with_zurds := false) -> Node3D:
 			_remove_now(zurd)
 		var director := world.find_child("ZurdDirector", true, false)
 		if director:
-			director.set(&"starting_zurds", 0)
+			director.set(&"spawn_at_start", false)
 	get_tree().root.add_child(world)
 	_worlds.append(world)
 	await get_tree().process_frame

@@ -85,3 +85,6 @@ transform = Transform3D(50, 0, 0, 0, 30, 0, 0, 0, 30, 189.86937, -8.744232, -237
 
 [node name="Arch8" parent="Arches" unique_id=1264485803 instance=ExtResource("3_arch")]
 transform = Transform3D(50, 0, 0, 0, 30, 0, 0, 0, 30, 443.1552, -8.744232, -237.27667)
+
+[node name="ZurdLandmark" type="Marker3D" parent="." unique_id=670004517 groups=["zurd_landmarks"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 60, 0)

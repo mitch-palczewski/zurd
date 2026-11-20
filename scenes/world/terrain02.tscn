@@ -62,3 +62,9 @@ transform = Transform3D(-22.794899, 0.19892806, -19.502644, 0.26179612, 29.99886
 
 [node name="CircleGrid3" parent="CircleGrids" unique_id=317237364 instance=ExtResource("6_grid")]
 transform = Transform3D(-26.875265, 0.2980171, 13.327847, 0.6482985, 29.986237, 0.6367702, -13.315407, 0.8584596, -26.86937, 12.472748, 6.903473, 963.58594)
+
+[node name="ZurdLandmark" type="Marker3D" parent="BushGarden" unique_id=585346318 groups=["zurd_landmarks"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1050, 100, 60)
+
+[node name="ZurdLandmark" type="Marker3D" parent="CircleGrids" unique_id=53205793 groups=["zurd_landmarks"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 80, 50, 780)
